@@ -1,0 +1,37 @@
+---
+title: "SurveyData"
+author: "Brad"
+date: "January 12, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+ library(Mar.datawrangling)
+ library(Mar.bycatch)
+ library(tidyverse)
+
+wd="C:/Users/hubleyb/Documents/Halibut/data"
+
+# Update data from database 
+#get_data(db='isdb',data.dir=wd,fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+ 
+```
+
+## prepare Data for hook occupancy model
+
+
+
+```{r }
+PrepareDataHookModel()
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+FixedSurvey<-FixedSurveyData()
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
