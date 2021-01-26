@@ -4,7 +4,7 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-PrepareDataHookModel <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/git/bio.halibut/data",add.gear=F){
+PrepareDataHookModel <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F){
 
   library(Mar.datawrangling)
   library(tidyverse)
