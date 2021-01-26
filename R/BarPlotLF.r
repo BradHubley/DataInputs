@@ -1,5 +1,5 @@
 #' @export
-BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows=length(yrs),graphic='pdf',xl,rel=T,ylp=0.1,ymax,LS=81,sample.size=NULL,recline=NULL,wd=10,ht=12,bx=F,xlab="Length (cm)",ylab="Mean N / standard tow",...){
+BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows=length(yrs),graphic='pdf',xl,rel=T,ylp=0.1,ymax,LS=81,sample.size=NULL,recline=NULL,wd=10,ht=12,bx=F,xlab="Length (cm)",ylab="Number of Halibut",...){
 
     mids<-bins[-1]-diff(bins)/2
 
@@ -35,7 +35,7 @@ BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows
             axis(1,at=pretty(xlm),lab=pretty(xlm)*diff(bins)[1])
         }
 
-        if(!is.null(LS))abline(v=LS[i]/diff(bins)[1],lwd=2,col='red')
+        if(!is.null(LS))abline(v=LS/diff(bins)[1],lwd=2,col='red')
         if(!is.null(recline))abline(v=recline,lty=2,col='red')
 
         mtext(as.character(LFyrs[i]), 3, -3, adj=ylp,outer = F,cex=1)

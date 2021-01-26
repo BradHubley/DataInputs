@@ -11,27 +11,105 @@ knitr::opts_chunk$set(echo = TRUE)
  library(Mar.bycatch)
  library(tidyverse)
 
-wd="C:/Users/hubleyb/Documents/Halibut/data"
+datadir="C:/Users/hubleyb/Documents/Halibut/data"
+wd="C:/Users/hubleyb/Documents/Halibut/git/DataInputs"
+source(file.path(wd,".passwords"))
+
+```
+
+## Update data from database 
+
+```{r}
 
 # Update data from database 
-#get_data(db='isdb',data.dir=wd,fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
  
 ```
 
+### SUrvey ABundance Indices
 ## prepare Data for hook occupancy model
-
-
 
 ```{r }
 PrepareDataHookModel()
+
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
+### Size Composition 
+## Prepare data for Length Frequemcy plots
 
 ```{r pressure, echo=FALSE}
 FixedSurvey<-FixedSurveyData()
+RandomSurvey<-RandomSurveyData()
+ComIndex<-CommercialIndexData()
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Fixed LF plots
+```{r}
+        
+
+  # Construct CLF
+  nafos<-unique(FixedSurvey$NAFAREA_ID)
+  nafo4x <- nafos[c(grep('4X',nafos),grep('4V',nafos),grep('4W',nafos))]
+  FixedSurvey4X <-subset(FixedSurvey,NAFAREA_ID%in%nafo4x)
+
+
+
+  fixedLF=list()
+  bins = paste0("L",seq(10,230,5))
+  FixedSurvey$N_MEASURED <- rowSums(FixedSurvey[,bins])
+  Yrs = 2009:2020
+  sx = c(1,2,0)
+
+  for(i in 1:length(Yrs)){
+    
+      #x=subset(FixedSurvey,YEAR==Yrs[i])
+      #x$scaler = x$NUM_HOOK_HAUL/1000 
+      fixedLF[[i]]=t(sapply(sx,function(s){colSums(subset(FixedSurvey,YEAR==Yrs[i]&SEXCD_ID==s,bins),na.rm=T)}))
+      
+      #fixedLF[[i]]=sapply(Yrs,colSums(subset(FixedSurvey,YEAR==Yrs[i],bins),na.rm=T)
+    
+  }
+  
+  #fixedLF=t(sapply(Yrs,function(y){colSums(subset(FixedSurvey,YEAR==y,bins),na.rm=T)}))
+  names(fixedLF) = Yrs
+  BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixed4XLF1"))
+  BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixed4VWXLF2"),ymax=300)
+
+```
+
+
+## Random LF plots
+```{r}
+            # Construct CLF
+            RandomLF=list()
+            bins = paste0("L",seq(10,230,5))
+            Yrs = 2017:2020
+            sx = c(1,2,0)
+
+            for(i in 1:length(Yrs)){
+              
+                #x=subset(FixedSurvey,YEAR==Yrs[i])
+                #x$scaler = x$NUM_HOOK_HAUL/1000 
+                RandomLF[[i]]=t(sapply(sx,function(s){colSums(subset(RandomSurvey,YEAR==Yrs[i]&SEXCD_ID==s,bins),na.rm=T)}))
+                
+                #fixedLF[[i]]=sapply(Yrs,colSums(subset(FixedSurvey,YEAR==Yrs[i],bins),na.rm=T)
+              
+            }
+            
+            #fixedLF=t(sapply(Yrs,function(y){colSums(subset(FixedSurvey,YEAR==y,bins),na.rm=T)}))
+            names(RandomLF) = Yrs
+            BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
+            BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
+
+```
+
+## Checking data for mis match in EST_NUM_CAUGHT and NUM_MEASURED
+
+```{r}
+
+x20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
+
+
+```
+

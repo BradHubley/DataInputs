@@ -4,7 +4,7 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-FixedSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
+RandomSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -19,7 +19,7 @@ FixedSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",ad
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057),]
 
   # filter for random survey
-  isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == 4,]
+  isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == 5,]
 
   # filter out bad sets
   isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
@@ -73,8 +73,8 @@ FixedSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",ad
     names(LFnosex)[-1]<-paste0("L",bins[-1])
     LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
     if(by.sex==T){
-      sx<-c(1,2,0)
-      for(i in 1:3){
+     sx<-c(1,2,0)
+     for(i in 1:3){
         LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s&SEXCD_ID==sx[i]),hist(FISH_LENGTH,breaks=bins,plot=F)$count)})))
       }
       LF <- do.call("rbind",LF)
@@ -93,8 +93,10 @@ FixedSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",ad
 
 
 
-write.csv(HALIBUTSURVEY,file.path(wd,"FixedHalibutSurveyData.csv"),row.names = F)
+write.csv(HALIBUTSURVEY,file.path(wd,"RandomHalibutSurveyData.csv"),row.names = F)
 return(HALIBUTSURVEY)
+
 }
+
 
 

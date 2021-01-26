@@ -4,7 +4,7 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-FixedSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
+CommercialIndexData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -16,13 +16,13 @@ FixedSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",ad
   get_data(db='isdb',data.dir=wd,env=isdb)
 
   # filter for halibut longline survey
-  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057),]
+  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057,7058),]
 
   # filter for random survey
-  isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == 4,]
+  isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == 10,]
 
   # filter out bad sets
-  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
+  #isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
 
 
   # filter for halibut
