@@ -4,7 +4,7 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-CommercialIndexData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
+CommercialIndexData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -13,7 +13,7 @@ CommercialIndexData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data
 
   isdb <- new.env()
 
-  get_data(db='isdb',data.dir=wd,env=isdb)
+  get_data(db='isdb',data.dir=datadir,env=isdb)
 
   # filter for halibut longline survey
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057,7058),]
@@ -66,7 +66,7 @@ CommercialIndexData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data
 
   # join length frequency if desired
   if(add.LF){
-    bins<-seq(size.range[1],size.range[2],bin.size)
+    #bins<-seq(size.range[1],size.range[2],bin.size)
     cid=unique(isdb$ISFISH$CATCH_ID)
     LF <-list()
     LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F)$count)})))
@@ -93,7 +93,7 @@ CommercialIndexData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data
 
 
 
-write.csv(HALIBUTSURVEY,file.path(wd,"FixedHalibutSurveyData.csv"),row.names = F)
+write.csv(HALIBUTSURVEY,file.path(datadir,"FixedHalibutSurveyData.csv"),row.names = F)
 return(HALIBUTSURVEY)
 }
 
