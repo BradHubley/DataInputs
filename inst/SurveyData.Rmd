@@ -6,7 +6,9 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(devtools)
+#install_github("Maritimes/Mar.datawrangling")
+#install_github("Maritimes/Mar.bycatch")
  library(Mar.datawrangling)
  library(Mar.bycatch)
  library(tidyverse)
@@ -38,69 +40,43 @@ PrepareDataHookModel()
 ### Size Composition 
 ## Prepare data for Length Frequemcy plots
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
+bins=seq(5,260,5)
+
 FixedSurvey<-FixedSurveyData()
 RandomSurvey<-RandomSurveyData()
 ComIndex<-CommercialIndexData()
 ```
 
-## Fixed LF plots
+## Construct LF for plots
 ```{r}
         
+  #subset by nafo
+  #nafos<-unique(FixedSurvey$NAFAREA_ID)
+  #nafo4x <- nafos[c(grep('4X',nafos),grep('4V',nafos),grep('4W',nafos))]
+  #FixedSurvey4X <-subset(FixedSurvey,NAFAREA_ID%in%nafo4x)
+  
+  #scale LF
+  #FixedSurvey$N_MEASURED <- rowSums(FixedSurvey[,bins])
+  #x$scaler = x$NUM_HOOK_HAUL/1000 
 
   # Construct CLF
-  nafos<-unique(FixedSurvey$NAFAREA_ID)
-  nafo4x <- nafos[c(grep('4X',nafos),grep('4V',nafos),grep('4W',nafos))]
-  FixedSurvey4X <-subset(FixedSurvey,NAFAREA_ID%in%nafo4x)
-
-
-
-  fixedLF=list()
-  bins = paste0("L",seq(10,230,5))
-  FixedSurvey$N_MEASURED <- rowSums(FixedSurvey[,bins])
-  Yrs = 2009:2020
-  sx = c(1,2,0)
-
-  for(i in 1:length(Yrs)){
-    
-      #x=subset(FixedSurvey,YEAR==Yrs[i])
-      #x$scaler = x$NUM_HOOK_HAUL/1000 
-      fixedLF[[i]]=t(sapply(sx,function(s){colSums(subset(FixedSurvey,YEAR==Yrs[i]&SEXCD_ID==s,bins),na.rm=T)}))
-      
-      #fixedLF[[i]]=sapply(Yrs,colSums(subset(FixedSurvey,YEAR==Yrs[i],bins),na.rm=T)
-    
-  }
+  fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = 2009:2020)
+  RandomLF=constructLF(LFdata=RandomSurvey,bins=bins, Yrs = 2017:2020)
+  ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = 2009:2020)
   
-  #fixedLF=t(sapply(Yrs,function(y){colSums(subset(FixedSurvey,YEAR==y,bins),na.rm=T)}))
-  names(fixedLF) = Yrs
-  BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixed4XLF1"))
-  BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixed4VWXLF2"),ymax=300)
 
 ```
 
 
-## Random LF plots
+## LF plots
 ```{r}
-            # Construct CLF
-            RandomLF=list()
-            bins = paste0("L",seq(10,230,5))
-            Yrs = 2017:2020
-            sx = c(1,2,0)
-
-            for(i in 1:length(Yrs)){
-              
-                #x=subset(FixedSurvey,YEAR==Yrs[i])
-                #x$scaler = x$NUM_HOOK_HAUL/1000 
-                RandomLF[[i]]=t(sapply(sx,function(s){colSums(subset(RandomSurvey,YEAR==Yrs[i]&SEXCD_ID==s,bins),na.rm=T)}))
-                
-                #fixedLF[[i]]=sapply(Yrs,colSums(subset(FixedSurvey,YEAR==Yrs[i],bins),na.rm=T)
-              
-            }
-            
-            #fixedLF=t(sapply(Yrs,function(y){colSums(subset(FixedSurvey,YEAR==y,bins),na.rm=T)}))
-            names(RandomLF) = Yrs
-            BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
-            BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
+  
+    BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF1"))
+    BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixedLF2"),ymax=320)
+  
+    BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
+    BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
 
 ```
 
@@ -108,6 +84,7 @@ ComIndex<-CommercialIndexData()
 
 ```{r}
 
+RandomSurvey$N_MEASURED <- rowSums(RandomSurvey[,paste0("L",bins[-1])])
 x20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
 
 
