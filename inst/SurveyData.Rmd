@@ -25,6 +25,7 @@ source(file.path(wd,".passwords"))
 
 # Update data from database 
 get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
  
 ```
 
@@ -32,7 +33,7 @@ get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password
 ## prepare Data for hook occupancy model
 
 ```{r }
-PrepareDataHookModel()
+rsh<-PrepareDataHookModel()
 
 
 ```
@@ -41,11 +42,11 @@ PrepareDataHookModel()
 ## Prepare data for Length Frequemcy plots
 
 ```{r, echo=FALSE}
-bins=seq(5,260,5)
+bins=seq(0,260,5)
 
 FixedSurvey<-FixedSurveyData()
 RandomSurvey<-RandomSurveyData()
-ComIndex<-CommercialIndexData()
+ComIndex<-CommercialIndexData(bins=seq(0,260,5))
 ```
 
 ## Construct LF for plots
@@ -77,6 +78,9 @@ ComIndex<-CommercialIndexData()
   
     BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
     BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
+    
+    BarPlotLF(ComIndexLF,yrs=2009:2020,rel=T,filen=file.path(wd,"figures","comindexLF1"))
+    BarPlotLF(ComIndexLF,yrs=2009:2020,rel=F,filen=file.path(wd,"figures","comindexLF2"),ymax=1400)
 
 ```
 
@@ -86,6 +90,14 @@ ComIndex<-CommercialIndexData()
 
 RandomSurvey$N_MEASURED <- rowSums(RandomSurvey[,paste0("L",bins[-1])])
 x20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
+
+
+```
+
+## RV survey
+
+```{r}
+get_data(db='rv',data.dir=datadir)
 
 
 ```

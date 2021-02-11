@@ -4,10 +4,11 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-RandomSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T){
+RandomSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T,hook.data=F){
 
   library(Mar.datawrangling)
   library(tidyverse)
+
 
   ## Survey data from database (isdb)
 
@@ -24,10 +25,8 @@ RandomSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/da
   # filter out bad sets
   isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
 
-
-  # filter for halibut
+    # filter for halibut
   isdb$ISSPECIESCODES= isdb$ISSPECIESCODES[isdb$ISSPECIESCODES$SPECCD_ID == sp,]
-
 
   # Apply filter
   self_filter('isdb',env=isdb)
@@ -90,6 +89,10 @@ RandomSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/da
 
   HALIBUTSURVEY <- left_join(sets,totalfish) %>%
     left_join(.,trips)
+
+  if(hook.data==T){
+    <-PrepareDataHookModel()
+  }
 
 
 
