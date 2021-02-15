@@ -4,7 +4,7 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-CommercialIndexData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T){
+CommercialIndexData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T,add.portsampling=T){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -90,6 +90,11 @@ CommercialIndexData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut
 
   HALIBUTSURVEY <- left_join(sets,totalfish) %>%
     left_join(.,trips)
+
+  if(add.portsampling==T){
+    psdata <- subset(get_ps_data(data.dir=datadir),!is.na(TRIP_NUMBER))
+
+  }
 
 
 

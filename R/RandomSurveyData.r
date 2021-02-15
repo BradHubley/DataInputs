@@ -65,7 +65,6 @@ RandomSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/da
 
   # join length frequency if desired
   if(add.LF){
-    bins<-seq(size.range[1],size.range[2],bin.size)
     cid=unique(isdb$ISFISH$CATCH_ID)
     LF <-list()
     LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F)$count)})))
@@ -91,7 +90,9 @@ RandomSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/da
     left_join(.,trips)
 
   if(hook.data==T){
-    <-PrepareDataHookModel()
+    hookData<-PrepareDataHookModel()
+    hooknames <- c("FISHSET_ID", "broken_hook", "empty_baited", "empty_unbaited", "other_species", "target_species", "missing_hook", "total_sampled", "ASSIGNED_STATION", "ASSIGNED_STRATUM_ID")
+    HALIBUTSURVEY <-left_join(HALIBUTSURVEY,hookData[,hooknames])
   }
 
 

@@ -27,7 +27,7 @@ source(file.path(wd,".passwords"))
 ```{r }
 
 bycatch<-fleet_halibut(dateStart = "2018-01-01", data.dir=datadir,oracle.username=uid,oracle.password=pwd,usepkg='roracle',oracle.dsn='ptran', useLocal=F)
-
+#get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 ```
 
