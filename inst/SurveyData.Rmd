@@ -33,8 +33,7 @@ get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password =
 ## prepare Data for hook occupancy model
 
 ```{r }
-rsh<-PrepareDataHookModel()
-
+HookOccupancyData<-PrepareDataHookModel()
 
 ```
 
@@ -44,9 +43,10 @@ rsh<-PrepareDataHookModel()
 ```{r, echo=FALSE}
 bins=seq(0,260,5)
 
-FixedSurvey<-FixedSurveyData()
-RandomSurvey<-RandomSurveyData()
-ComIndex<-CommercialIndexData(bins=seq(0,260,5))
+FixedSurvey<-FixedSurveyData(datadir=datadir)
+RandomSurvey<-RandomSurveyData(datadir=datadir)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=seq(5,260,5),by.sex=T,hook.data=T)
+ComIndex<-CommercialIndexData(datadir=datadir,bins=seq(0,260,5),add.portsampling=T)
 ```
 
 ## Construct LF for plots
