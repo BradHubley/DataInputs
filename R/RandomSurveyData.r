@@ -4,16 +4,19 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-RandomSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVault",add.gear=T,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
+
+RandomSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T,hook.data=F){
+
 
   library(Mar.datawrangling)
   library(tidyverse)
+
 
   ## Survey data from database (isdb)
 
   isdb <- new.env()
 
-  get_data(db='isdb',data.dir=wd,env=isdb)
+  get_data(db='isdb',data.dir=datadir,env=isdb)
 
   # filter for halibut longline survey
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057),]
@@ -24,10 +27,8 @@ RandomSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVa
   # filter out bad sets
   isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
 
-
-  # filter for halibut
+    # filter for halibut
   isdb$ISSPECIESCODES= isdb$ISSPECIESCODES[isdb$ISSPECIESCODES$SPECCD_ID == sp,]
-
 
   # Apply filter
   self_filter('isdb',env=isdb)
@@ -66,7 +67,6 @@ RandomSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVa
 
   # join length frequency if desired
   if(add.LF){
-    bins<-seq(size.range[1],size.range[2],bin.size)
     cid=unique(isdb$ISFISH$CATCH_ID)
     LF <-list()
     LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F)$count)})))
@@ -91,9 +91,15 @@ RandomSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVa
   HALIBUTSURVEY <- left_join(sets,totalfish) %>%
     left_join(.,trips)
 
+  if(hook.data==T){
+    hookData<-PrepareDataHookModel()
+    hooknames <- c("FISHSET_ID", "broken_hook", "empty_baited", "empty_unbaited", "other_species", "target_species", "missing_hook", "total_sampled", "ASSIGNED_STATION", "ASSIGNED_STRATUM_ID")
+    HALIBUTSURVEY <-left_join(HALIBUTSURVEY,hookData[,hooknames])
+  }
 
 
-write.csv(HALIBUTSURVEY,file.path(wd,"RandomHalibutSurveyData.csv"),row.names = F)
+
+write.csv(HALIBUTSURVEY,file.path(datadir,"RandomHalibutSurveyData.csv"),row.names = F)
 return(HALIBUTSURVEY)
 
 }

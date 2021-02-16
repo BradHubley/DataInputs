@@ -4,7 +4,9 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-FixedSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVault",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
+
+FixedSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T){
+
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -13,7 +15,7 @@ FixedSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVau
 
   isdb <- new.env()
 
-  get_data(db='isdb',data.dir=wd,env=isdb)
+  get_data(db='isdb',data.dir=datadir,env=isdb)
 
   # filter for halibut longline survey
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057),]
@@ -93,7 +95,7 @@ FixedSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVau
 
 
 
-write.csv(HALIBUTSURVEY,file.path(wd,"FixedHalibutSurveyData.csv"),row.names = F)
+write.csv(HALIBUTSURVEY,file.path(datadir,"FixedHalibutSurveyData.csv"),row.names = F)
 return(HALIBUTSURVEY)
 }
 

@@ -6,7 +6,9 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(devtools)
+#install_github("Maritimes/Mar.datawrangling")
+#install_github("Maritimes/Mar.bycatch")
  library(Mar.datawrangling)
  library(Mar.bycatch)
  library(tidyverse)
@@ -22,9 +24,12 @@ source(file.path(wd, ".passwords"))
 ```{r}
 
 # Update data from database 
+
 #get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
-get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/")
+get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
  
 ```
 
@@ -32,77 +37,54 @@ get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/")
 ## prepare Data for hook occupancy model
 
 ```{r }
-PrepareDataHookModel()
-
+HookOccupancyData<-PrepareDataHookModel()
 
 ```
 
 ### Size Composition 
 ## Prepare data for Length Frequemcy plots
 
-```{r pressure, echo=FALSE}
-FixedSurvey<-FixedSurveyData()
-RandomSurvey<-RandomSurveyData()
-ComIndex<-CommercialIndexData()
+```{r, echo=FALSE}
+bins=seq(0,260,5)
+
+FixedSurvey<-FixedSurveyData(datadir=datadir)
+RandomSurvey<-RandomSurveyData(datadir=datadir)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=seq(5,260,5),by.sex=T,hook.data=T)
+ComIndex<-CommercialIndexData(datadir=datadir,bins=seq(0,260,5),add.portsampling=T)
 ```
 
-## Fixed LF plots
+## Construct LF for plots
 ```{r}
         
+  #subset by nafo
+  #nafos<-unique(FixedSurvey$NAFAREA_ID)
+  #nafo4x <- nafos[c(grep('4X',nafos),grep('4V',nafos),grep('4W',nafos))]
+  #FixedSurvey4X <-subset(FixedSurvey,NAFAREA_ID%in%nafo4x)
+  
+  #scale LF
+  #FixedSurvey$N_MEASURED <- rowSums(FixedSurvey[,bins])
+  #x$scaler = x$NUM_HOOK_HAUL/1000 
 
   # Construct CLF
-  nafos<-unique(FixedSurvey$NAFAREA_ID)
-  nafo4x <- nafos[c(grep('4X',nafos),grep('4V',nafos),grep('4W',nafos))]
-  FixedSurvey4X <-subset(FixedSurvey,NAFAREA_ID%in%nafo4x)
-
-
-
-  fixedLF=list()
-  bins = paste0("L",seq(10,230,5))
-  FixedSurvey$N_MEASURED <- rowSums(FixedSurvey[,bins])
-  Yrs = 2009:2020
-  sx = c(1,2,0)
-
-  for(i in 1:length(Yrs)){
-    
-      #x=subset(FixedSurvey,YEAR==Yrs[i])
-      #x$scaler = x$NUM_HOOK_HAUL/1000 
-      fixedLF[[i]]=t(sapply(sx,function(s){colSums(subset(FixedSurvey,YEAR==Yrs[i]&SEXCD_ID==s,bins),na.rm=T)}))
-      
-      #fixedLF[[i]]=sapply(Yrs,colSums(subset(FixedSurvey,YEAR==Yrs[i],bins),na.rm=T)
-    
-  }
+  fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = 2009:2020)
+  RandomLF=constructLF(LFdata=RandomSurvey,bins=bins, Yrs = 2017:2020)
+  ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = 2009:2020)
   
-  #fixedLF=t(sapply(Yrs,function(y){colSums(subset(FixedSurvey,YEAR==y,bins),na.rm=T)}))
-  names(fixedLF) = Yrs
-  BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixed4XLF1"))
-  BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixed4VWXLF2"),ymax=300)
 
 ```
 
 
-## Random LF plots
+## LF plots
 ```{r}
-            # Construct CLF
-            RandomLF=list()
-            bins = paste0("L",seq(10,230,5))
-            Yrs = 2017:2020
-            sx = c(1,2,0)
-
-            for(i in 1:length(Yrs)){
-              
-                #x=subset(FixedSurvey,YEAR==Yrs[i])
-                #x$scaler = x$NUM_HOOK_HAUL/1000 
-                RandomLF[[i]]=t(sapply(sx,function(s){colSums(subset(RandomSurvey,YEAR==Yrs[i]&SEXCD_ID==s,bins),na.rm=T)}))
-                
-                #fixedLF[[i]]=sapply(Yrs,colSums(subset(FixedSurvey,YEAR==Yrs[i],bins),na.rm=T)
-              
-            }
-            
-            #fixedLF=t(sapply(Yrs,function(y){colSums(subset(FixedSurvey,YEAR==y,bins),na.rm=T)}))
-            names(RandomLF) = Yrs
-            BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
-            BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
+  
+    BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF1"))
+    BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixedLF2"),ymax=320)
+  
+    BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
+    BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
+    
+    BarPlotLF(ComIndexLF,yrs=2009:2020,rel=T,filen=file.path(wd,"figures","comindexLF1"))
+    BarPlotLF(ComIndexLF,yrs=2009:2020,rel=F,filen=file.path(wd,"figures","comindexLF2"),ymax=1400)
 
 ```
 
@@ -110,10 +92,15 @@ ComIndex<-CommercialIndexData()
 
 ```{r}
 
+<<<<<<< HEAD
 SR20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
 
 #FS20=subset(FixedSurvey, NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020) 
 ##maybe they don't have to measure all ones caught in the fixed survey stations?
+=======
+RandomSurvey$N_MEASURED <- rowSums(RandomSurvey[,paste0("L",bins[-1])])
+x20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
+>>>>>>> f09e299c3523e6aa317c352a9135a4dc1d3521af
 
 SR20 <- SR20 %>%
   select("FISHSET_ID", "SET_NO", "TRIP_ID", "STATION", "EST_NUM_CAUGHT", "EST_COMBINED_WT", "SEXCD_ID", "NUM_MEASURED", "TRIP", "VESS_ID", "VESSEL_NAME", "CFV")
@@ -138,5 +125,13 @@ halibut$SEXCD_ID <- as.character(halibut$SEXCD_ID)
 ggplot(halibut, aes(x=FISH_LENGTH, fill=SEXCD_ID, color=SEXCD_ID)) +
   geom_histogram(binwidth = 1, position="identity", alpha=0.5) +
   theme_classic()
+```
+
+## RV survey
+
+```{r}
+get_data(db='rv',data.dir=datadir)
+
+
 ```
 

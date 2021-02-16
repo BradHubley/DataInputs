@@ -1,0 +1,53 @@
+---
+title: "CatchComposition"
+author: "Brad"
+date: "February 4, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(devtools)
+#install_github("Maritimes/Mar.datawrangling")
+#install_github("Maritimes/Mar.bycatch")
+ library(Mar.datawrangling)
+ library(Mar.bycatch)
+ library(tidyverse)
+
+datadir="C:/Users/hubleyb/Documents/Halibut/data"
+wd="C:/Users/hubleyb/Documents/Halibut/git/DataInputs"
+source(file.path(wd,".passwords"))
+
+```
+
+## Update data from database 
+
+# get observer data
+```{r }
+
+bycatch<-fleet_halibut(dateStart = "2018-01-01", data.dir=datadir,oracle.username=uid,oracle.password=pwd,usepkg='roracle',oracle.dsn='ptran', useLocal=F)
+#get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+```
+
+# get port sampling data
+
+```{r}
+#get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+psdata <- get_ps_data(data.dir=datadir)
+
+```
+
+
+
+
+##  Plots
+
+
+
+```{r,  echo=FALSE}
+
+```
+
+
