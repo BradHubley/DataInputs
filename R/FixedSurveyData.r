@@ -4,7 +4,7 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
-FixedSurveyData <-function(sp=30,wd="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
+FixedSurveyData <-function(sp=30,wd="C:/Users/harperd/Documents/Halibut/RDataVault",add.gear=F,add.LF=T,bin.size=5,size.range=c(5,250),by.sex=T){
 
   library(Mar.datawrangling)
   library(tidyverse)

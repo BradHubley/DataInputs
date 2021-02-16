@@ -11,9 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
  library(Mar.bycatch)
  library(tidyverse)
 
-datadir="C:/Users/hubleyb/Documents/Halibut/data"
-wd="C:/Users/hubleyb/Documents/Halibut/git/DataInputs"
-source(file.path(wd,".passwords"))
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+source(file.path(wd, ".passwords"))
 
 ```
 
@@ -22,7 +22,9 @@ source(file.path(wd,".passwords"))
 ```{r}
 
 # Update data from database 
-get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+#get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/")
  
 ```
 
@@ -108,8 +110,33 @@ ComIndex<-CommercialIndexData()
 
 ```{r}
 
-x20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
+SR20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
+
+#FS20=subset(FixedSurvey, NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020) 
+##maybe they don't have to measure all ones caught in the fixed survey stations?
+
+SR20 <- SR20 %>%
+  select("FISHSET_ID", "SET_NO", "TRIP_ID", "STATION", "EST_NUM_CAUGHT", "EST_COMBINED_WT", "SEXCD_ID", "NUM_MEASURED", "TRIP", "VESS_ID", "VESSEL_NAME", "CFV")
+print(SR20)
+
+```
+
+Checking length against weight for random survey halibut
 
 
+```{r}
+halibut <- ISSETPROFILE_WIDE %>%
+  filter(YEAR == 2020) %>%
+  left_join(ISFISHSETS, by = "FISHSET_ID")%>%
+  filter(SETCD_ID == 5) %>%
+  left_join(ISCATCHES, by = "FISHSET_ID") %>%
+  filter(SPECCD_ID == 30) %>%
+  left_join(ISFISH, by = "CATCH_ID")
+
+halibut$SEXCD_ID <- as.character(halibut$SEXCD_ID)
+
+ggplot(halibut, aes(x=FISH_LENGTH, fill=SEXCD_ID, color=SEXCD_ID)) +
+  geom_histogram(binwidth = 1, position="identity", alpha=0.5) +
+  theme_classic()
 ```
 
