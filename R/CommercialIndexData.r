@@ -4,6 +4,7 @@
 #date: "November 10, 2020"
 #output: word_document
 #---
+
 CommercialIndexData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T,add.portsampling=T){
 
   library(Mar.datawrangling)
