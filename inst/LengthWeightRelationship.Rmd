@@ -106,10 +106,26 @@ Graphing the length by weight for NAFO and 5yr bins (when colouring the points b
 ggplot(setdata_halRV, aes(FLEN, FWT, color = as.factor(FSEX))) +
   geom_point()+
   scale_color_manual(name = "FSEX",
-                     values = c("0" = "red",
+                     values = c("0" = "black",
                                   "1" = "blue",
-                                  "2" = "pink",
+                                  "2" = "deeppink",
                                 "NA" = "black"),
   labels = c("0", "male", "female", "NA"))+
-  facet_grid(yr_bin~NAFO)
+  facet_grid(yr_bin~NAFO, scales = "free")
 ```
+Checking how many fish sampled by year and NAFO
+```{r}
+NAFO_4_5 <- setdata_halRV %>%
+  mutate(NAFO = substr(NAFO,1,1))
+
+
+num_fish_sampled <- data.frame(table(NAFO_4_5$YEAR, NAFO_4_5$NAFO))
+
+#this counts how many fish are in "numb_fish_sampled"
+sum(num_fish_sampled$Freq)
+```
+There are 10 fewer fish in num_fish_sampled than in setdata_RVhal because 10 fish in the original data don't have an associated NAFO zone
+
+Many of these don't match up for NAFO and year...(how is the data so different?)
+
+
