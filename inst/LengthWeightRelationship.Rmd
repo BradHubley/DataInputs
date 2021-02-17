@@ -12,8 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
  library(lubridate)
  library(stringr)
 
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
-wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, ".passwords"))
 
 ```
@@ -25,7 +25,7 @@ Extract MAR RV survey data using RORACLE
 
 Extract MAR RV survey data from existing dump
 ```{r}
-get_data("rv", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/")
+get_data("rv", data.dir = datadir)
 ```
 
 Pull halibut morphology data from the MAR RV survey since beginning of survey data set (1970?)
@@ -103,7 +103,7 @@ ggplot(setdata_halRV, aes(FLEN, FWT)) +
 
 Graphing the length by weight for NAFO and 5yr bins (when colouring the points by sex we lose even more data (from 1188 to 1204 fish not included in the figure below...))
 ```{r}
-ggplot(setdata_halRV, aes(FLEN, FWT, color = FSEX)) +
+ggplot(setdata_halRV, aes(FLEN, FWT, color = as.factor(FSEX))) +
   geom_point()+
   scale_color_manual(name = "FSEX",
                      values = c("0" = "red",

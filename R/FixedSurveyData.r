@@ -67,7 +67,7 @@ FixedSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/dat
 
   # join length frequency if desired
   if(add.LF){
-    bins<-seq(size.range[1],size.range[2],bin.size)
+    #bins<-seq(size.range[1],size.range[2],bin.size)
     cid=unique(isdb$ISFISH$CATCH_ID)
     LF <-list()
     LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F)$count)})))

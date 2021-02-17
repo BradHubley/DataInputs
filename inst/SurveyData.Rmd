@@ -13,6 +13,8 @@ library(devtools)
  library(Mar.bycatch)
  library(tidyverse)
 
+#datadir="C:/Users/hubleyb/Documents/Halibut/data"
+#wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
 datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, ".passwords"))
@@ -45,7 +47,7 @@ HookOccupancyData<-PrepareDataHookModel()
 ```{r, echo=FALSE}
 bins=seq(0,260,5)
 
-FixedSurvey<-FixedSurveyData(datadir=datadir)
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=F)
 RandomSurvey<-RandomSurveyData(datadir=datadir)
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=seq(5,260,5),by.sex=T,hook.data=T)
 ComIndex<-CommercialIndexData(datadir=datadir,bins=seq(0,260,5),add.portsampling=T)
