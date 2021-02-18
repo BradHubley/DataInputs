@@ -1,5 +1,6 @@
 #Nell's ab function
 make.ab<-function(dat, wd){
+
 #take data, drop outliers, convert area 5 to 4 to check for difference between 4WVX5Z and 3NOP
 #do not model difference between areas, and sample size is by sex and year, all areas
 #get a and b from linear mixed effects, log transformed length and weight, random year effect
@@ -47,19 +48,21 @@ GBmodel=F #GFmodel = FALSE
 		                                                           a=coef(wt.lme)[order(as.numeric(row.names(coef(wt.lme)))),1],
 		                                                           b=coef(wt.lme)[order(as.numeric(row.names(coef(wt.lme)))),2])
 		for(i in 1:length(ran.effects)){ #for every unique year (ran.effect<-unique(raneff) and raneff<-random.effect='year')
-			a[i] <- exp(fit[i,2]) #'a' is the exponentiated 'fit' for that given year, where 'fit' is created above?...column 2?
-			b[i] <- fit[i,3] #'b' is the 'fit' for that given year, and column 3?
+			a[i] <- exp(fit[i,2]) #'a' is the exponentiated 'X.intercept' from df fit for a given year since column 2 = X.intercept
+			b[i] <- fit[i,3] #'b' is the 'log.len' for that given year since column 3 in df fit is log.len?
 		}
 		A <- exp(wt.lme$coef$fixed[1])  ###exponentiated this to make easier for me #ndh Aug 1, 2014
+		#A here is the intercept from the model (average intercept for all years)
 		B <- wt.lme$coef$fixed[2]
+		#B here is the sploe coef (log.len) for the model
 		if(GBmodel){
 			a <- c(exp(as.numeric(wt.lme$coef$fixed[1])),a) #can this be re-written as a<-c(A,a)
 			b <- c(as.numeric(wt.lme$coef$fixed[2]),b)
 }
-unk.a<-a
-unk.b<-b
-unk.A<-A
-unk.B<-B
+unk.a<-a #"a" or "intercept" values for all years for all data which includes: males, females, unknowns
+unk.b<-b #"b" or slope coef for all years (all the same)
+unk.A<-A #overall "a" or "intercept" for the model
+unk.B<-B #overall "b" or slope coef for the model
 
 ##male
 wt.dat<-dat[dat$sex==1,] #subsetting for only males (sex code = 1)
@@ -108,7 +111,7 @@ wt.dat<-dat[dat$sex==2,] #subsetting for the females (sex code = 2)
 #there is a random effect of year (raneff <- random.effect = 'year')
 		summary(wt.lme) #a summary of the above model
 
-			if(is.character(wt.dat[,random.effect]))fit <- data.frame(raneff=row.names(coef(wt.lme)),coef(wt.lme))
+		if(is.character(wt.dat[,random.effect]))fit <- data.frame(raneff=row.names(coef(wt.lme)),coef(wt.lme))
 		if(!is.character(wt.dat[,random.effect]))fit <- data.frame(raneff=sort(row.names(coef(wt.lme))),
 		                                                           a=coef(wt.lme)[order(as.numeric(row.names(coef(wt.lme)))),1],
 		                                                           b=coef(wt.lme)[order(as.numeric(row.names(coef(wt.lme)))),2])
@@ -129,13 +132,12 @@ female.A<-A
 female.B<-B
 
 ##number of observations in that year of that sex in any area
-x<-as.data.frame(with(dat, table(year, sex))) #creates a data frame of all the data with columns for year and sex
-male.n<-x$Freq[x$sex==1] #creates a frequency table for males by year?
-female.n<-x$Freq[x$sex==2] #creates a frequency table for females by year?
-unk.n<-male.n+female.n+x$Freq[x$sex==0] #creates a frequency table for unknowns by year? and also merges that up with
-#male and female frequency tables?
+x<-as.data.frame(with(dat, table(year, sex))) #creates a data frame of all the data with columns for year and sex and freq
+male.n<-x$Freq[x$sex==1] #creates a vector of the frequencies of males for each year
+female.n<-x$Freq[x$sex==2] #creates a vector fo the frequencies of females for each year
+unk.n<-male.n+female.n+x$Freq[x$sex==0] #creates a vector of the overall frequencies of halibut for each year (combining unknowns, males, and females)
 
-abdat2<-NULL
+abdat2<-NULL #generates an empty vector called "abdat2"
 ##OK generate hal len wt
 YEAR<-as.character(rep(1970:2013, 6)) #creates year vector with sequence 1970-2013 repeated 6 times
 SEX<-as.character(c(rep(1, length(1970:2013)*2), rep(2, length(1970:2013)*2), rep(0, length(1970:2013)*2)))

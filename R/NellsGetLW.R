@@ -2,7 +2,7 @@
 
 
 get.lenwt.all<-function(start.year, end.year){
-  start.year <- as.numeric(1977)
+  start.year <- as.numeric(1970)
   end.year <- as.numeric(2013)
 
   #pulls all rv survey and observer data for length and weight
@@ -12,7 +12,7 @@ get.lenwt.all<-function(start.year, end.year){
   require(sqldf)
 
   ######### OBSERVER ##############
-  ch1 <- ROracle::dbConnect(drv = DBI::dbDriver("Oracle"),  username = "uid", password = "pwd", dbname = "PTRAN")
+  ch1 <- ROracle::dbConnect(drv = DBI::dbDriver("Oracle"),  username = "hubleyb", password = "R4#vmxtas", dbname = "PTRAN")
   my.query <- paste("
 select (TO_CHAR(t.board_date,'YYYY')) yr, to_char(t.board_date,'MM') month,  f.sexcd_id sex,substr(s.NAFAREA_ID,1,2) nafo,
 f.FISH_length len, f.FISH_weight wt, g.GEARCD_ID gear
