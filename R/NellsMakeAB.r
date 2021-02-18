@@ -46,14 +46,14 @@ GBmodel=F #GFmodel = FALSE
 		if(!is.character(wt.dat[,random.effect]))fit <- data.frame(raneff=sort(row.names(coef(wt.lme))),
 		                                                           a=coef(wt.lme)[order(as.numeric(row.names(coef(wt.lme)))),1],
 		                                                           b=coef(wt.lme)[order(as.numeric(row.names(coef(wt.lme)))),2])
-		for(i in 1:length(ran.effects)){
-			a[i] <- exp(fit[i,2])
-			b[i] <- fit[i,3]
+		for(i in 1:length(ran.effects)){ #for every unique year (ran.effect<-unique(raneff) and raneff<-random.effect='year')
+			a[i] <- exp(fit[i,2]) #'a' is the exponentiated 'fit' for that given year, where 'fit' is created above?...column 2?
+			b[i] <- fit[i,3] #'b' is the 'fit' for that given year, and column 3?
 		}
 		A <- exp(wt.lme$coef$fixed[1])  ###exponentiated this to make easier for me #ndh Aug 1, 2014
 		B <- wt.lme$coef$fixed[2]
 		if(GBmodel){
-			a <- c(exp(as.numeric(wt.lme$coef$fixed[1])),a)
+			a <- c(exp(as.numeric(wt.lme$coef$fixed[1])),a) #can this be re-written as a<-c(A,a)
 			b <- c(as.numeric(wt.lme$coef$fixed[2]),b)
 }
 unk.a<-a
