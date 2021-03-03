@@ -12,8 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
  library(lubridate)
  library(stringr)
 
-#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
-#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, ".passwords"))
 
 ```
@@ -128,4 +128,57 @@ There are 10 fewer fish in num_fish_sampled than in setdata_RVhal because 10 fis
 
 Many of these don't match up for NAFO and year...(how is the data so different?)
 
+
+####NEXT SECTION FOR ISDB DATA ####
+
+Extract ISDB data using RORACLE
+```{r}
+#get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = "PTRAN", force.extract = T)
+```
+
+Pull ISDB data from where it is stored locally (previously pulled from database using oracle)
+```{r}
+get_data("isdb", data.dir = datadir)
+```
+
+Pulling the halibut trips from the trips table (30 = halibut, 7057 = halibut longline survey, 7058 = halibut port sampling)
+```{r}
+hal_trips <- ISTRIPS %>%
+  filter(TRIPCD_ID %in% c("30", "7057", "7058"))
+```
+
+Pulling all the sets that belong to the halibut trips identified above
+```{r}
+hal_fishsets <- hal_trips %>%
+  left_join(ISFISHSETS, by = "TRIP_ID") %>%
+  drop_na(FISHSET_ID) #need to drop NAs as there are 281 catches with NA for fish set in ISCATCHED that are being matched in the next join
+```
+
+Pulling out all the catches from the identified sets above
+```{r}
+hal_catches <- hal_fishsets %>%
+  left_join(ISCATCHES, by = "FISHSET_ID")
+```
+**Weird that for species sought there are other species (30, 12, 15, 7099, 31, 23, 11, 10, 211, 201, 16, NA) even though the trip is identified as trip code 30...should I be isolating for only halibut sought trips???
+
+
+Pulling out all fish caught in the catches from the halibut trips, and then filtering for just the halibut caught
+```{r}
+hal_fish <- hal_catches %>%
+  left_join(ISFISH, by = "CATCH_ID") %>%
+  filter(SPECCD_ID == "30")
+```
+
+First exploratory plot: plotting all length against width (some will not be plotted and provides idea of how many individuals are missing a length or weight measurement)
+```{r}
+ggplot(hal_fish, aes(FISH_LENGTH, FISH_WEIGHT)) +
+  geom_point()
+```
+From looking at the data in hal_fish and the graph there are A LOT of issues: lots of missing lengths and weights, and weights that don't make sense (what's the units for the weights?)
+
+Trimming down the dataframe to useful columns
+```{r}
+
+
+```
 
