@@ -1,0 +1,95 @@
+---
+title: "FisheryData"
+author: "Brad"
+date: "March 1, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(devtools)
+#install_github("Maritimes/Mar.datawrangling")
+#install_github("Maritimes/Mar.bycatch")
+ library(Mar.datawrangling)
+ library(Mar.bycatch)
+ library(tidyverse)
+
+#install_github("BradHubley/SpatialHub")
+library(SpatialHub)
+
+
+datadir="C:/Users/hubleyb/Documents/Halibut/data"
+wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs"
+source(file.path(wd, ".passwords"))
+```
+
+## Update data from database 
+## Marfis from data,wrangling
+```{r }
+
+get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+
+```
+
+## from Mar.bycatch
+```{r}
+yrs = 2002:2020
+
+        for (y in yrs){
+          nm = paste0("fleet",y)
+          cat(paste0("Working on ",nm,"\n"))
+          thisyear = fleet_halibut(useLocal=F, data.dir=datadir, dateStart=paste0(y,'-01-01'), dateEnd=paste0(y,'-12-31'), keepSurveyTrips=T, oracle.username=uid, oracle.password=pwd, oracle.dsn='ptran',usepkg="roracle")
+          assign(nm, thisyear)
+          rm(thisyear, nm)
+        }
+
+
+```
+
+##
+```{r }
+catch.data <- na.omit(with(subset(fleet2020$marf$MARF_SETS),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+summary(catch.data)
+
+```
+
+# plot
+```{r}
+
+lvls=seq(0,7000,1000)
+xl=c(-69,-47)
+yl=c(40,48)
+
+
+catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=18.52,aspr=1)
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
+SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=.7)
+
+```
+
+### Loop
+
+```{r}
+
+for(y in yrs){
+  fleet <- get(paste0('fleet',y))
+  catch.data <- na.omit(with(fleet$marf$MARF_SETS,data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+  catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+  #summary(catch.data)
+  catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=18.52,aspr=1)
+  
+  pdf(file.path(wd,'figures',paste0('marfisCatch',y,'.pdf')),width=10,height=7)
+  
+  SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
+  SpatialHub::contLegend('bottomleft', lvls=lvls/1000, Cont.data=catch.grids, title="MT")
+  dev.off()
+
+}
+
+
+
+```
+
