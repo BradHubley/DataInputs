@@ -15,7 +15,6 @@ knitr::opts_chunk$set(echo = TRUE)
 datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, ".passwords"))
-
 ```
 
 Extract MAR RV survey data using RORACLE
@@ -318,4 +317,120 @@ hal_rmNAwt %>%
                       labels = c("0", "male", "female", "NA"))+
    facet_wrap(~SETCD_ID) ##mostly survey trips, lots commercial index
 ```
+
+Repeating above to pull all halibut from ISDB, not just ones from halibut directed trips
+```{r}
+hal_allcatch <- ISCATCHES %>%
+  filter(SPECCD_ID == "30")
+```
+```{r}
+hal_all <- hal_allcatch %>%
+  left_join(ISFISH, by = "CATCH_ID")
+unique(hal_all$SPECCD_ID)
+
+hal_all %>% count(SPECCD_ID)
+```
+Removing rows without length/weight data
+```{r}
+hal_all %>% count(FISH_LENGTH) # 93,161 observations without length
+hal_allrmNAwt <- hal_all %>%
+  drop_na(FISH_WEIGHT) #goes from 272,023 observations to 55,197 when weight=NA is removed
+
+hal_allrmNAwt %>% count(FISH_LENGTH) #only 2 fish where there is a weight and no length
+
+```
+Finding how/when these halibut were caught by isolating the sets and trips where they were caught
+```{r}
+hal_allsets <- hal_allrmNAwt %>%
+  left_join(ISFISHSETS, by = "FISHSET_ID")
+
+hal_alltrips <- hal_allsets %>%
+  left_join(ISTRIPS, by = "TRIP_ID")
+```
+Looking at the different types of trips
+```{r}
+hal_alltrips %>% count(TRIPCD_ID)
+
+trips_halcaught <- hal_alltrips %>%
+  left_join(ISTRIPTYPECODES, by = "TRIPCD_ID") %>%
+  select("TRIPCD_ID", "TRIP_TYPE") %>%
+  count(TRIPCD_ID, TRIP_TYPE)
+```
+
+Trimming down the dataframe to useful columns
+```{r}
+hal_alltrips <- hal_alltrips %>%
+  select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
+```
+Looking into the length and weight data
+```{r}
+summary(hal_allrmNAwt$FISH_LENGTH)
+
+summary(hal_allrmNAwt$FISH_WEIGHT)
+```
+Silver hake has the most measured halibut (more than the halibut commercial fishery) only from years 1980-1997, weight appears to be measured in kg and also in g...challenge. 
+```{r}
+SHhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "14") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+summary(SHhal)
+```
+
+Next highest measured halibut is in the cod,haddock,pollock fishery, data from 1981-2018, appears to be measured in both kg and g...challenge
+```{r}
+CHPhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "7001") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+summary(CHPhal)
+```
+
+Looking at the data that comes from surveys: 4VsW Sentinel Program (n=775), 4X Mobile Gear Survey (n=547), 4VXW Skate Survey (n=1), 5Z Fixed Gear Survey (n=1), GEAC Juv. and Forage Survey (n=26), Snowcrab Survey (n=15)
+```{r}
+allsurveyhal <- hal_alltrips %>%
+  filter(TRIPCD_ID %in% c("7050", "7051", "7054", "7055", "7060", "7061"))
+
+Sentinel <- allsurveyhal %>%
+  filter(TRIPCD_ID == "7050") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+summary(Sentinel) #data looks somewhat consistent and potentially useful. Length appears cm, weight appears all g. Range from 1995-2019
+
+MGS <- allsurveyhal %>%
+  filter(TRIPCD_ID == "7051") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+summary(MGS) #data looks somewhat consistent and potentially useful. Length appears cm, weight appears all g. Range from 1998-2012
+
+GEAC_juv <- allsurveyhal %>%
+  filter(TRIPCD_ID == "7060") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+summary(GEAC_juv) #few fish (n=26), weight appears to be g and length appearsa to be cm. Range from 2002-2003
+
+snowcrab <- allsurveyhal %>%
+  filter(TRIPCD_ID == "7061") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+summary(snowcrab) #few data (n=15), weight appears to be g, length appears to be cm. range from 2015-2020.
+
+others <- allsurveyhal %>%
+  filter(TRIPCD_ID %in% c("7055", "7054")) %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+print(others) #these are the two fish that were measured for length and weight in the 4VWX skate survey and the 5Z fixed gear survey
+
+```
+Need to make a decision on what to keep from this data in addition to the halibut directed
+```{r}
+hal_alltrips <- hal_alltrips %>%
+  mutate(YEAR = substr(BOARD_DATE, 1,4))
+  
+hal_alltrips <- hal_alltrips %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+
+ggplot(hal_alltrips) +
+  geom_histogram(aes(YEAR), stat = "count") +
+  facet_wrap(~NAFO, scales = "free")
+
+```
+This tells me there are data from the other fisheries/surveys that are outside our management unit. I need to remove those. And there are 9 fish where NAFO is not identified
+
+
+
+
 
