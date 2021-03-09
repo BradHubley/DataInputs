@@ -377,21 +377,152 @@ summary(hal_alltrips$FISH_LENGTH)
 
 summary(hal_alltrips$FISH_WEIGHT)
 ```
+
+Creating some new useful columns
+```{r}
+hal_alltrips <- hal_alltrips %>%
+  mutate(YEAR = substr(BOARD_DATE, 1,4))
+  
+hal_alltrips <- hal_alltrips %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+```
+
+
 Silver hake has the most measured halibut (more than the halibut commercial fishery) only from years 1980-1997, weight appears to be measured in kg and also in g...challenge. 
 ```{r}
 SHhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "14") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR)
 summary(SHhal)
+
+ggplot(SHhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~YEAR, scales = "free")
 ```
 
 Next highest measured halibut is in the cod,haddock,pollock fishery, data from 1981-2018, appears to be measured in both kg and g...challenge
 ```{r}
 CHPhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "7001") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(CHPhal)
+
+
+CHPhal %>% filter(YEAR == "1992") %>%
+ggplot()+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scales = "free")
 ```
+
+Check white hake
+```{r}
+WHhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "12") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR)
+summary(WHhal)
+
+ggplot(WHhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~YEAR, scales = "free")
+```
+Check redfish
+```{r}
+RFhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "23") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(RFhal)
+
+RFhal %>% filter(YEAR == "1990") %>%
+ggplot()+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scales = "free")
+```
+Check flatfish
+```{r}
+FFhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "49") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(FFhal)
+
+FFhal %>% filter(YEAR == "1990")
+ggplot(FFhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scales = "free")
+```
+
+Check skate
+```{r}
+SKATEhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "211") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SKATEhal)
+
+
+ggplot(SKATEhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+Check mackerel
+```{r}
+Mackhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "70") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(Mackhal)
+
+ggplot(Mackhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+
+Check shrimp
+```{r}
+shrimphal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "2210") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(shrimphal)
+
+
+ggplot(shrimphal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT)) +
+  facet_wrap(~TRIP, scales = "free")
+```
+Check scallop
+```{r}
+SChal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "4320") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SChal)
+
+ggplot(SChal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+Check squid
+```{r}
+SQhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "4511") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SQhal)
+
+ggplot(SQhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+Check (SH,SQ,Argentine)
+```{r}
+SSAhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "7002") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SSAhal)
+
+ggplot(SSAhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scale = "free")
+```
+Looks like the only trip that might be an issue is redfish trip 90395.0 and it still could be real data...
+```{r}
+hal_alltrips %>% filter(TRIP == "90395.0") %>%
+  ggplot()+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+
+
 
 Looking at the data that comes from surveys: 4VsW Sentinel Program (n=775), 4X Mobile Gear Survey (n=547), 4VXW Skate Survey (n=1), 5Z Fixed Gear Survey (n=1), GEAC Juv. and Forage Survey (n=26), Snowcrab Survey (n=15)
 ```{r}
@@ -426,12 +557,6 @@ print(others) #these are the two fish that were measured for length and weight i
 ```
 Need to make a decision on what to keep from this data in addition to the halibut directed
 ```{r}
-hal_alltrips <- hal_alltrips %>%
-  mutate(YEAR = substr(BOARD_DATE, 1,4))
-  
-hal_alltrips <- hal_alltrips %>%
-  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
-
 ggplot(hal_alltrips) +
   geom_histogram(aes(YEAR), stat = "count") +
   facet_wrap(~NAFO, scales = "free")
@@ -483,22 +608,38 @@ Difference in amount of data between all halibut in ISDB and all halibut from di
 
 Removing outliers from all hal data (NEED TO MAKE A AND B BEFORE RUNNING THIS ON TOTAL DATA SET...THIS IS JUST TO TEST THE CODE)
 ```{r}
-# library(sqldf)
-# 
-# test_hal <- hal_allrmNAwt %>%
-#   select(FISH_ID, FISH_LENGTH, FISH_WEIGHT)
-# 
-# test_hal$out<-0
-# test_hal<-test_hal[!is.na(test_hal$FISH_LENGTH),]
-# test_hal<-test_hal[!is.na(test_hal$FISH_WEIGHT),]
-# 
-# #identify outliers
-# mod1<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_hal,start=c(a=.001,b=3),na.action=na.omit)
-# test_hal$upper<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*1.75
-# test_hal$lower<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*0.25
-# test_hal$out[test_hal$FISH_WEIGHT<test_hal$upper&test_hal$FISH_WEIGHT>test_hal$lower]<-1
-# test_lenwt.dat.all<-test_hal[,c(1:6)]
+library(sqldf)
 
+test_hal <- hal_allNAFOfilter %>%
+  select(FISH_ID, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
+
+test_hal$out<-0
+test_hal<-test_hal[!is.na(test_hal$FISH_LENGTH),]
+test_hal<-test_hal[!is.na(test_hal$FISH_WEIGHT),]
+
+#identify outliers (using a and b from the previous assessment log(a)=-5.021354 so a=0.00659559; b=3.124184)
+mod1<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_hal,start=c(a=0.00659559,b=3.124184),na.action=na.omit) #these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
+test_hal$upper<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*1.75
+test_hal$lower<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*0.25
+test_hal$out[test_hal$FISH_WEIGHT<test_hal$upper&test_hal$FISH_WEIGHT>test_hal$lower]<-1
+test_lenwt.dat.all<-test_hal[,c(1:8)]
+
+ISDB_outliers <- test_lenwt.dat.all %>% filter(out == "0") #here we lose 319 fish as outliers (not major at all in the overall dataset, it's 0.58%) 
+test_full <- test_lenwt.dat.all %>% filter(out == "1") #still 4,300+ small fish!
+
+test_full %>%
+  filter(FISH_WEIGHT < 250) %>%
+  ggplot(aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+#the problem seen above where issues arose due to kg vs. g units is not seen here, these data seem cleaned
+
+ggplot(test_full, aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+
+# test_full %>% filter(between(FISH_LENGTH, 175, 200), between(FISH_WEIGHT, 20000, 21000)) %>%
+# ggplot(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
+#   geom_point()+
+#   geom_text(aes(label=as.character(TRIP)))#outliers have been removed and data appear far more clean
 ```
 
 
