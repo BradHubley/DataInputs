@@ -15,9 +15,10 @@ library(devtools)
 
 #datadir="C:/Users/hubleyb/Documents/Halibut/data"
 #wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
-wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, ".passwords"))
+source(file.path(wd, ".directories"))
 
 ```
 
@@ -31,6 +32,9 @@ source(file.path(wd, ".passwords"))
 
 get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",
+                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 ```
 
 ### SUrvey ABundance Indices
@@ -47,7 +51,8 @@ HookOccupancyData<-PrepareDataHookModel()
 ```{r, echo=FALSE}
 bins=seq(0,260,5)
 
-FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=F)
+FixedSurvey<-FixedSurveyData(datadir=datadir,LF.from = "ISFISH",by.sex=F)
+FixedSurvey2<-FixedSurveyData(datadir=datadir,LF.from = "ISFISHLENGTHS",by.sex=F)
 RandomSurvey<-RandomSurveyData(datadir=datadir)
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=seq(5,260,5),by.sex=T,hook.data=T)
 ComIndex<-CommercialIndexData(datadir=datadir,bins=seq(0,260,5),add.portsampling=T)
@@ -67,6 +72,7 @@ ComIndex<-CommercialIndexData(datadir=datadir,bins=seq(0,260,5),add.portsampling
 
   # Construct CLF
   fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = 2009:2020)
+  fixedLF2=constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = 2009:2020)
   RandomLF=constructLF(LFdata=RandomSurvey,bins=bins, Yrs = 2017:2020)
   ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = 2009:2020)
 
@@ -78,8 +84,8 @@ ComIndex<-CommercialIndexData(datadir=datadir,bins=seq(0,260,5),add.portsampling
 ## LF plots
 ```{r}
   
-    BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF1"))
-    BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixedLF2"),ymax=320)
+    BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixedLF1"),ymax=320)
+    BarPlotLF(fixedLF2,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixedLF2"),ymax=320)
   
     BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
     BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)

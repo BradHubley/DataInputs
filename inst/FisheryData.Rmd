@@ -84,7 +84,7 @@ for(y in yrs){
   pdf(file.path(wd,'figures',paste0('marfisCatch',y,'.pdf')),width=10,height=7)
   
   SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
-  SpatialHub::contLegend('bottomleft', lvls=lvls/1000, Cont.data=catch.grids, title="MT")
+  SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
   dev.off()
 
 }
