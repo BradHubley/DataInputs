@@ -5,7 +5,7 @@
 #output: word_document
 #---
 
-FixedSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T,LF.from='ISFISH'){
+FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/data", add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, LF.from='ISFISHLENGTHS'){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -74,13 +74,13 @@ FixedSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/dat
       #bins<-seq(size.range[1],size.range[2],bin.size)
       cid=unique(isdb$ISFISH$CATCH_ID)
       LF <-list()
-      LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F)$count)})))
+      LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$count)})))
       names(LFnosex)[-1]<-paste0("L",bins[-1])
       LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
-          LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s&SEXCD_ID==sx[i]),hist(FISH_LENGTH,breaks=bins,plot=F)$count)})))
+          LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s&SEXCD_ID==sx[i]),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$count)})))
         }
         LF <- do.call("rbind",LF)
         names(LF)[-(1:2)]<-paste0("L",bins[-1])
@@ -107,7 +107,7 @@ FixedSurveyData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/dat
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
-          LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s&SEXCD_ID==sx[i]), binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
+          LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s&SEXCD_ID==sx[i]), binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
         }
         LF <- do.call("rbind",LF)
         #names(LF)[-(1:2)]<-paste0("L",bins[-1])
