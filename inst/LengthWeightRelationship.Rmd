@@ -143,7 +143,7 @@ get_data("isdb", data.dir = datadir)
 Pulling the halibut trips from the trips table (30 = halibut, 7057 = halibut longline survey, 7058 = halibut port sampling)
 ```{r}
 hal_trips <- ISTRIPS %>%
-  filter(TRIPCD_ID %in% c("30", "7057", "7058"))
+  filter(TRIPCD_ID %in% c("30", "7057"))
 ```
 
 Pulling all the sets that belong to the halibut trips identified above
@@ -176,15 +176,15 @@ ggplot(hal_fish, aes(FISH_LENGTH, FISH_WEIGHT)) +
 From looking at the data in hal_fish and the graph there are A LOT of issues: lots of missing lengths and weights, and weights that don't make sense (what's the units for the weights?)
 ```{r}
 hal_fish %>% 
-  count(FISH_LENGTH) # 18,663 rows without fish length (of these, 2 have weights and the rest are missing both)
+  count(FISH_LENGTH) # 10,949 rows without fish length (of these, 2 have weights and the rest are missing both)
 
 hal_rmNAwt <- hal_fish %>%
-  drop_na(FISH_WEIGHT)#from 180,684 observations in hal_fish to 40,306 observations where weight is available
+  drop_na(FISH_WEIGHT)#from 180,684 observations in hal_fish to 40,256 observations where weight is available
 ```
 
 Trimming down the dataframe to useful columns
 ```{r}
-hal_fishTrim <- hal_fish %>%
+hal_fishTrim <- hal_rmNAwt %>%
   select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
 ```
 
@@ -213,7 +213,7 @@ See NAFO zones represented in the hal data from the Mar RV survey data
 ```{r}
 unique(hal_fishTrim$NAFAREA_ID)
 ```
-There are 19 fish where there is no corresponding NAFO (can likely just look it up using the coordinates?)
+There are 11 fish where there is no corresponding NAFO (can likely just look it up using the coordinates?)
 
 Reducing the fine scale of NAFO regions to the larger zones (e.g. 4Vs to 4V...) in new column NAFO
 ```{r}
@@ -282,7 +282,7 @@ hal_NAFOtrim %>%
 ```
 
 
-Checking how many fish sampled by year and NAFO
+Checking how many fish sampled (that have both length and weight) by year and NAFO
 ```{r}
 NAFO3_4_5_ISDB <- hal_fishTrim %>%
   mutate(NAFO = substr(NAFO,1,1))
@@ -294,7 +294,7 @@ num_fish_sampled_ISDB <- data.frame(table(NAFO3_4_5_ISDB$YEAR, NAFO3_4_5_ISDB$NA
 sum(num_fish_sampled_ISDB$Freq)
 ```
 
-There are 19 fish that do not match up to a NAFO area, could use coordinates to match to a NAFO
+There are 11 fish that do not match up to a NAFO area, could use coordinates to match to a NAFO
 
 Overall there are only 37 weighed fish from 2020, all on TRIPCD_ID 30 (not from survey). 2019 has only weighed fish on survey trips, and all seem to closely follow a log line (likely estimated). Seems like 2016 was the last time in a timeframe where lots of fish had weights and looks like it might have been measured?
 ```{r}
@@ -347,6 +347,12 @@ hal_allsets <- hal_allrmNAwt %>%
 hal_alltrips <- hal_allsets %>%
   left_join(ISTRIPS, by = "TRIP_ID")
 ```
+
+Removing the port sampled data as discussed 
+```{r}
+hal_alltrips <- hal_alltrips %>%
+  filter(TRIPCD_ID != "7058")
+```
 Looking at the different types of trips
 ```{r}
 hal_alltrips %>% count(TRIPCD_ID)
@@ -362,27 +368,161 @@ Trimming down the dataframe to useful columns
 hal_alltrips <- hal_alltrips %>%
   select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
 ```
+
+
+
 Looking into the length and weight data
 ```{r}
-summary(hal_allrmNAwt$FISH_LENGTH)
+summary(hal_alltrips$FISH_LENGTH)
 
-summary(hal_allrmNAwt$FISH_WEIGHT)
+summary(hal_alltrips$FISH_WEIGHT)
 ```
+
+Creating some new useful columns
+```{r}
+hal_alltrips <- hal_alltrips %>%
+  mutate(YEAR = substr(BOARD_DATE, 1,4))
+  
+hal_alltrips <- hal_alltrips %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+```
+
+
 Silver hake has the most measured halibut (more than the halibut commercial fishery) only from years 1980-1997, weight appears to be measured in kg and also in g...challenge. 
 ```{r}
 SHhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "14") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR)
 summary(SHhal)
+
+ggplot(SHhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~YEAR, scales = "free")
 ```
 
 Next highest measured halibut is in the cod,haddock,pollock fishery, data from 1981-2018, appears to be measured in both kg and g...challenge
 ```{r}
 CHPhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "7001") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(CHPhal)
+
+
+CHPhal %>% filter(YEAR == "1992") %>%
+ggplot()+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scales = "free")
 ```
+
+Check white hake
+```{r}
+WHhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "12") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR)
+summary(WHhal)
+
+ggplot(WHhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~YEAR, scales = "free")
+```
+Check redfish
+```{r}
+RFhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "23") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(RFhal)
+
+RFhal %>% filter(YEAR == "1990") %>%
+ggplot()+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scales = "free")
+```
+Check flatfish
+```{r}
+FFhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "49") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(FFhal)
+
+FFhal %>% filter(YEAR == "1990")
+ggplot(FFhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scales = "free")
+```
+
+Check skate
+```{r}
+SKATEhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "211") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SKATEhal)
+
+
+ggplot(SKATEhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+Check mackerel
+```{r}
+Mackhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "70") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(Mackhal)
+
+ggplot(Mackhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+
+Check shrimp
+```{r}
+shrimphal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "2210") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(shrimphal)
+
+
+ggplot(shrimphal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT)) +
+  facet_wrap(~TRIP, scales = "free")
+```
+Check scallop
+```{r}
+SChal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "4320") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SChal)
+
+ggplot(SChal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+Check squid
+```{r}
+SQhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "4511") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SQhal)
+
+ggplot(SQhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+Check (SH,SQ,Argentine)
+```{r}
+SSAhal <- hal_alltrips %>%
+  filter(TRIPCD_ID == "7002") %>%
+  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+summary(SSAhal)
+
+ggplot(SSAhal)+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
+  facet_wrap(~TRIP, scale = "free")
+```
+Looks like the only trip that might be an issue is redfish trip 90395.0 and it still could be real data...
+```{r}
+hal_alltrips %>% filter(TRIP == "90395.0") %>%
+  ggplot()+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT))
+```
+
+
 
 Looking at the data that comes from surveys: 4VsW Sentinel Program (n=775), 4X Mobile Gear Survey (n=547), 4VXW Skate Survey (n=1), 5Z Fixed Gear Survey (n=1), GEAC Juv. and Forage Survey (n=26), Snowcrab Survey (n=15)
 ```{r}
@@ -417,18 +557,90 @@ print(others) #these are the two fish that were measured for length and weight i
 ```
 Need to make a decision on what to keep from this data in addition to the halibut directed
 ```{r}
-hal_alltrips <- hal_alltrips %>%
-  mutate(YEAR = substr(BOARD_DATE, 1,4))
-  
-hal_alltrips <- hal_alltrips %>%
-  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
-
 ggplot(hal_alltrips) +
   geom_histogram(aes(YEAR), stat = "count") +
   facet_wrap(~NAFO, scales = "free")
 
 ```
-This tells me there are data from the other fisheries/surveys that are outside our management unit. I need to remove those. And there are 9 fish where NAFO is not identified
+This tells me there are data from the other fisheries/surveys that are outside our management unit. I need to remove those. And there are 9 fish where NAFO is not identified (tripcd_ID for missing NAFO is "J09-0307", set #1, FISHSET_ID = 100159262...can pull coordinates for that)
+```{r}
+hal_allNAFOfilter[is.na(hal_allNAFOfilter$NAFO),]
+
+ISSETPROFILE_WIDE %>%
+  filter(FISHSET_ID == 100159262) #(LAT1: 42.771, LONG1:-63.352...looks like 4X, will map to ensure)
+```
+
+Removing data from outside our management unit (keeping 3NOP4VWX5YZ and NA)
+```{r}
+hal_allNAFOfilter <- hal_alltrips %>%
+  filter(NAFO %in% c("3N", "3O", "3P", "4V", "4W", "4X", "5Y", "5Z", NA))
+
+ggplot(hal_allNAFOfilter) +
+  geom_histogram(aes(YEAR), stat = "count") +
+  facet_wrap(~NAFO, scales = "free")
+```
+Looking at the range/scale of data
+```{r}
+ggplot(hal_allNAFOfilter) +
+  geom_histogram(aes(FISH_WEIGHT), binwidth = 200)
+
+#this plot below shows some of the fish that are an issue (the ones along the curve are weighed in kg presumably)
+hal_allNAFOfilter %>%
+  filter(FISH_WEIGHT < 250) %>%
+  ggplot(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
+  geom_text(aes(label=ifelse(FISH_LENGTH>45, as.character(TRIP), ' ')),position=position_jitter(width=1,height=1)) #(if I want the points with length <50 labeled by trip)
+
+
+somekgtrips <- hal_allNAFOfilter %>%
+  filter(FISH_WEIGHT < 200) %>%
+  filter(FISH_LENGTH > 50) #trying to figure out the bounds for this...looks like there are fish around 200g that might be correctly recorded in grams (the bunch close to the almost verticle line) the group below that also appear to be fish of small size around 150g
+#For trip J11-0074 It looks to me that either weight or length was copied into both columns except for fish id = 102197700 which appears to be in kg (accounts for most of the group above the log curve)
+#For trip J18-0211 it appears that one weight was copied for all fish in that set (and it's a weight that doesn't make sense in g or kg...)
+#the rest appear to be simple kg vs. g issues
+
+unique(somekgtrips$TRIP)
+
+```
+Can get Gabrielle to at least check the trips that were in the survey (or maybe just the ones from 2018?)
+
+Difference in amount of data between all halibut in ISDB and all halibut from directed trips = 14,891 more halibut when considering all the data...although there are some limitations (unknown how these data are recorded, issues with units...)
+
+Removing outliers from all hal data (NEED TO MAKE A AND B BEFORE RUNNING THIS ON TOTAL DATA SET...THIS IS JUST TO TEST THE CODE)
+```{r}
+library(sqldf)
+
+test_hal <- hal_allNAFOfilter %>%
+  select(FISH_ID, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
+
+test_hal$out<-0
+test_hal<-test_hal[!is.na(test_hal$FISH_LENGTH),]
+test_hal<-test_hal[!is.na(test_hal$FISH_WEIGHT),]
+
+#identify outliers (using a and b from the previous assessment log(a)=-5.021354 so a=0.00659559; b=3.124184)
+mod1<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_hal,start=c(a=0.00659559,b=3.124184),na.action=na.omit) #these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
+test_hal$upper<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*1.75
+test_hal$lower<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*0.25
+test_hal$out[test_hal$FISH_WEIGHT<test_hal$upper&test_hal$FISH_WEIGHT>test_hal$lower]<-1
+test_lenwt.dat.all<-test_hal[,c(1:8)]
+
+ISDB_outliers <- test_lenwt.dat.all %>% filter(out == "0") #here we lose 319 fish as outliers (not major at all in the overall dataset, it's 0.58%) 
+test_full <- test_lenwt.dat.all %>% filter(out == "1") #still 4,300+ small fish!
+
+test_full %>%
+  filter(FISH_WEIGHT < 250) %>%
+  ggplot(aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+#the problem seen above where issues arose due to kg vs. g units is not seen here, these data seem cleaned
+
+ggplot(test_full, aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+
+# test_full %>% filter(between(FISH_LENGTH, 175, 200), between(FISH_WEIGHT, 20000, 21000)) %>%
+# ggplot(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
+#   geom_point()+
+#   geom_text(aes(label=as.character(TRIP)))#outliers have been removed and data appear far more clean
+```
 
 
 
