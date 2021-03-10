@@ -3,5 +3,5 @@
 .RData
 .Ruserdata
 *.pdf
-.passwords
-.directories
+#passwords.r
+#directories.r
