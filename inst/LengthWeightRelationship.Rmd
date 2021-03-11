@@ -5,6 +5,7 @@ date: "February 16, 2021"
 output: html_document
 --- 
 
+---packages and data directory set up
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
  library(Mar.datawrangling)
@@ -17,7 +18,7 @@ wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, ".passwords"))
 ```
 
-Extract MAR RV survey data using RORACLE
+---Extract MAR RV survey data using RORACLE
 ```{r}
 #get_data("rv", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = "PTRAN", force.extract = T)
 ```
@@ -127,10 +128,7 @@ There are 10 fewer fish in num_fish_sampled than in setdata_RVhal because 10 fis
 
 Many of these don't match up for NAFO and year...(how is the data so different?)
 
-
-####NEXT SECTION FOR ISDB DATA ####
-
-Extract ISDB data using RORACLE
+---Extract ISDB data using RORACLE
 ```{r}
 #get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = "PTRAN", force.extract = T)
 ```
@@ -318,7 +316,8 @@ hal_rmNAwt %>%
    facet_wrap(~SETCD_ID) ##mostly survey trips, lots commercial index
 ```
 
-Repeating above to pull all halibut from ISDB, not just ones from halibut directed trips
+
+#----Repeating above to pull all halibut from ISDB, not just ones from halibut directed trips----
 ```{r}
 hal_allcatch <- ISCATCHES %>%
   filter(SPECCD_ID == "30")
@@ -344,8 +343,14 @@ Finding how/when these halibut were caught by isolating the sets and trips where
 hal_allsets <- hal_allrmNAwt %>%
   left_join(ISFISHSETS, by = "FISHSET_ID")
 
-hal_alltrips <- hal_allsets %>%
+hal_allLATLONG <- ISSETPROFILE_WIDE %>% select(FISHSET_ID, LAT1, LONG1, LAT2, LONG2, LAT3, LONG3, LAT4, LONG4)
+  
+hal_allsetinfo <- hal_allsets %>%
+  left_join(hal_allLATLONG, by = "FISHSET_ID")
+
+hal_alltrips <- hal_allsetinfo %>%
   left_join(ISTRIPS, by = "TRIP_ID")
+
 ```
 
 Removing the port sampled data as discussed 
@@ -366,7 +371,7 @@ trips_halcaught <- hal_alltrips %>%
 Trimming down the dataframe to useful columns
 ```{r}
 hal_alltrips <- hal_alltrips %>%
-  select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
+  select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS", "LAT1", "LONG1", "LAT2", "LONG2", "LAT3", "LONG3", "LAT4", "LONG4")
 ```
 
 
@@ -627,6 +632,11 @@ test_lenwt.dat.all<-test_hal[,c(1:8)]
 ISDB_outliers <- test_lenwt.dat.all %>% filter(out == "0") #here we lose 319 fish as outliers (not major at all in the overall dataset, it's 0.58%) 
 test_full <- test_lenwt.dat.all %>% filter(out == "1") #still 4,300+ small fish!
 
+#bring test_full back together with the other df
+test_full <- test_full %>%
+  select("FISH_ID") %>%
+  left_join(hal_allNAFOfilter, by = "FISH_ID")
+
 test_full %>%
   filter(FISH_WEIGHT < 250) %>%
   ggplot(aes(FISH_LENGTH, FISH_WEIGHT))+
@@ -643,6 +653,72 @@ ggplot(test_full, aes(FISH_LENGTH, FISH_WEIGHT))+
 ```
 
 
+#----Data exploration----
+```{r}
+ISDB_halOR <- test_full
+
+ISDB_halall <- hal_allNAFOfilter
+
+MarRV <- setdata_halRV
+```
+
+Adding the gear info to the ISDB tables
+```{r}
+gear <- ISGEARS %>%
+  select(TRIP_ID, GEARCD_ID) 
+
+ISDBhaltrips <- ISDB_halall %>%
+  select(TRIP_ID, TRIPCD_ID)
+
+hal_gear <- ISDBhaltrips %>%
+  left_join(gear, by = "TRIP_ID")
+
+hal_gear <- hal_gear %>% count(TRIP_ID, GEARCD_ID)
+
+n_occur <- data.frame(table(hal_gear$TRIP_ID))  %>% filter(Freq > 1) %>% rename(TRIP_ID = Var1)#47 trips where 2 types of gear are used
+n_occur <- n_occur %>%
+  select(TRIP_ID) 
+
+n_occur2 <- n_occur[, "TRIP_ID"]
+
+repeat_gear <- subset(hal_gear, TRIP_ID %in% n_occur2) #mostly all 12, 15 so both trawls (can make just trawl), then 1 trip with a HARPOONED halibut...is that possible?!
+ISDB_halall %>% filter(TRIP_ID == "5781")
+
+hal_gear <- hal_gear %>%
+  mutate(GEARCD_ID = replace(GEARCD_ID, GEARCD_ID %in% c(7, 11, 12, 15, 16), "trawl")) %>%
+  mutate(GEARCD_ID = replace(GEARCD_ID, GEARCD_ID %in% c(41, 42), "gillnet")) %>%
+  mutate(GEARCD_ID = replace(GEARCD_ID, GEARCD_ID %in% c(21, 22), "seine")) %>%
+  mutate(GEARCD_ID = replace(GEARCD_ID, GEARCD_ID %in% c(50, 51), "longline")) %>%
+  mutate(GEARCD_ID = replace(GEARCD_ID, GEARCD_ID == 71, "dredge")) %>%
+  mutate(GEARCD_ID = replace(GEARCD_ID, GEARCD_ID == 81, "harpoon")) %>%
+  rename(GEAR = GEARCD_ID)
+
+#For my purposes Im going to change the harpoon recording to longline (no way of knowing which fish(es) were harpooned)
+hal_gear <- hal_gear %>%
+  mutate(GEAR = replace(GEAR, GEAR == "harpoon", "longline")) %>%
+  select(TRIP_ID, GEAR)
 
 
+hal_gear2 <- hal_gear %>% count(TRIP_ID, GEAR)
 
+n_occur3 <- data.frame(table(hal_gear$TRIP_ID)) %>% filter(Freq > 1)
+
+#bringing gear into my final tables
+ISDB_halOR <- ISDB_halOR %>%
+  left_join(hal_gear, by = "TRIP_ID")
+
+ISDB_halall <- ISDB_halall %>%
+  left_join(hal_gear, by = "TRIP_ID")
+
+```
+
+Bring RV and ISDB together
+```{r}
+colnames(ISDB_halOR)
+```
+```{r}
+colnames(ISDB_halall)
+```
+```{r}
+colnames(MarRV)
+```
