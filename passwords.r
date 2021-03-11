@@ -1,2 +1,0 @@
-uid = "hubleyb"
-pwd = "R4#vmxtas"
