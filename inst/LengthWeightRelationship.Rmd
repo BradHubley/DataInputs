@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
-source(file.path(wd, ".passwords"))
+source(file.path(wd, "passwords.r"))
 ```
 
 ---Extract MAR RV survey data using RORACLE

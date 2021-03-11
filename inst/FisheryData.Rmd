@@ -64,7 +64,7 @@ xl=c(-69,-47)
 yl=c(40,48)
 
 
-catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=18.52,aspr=1)
+catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
 SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
 SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=.7)
 
