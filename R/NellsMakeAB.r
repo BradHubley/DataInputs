@@ -5,7 +5,7 @@ make.ab<-function(dat, wd){
 #do not model difference between areas, and sample size is by sex and year, all areas
 #get a and b from linear mixed effects, log transformed length and weight, random year effect
 
-dat<-dat[dat$out==1,] #takes just the first character in whatever's in the "out" column, or not sure?
+dat<-dat[dat$out==1,] #takes just rows where out = 1
 dat$area<-substr(dat$nafo,1,1) #takes the first character of the nafo column and puts it in the area column
 dat$area[dat$area==5]<-4 #changes all 5s in the area column to 4s
 dat$ll<-log10(dat$len) #logs the length column
@@ -19,8 +19,8 @@ wt.dat<-dat #creates data frame wt.dat from all the data
 require(nlme) #installs/loads the nlme package
 random.effect="year" #says that "random.effect" is to be filled in with the year in each function
 b.par='estimate' #"b.par" is to be filled with the estimate in each function
-verbose=T #verbose = TRUE
-GBmodel=F #GFmodel = FALSE
+verbose=T #
+GBmodel=F #
 
 	require(nlme) #pulls in package "nlme"
 	wt.dat$raneff<-wt.dat[,random.effect] #creates column called raneff that's the year (because random.effect='year')
@@ -54,7 +54,7 @@ GBmodel=F #GFmodel = FALSE
 		A <- exp(wt.lme$coef$fixed[1])  ###exponentiated this to make easier for me #ndh Aug 1, 2014
 		#A here is the intercept from the model (average intercept for all years)
 		B <- wt.lme$coef$fixed[2]
-		#B here is the sploe coef (log.len) for the model
+		#B here is the slope coef (log.len) for the model
 		if(GBmodel){
 			a <- c(exp(as.numeric(wt.lme$coef$fixed[1])),a) #can this be re-written as a<-c(A,a)
 			b <- c(as.numeric(wt.lme$coef$fixed[2]),b)
