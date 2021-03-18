@@ -12,6 +12,8 @@ checkLF<-function(datadir,sp=30){
   # filter for halibut
   isdb$ISSPECIESCODES= isdb$ISSPECIESCODES[isdb$ISSPECIESCODES$SPECCD_ID == sp,]
 
+  # filter out bad sets
+  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
 
   # Apply filter
   Mar.datawrangling::self_filter('isdb',env=isdb)
@@ -22,22 +24,28 @@ checkLF<-function(datadir,sp=30){
   ## Sets
   sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME3","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION")], by=c('FISHSET_ID','SET_NO'))
 
-  totalfish <- isdb$ISCATCHES[,c("FISHSET_ID","CATCH_ID","EST_NUM_CAUGHT","EST_COMBINED_WT")]
+  tripsets <- full_join(trips,sets)
+
+  totalfish <- isdb$ISCATCHES[,c("FISHSET_ID","CATCH_ID","EST_NUM_CAUGHT","EST_COMBINED_WT")] %>%
+    full_join(.,tripsets)
+
 
   Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
 
   ISSAMPLES = subset(ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
   ISFISHLENGTHS=subset(ISFISHLENGTHS,SMPL_ID %in% ISSAMPLES$SMPL_ID,c("SMPL_ID","FISH_LENGTH","NUM_AT_LENGTH"))
 
-  fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)
+  fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS) %>%
+    full_join(.,totalfish)
 
-  fish <- isdb$ISFISH %>% group_by(CATCH_ID,SEXCD_ID,FISH_LENGTH) %>%
+  isfish <- isdb$ISFISH %>% group_by(CATCH_ID,SEXCD_ID,FISH_LENGTH) %>%
     summarize(ISFISH_COUNT=length(FISH_LENGTH)) %>%
-    right_join(.,totalfish) %>%
-    left_join(.,fishlengths)
+      full_join(.,totalfish)
 
-  HALIBUTSURVEY <- left_join(sets,fish) %>%
-    left_join(.,trips)
+
+
+  HALIBUTSURVEY <- full_join(isfishlengths,isfish)
+
 
   HALIBUTSURVEY$ISFISH_COUNT[is.na(HALIBUTSURVEY$ISFISH_COUNT)]<-0
   HALIBUTSURVEY$NUM_AT_LENGTH[is.na(HALIBUTSURVEY$NUM_AT_LENGTH)]<-0

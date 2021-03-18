@@ -13,12 +13,14 @@ library(devtools)
  library(Mar.bycatch)
  library(tidyverse)
 
+source(file.path(getwd(), "directories.r"))
 #datadir="C:/Users/hubleyb/Documents/Halibut/data"
 #wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
 #datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 #wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, "passwords.r"))
-source(file.path(wd, "directories.r"))
+
+
 
 ```
 
@@ -53,7 +55,7 @@ HookOccupancyData<-PrepareDataHookModel()
 bins=seq(0,260,5)
 
 FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins)
-FixedSurvey2<-FixedSurveyData(datadir=datadir,LF.from = "ISFISH",by.sex=T)
+#FixedSurvey2<-FixedSurveyData(datadir=datadir,LF.from = "ISFISH",by.sex=T)
 
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=bins,by.sex=T,hook.data=T)
 
@@ -63,19 +65,39 @@ ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=T)
 
 ## Checking difference between ISFISHLENGTHS and ISFISH
 ```{r}
-sum(abs(FixedSurvey2[,paste0("L",seq(10,260,5))]-FixedSurvey[,paste0("L",seq(10,260,5))]),na.rm=T)
-sum(FixedSurvey2[,paste0("L",seq(10,260,5))],na.rm=T)
-sum(FixedSurvey[,paste0("L",seq(10,260,5))],na.rm=T)
+#sum(abs(FixedSurvey2[,paste0("L",seq(10,260,5))]-FixedSurvey[,paste0("L",seq(10,260,5))]),na.rm=T)
+#sum(FixedSurvey2[,paste0("L",seq(10,260,5))],na.rm=T)
+#sum(FixedSurvey[,paste0("L",seq(10,260,5))],na.rm=T)
 
-FixedSurvey2020_2 <- subset(FixedSurvey2,YEAR==2020)
-FixedSurvey2020 <- subset(FixedSurvey,YEAR==2020)
+#FixedSurvey2020_2 <- subset(FixedSurvey2,YEAR==2020)
+#FixedSurvey2020 <- subset(FixedSurvey,YEAR==2020)
 
-FixedSurvey2020[rowSums(abs(FixedSurvey2020_2[,paste0("L",seq(10,260,5))]-FixedSurvey2020[,paste0("L",seq(10,260,5))]),na.rm=T)>0,]
+#FixedSurvey2020[rowSums(abs(FixedSurvey2020_2[,paste0("L",seq(10,260,5))]-FixedSurvey2020[,paste0("L",seq(10,260,5))]),na.rm=T)>0,]
 
 
-subset(FixedSurvey,TRIP=="J20-0019"&SET_NO==2)
-subset(FixedSurvey2,TRIP=="J20-0019"&SET_NO==2)
-subset(isdb$ISFISH,CATCH_ID==101911351&SEXCD_ID==0)
+#subset(FixedSurvey,TRIP=="J20-0019"&SET_NO==2)
+#subset(FixedSurvey2,TRIP=="J20-0019"&SET_NO==2)
+#subset(isdb$ISFISH,CATCH_ID==101911351&SEXCD_ID==0)
+
+
+LFcheck<-checkLF(datadir=datadir)
+
+subset(LFcheck,!MATCH&YEAR==2020&SETCD_ID==5)
+subset(HALIBUTSURVEY,!MATCH&YEAR==2020&TRIP=="J20-0020A"&SETCD_ID%in%4:5)
+subset(LFcheck,!MATCH&YEAR==2020&SETCD_ID==5&!is.na(SMPL_ID))
+
+
+ sum(subset(LFcheck,YEAR==2020&SETCD_ID==5)$ISFISH_COUNT)
+
+ sum(subset(LFcheck,YEAR==2020&SETCD_ID==5)$NUM_AT_LENGTH)
+ 
+ sum(subset(LFcheck,SETCD_ID==5)$ISFISH_COUNT)
+ sum(subset(LFcheck,SETCD_ID==5)$NUM_AT_LENGTH)
+ sum(subset(LFcheck,SETCD_ID==4)$ISFISH_COUNT)
+ sum(subset(LFcheck,SETCD_ID==4)$NUM_AT_LENGTH)
+ sum(subset(LFcheck,SETCD_ID==10)$ISFISH_COUNT)
+ sum(subset(LFcheck,SETCD_ID==10)$NUM_AT_LENGTH)
+ 
 
 ```
 ## Checked a few differences in the data sheets and they persisted on the page, i.e. length frequency form was inconsistant with halibut survey tagging observations. There are more fish observed in ISFISHLENGTHS so go with that for size composition. 
