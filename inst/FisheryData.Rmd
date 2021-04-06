@@ -12,16 +12,19 @@ library(devtools)
  library(Mar.datawrangling)
  library(Mar.bycatch)
  library(tidyverse)
-
+library(CircStats)
+library(lubridate)
 #install_github("BradHubley/SpatialHub")
 library(SpatialHub)
 
 
-datadir="C:/Users/hubleyb/Documents/Halibut/data"
-wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs"
+source(file.path(getwd(), "directories.r"))
+#datadir="C:/Users/hubleyb/Documents/Halibut/data"
+#wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
 #datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
-#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs"
-source(file.path(wd, ".passwords"))
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+source(file.path(wd, "passwords.r"))
+
 ```
 
 ## Update data from database 
@@ -36,27 +39,28 @@ get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.passwo
 ## from Mar.bycatch
 ```{r}
 yrs = 2002:2020
-
-        for (y in yrs){
-          nm = paste0("fleet",y)
-          cat(paste0("Working on ",nm,"\n"))
-          thisyear = fleet_halibut(useLocal=F, data.dir=datadir, dateStart=paste0(y,'-01-01'), dateEnd=paste0(y,'-12-31'), keepSurveyTrips=T, oracle.username=uid, oracle.password=pwd, oracle.dsn='ptran',usepkg="roracle")
-          assign(nm, thisyear)
-          rm(thisyear, nm)
+fleets <- list()
+        for (i in 1:length(yrs)){
+          cat(yrs[i])
+          thisyear = fleet_halibut(useLocal=F, data.dir=datadir, dateStart=paste0(yrs[i],'-01-01'), dateEnd=paste0(yrs[i],'-12-31'), keepSurveyTrips=T, oracle.username=uid, oracle.password=pwd, oracle.dsn='ptran',usepkg="roracle")
+          fleets[[i]]<-thisyear$marf$MARF_SETS
+          rm(thisyear)
         }
+fleets[[1]]$CALC_AREA<-NA
+marf<-do.call("rbind",fleets)
 
 
 ```
 
 ##
 ```{r }
-catch.data <- na.omit(with(subset(fleet2020$marf$MARF_SETS),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==2020),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
 catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
 summary(catch.data)
 
 ```
 
-# plot
+# plot annual
 ```{r}
 
 lvls=seq(0,7000,1000)
@@ -70,16 +74,19 @@ SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, tit
 
 ```
 
-### Loop
+### Loop for annual
 
 ```{r}
 
+lvls=seq(0,7000,1000)
+xl=c(-69,-47)
+yl=c(40,48)
+
 for(y in yrs){
-  fleet <- get(paste0('fleet',y))
-  catch.data <- na.omit(with(fleet$marf$MARF_SETS,data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+  catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==y),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
   catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
   #summary(catch.data)
-  catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=18.52,aspr=1)
+  catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
   
   pdf(file.path(wd,'figures',paste0('marfisCatch',y,'.pdf')),width=10,height=7)
   
@@ -88,6 +95,89 @@ for(y in yrs){
   dev.off()
 
 }
+
+
+
+```
+
+
+### Loop for quarterly
+
+```{r}
+q=sort(unique(quarter(marf$DATE_FISHED,T)))
+
+  
+  for(i in q){
+    catch.data <- na.omit(with(subset(marf,quarter(DATE_FISHED,T)==i),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+    catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+    catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
+    #print(summary(catch.grids))
+    
+    pdf(file.path(wd,'figures',paste0('marfisCatch',i,'.pdf')),width=10,height=7)
+    
+    SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = q)
+    SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
+    dev.off()
+    
+  }
+
+	
+
+
+
+```
+
+### Loop for quarterly year blocks
+
+```{r}
+q=sort(unique(quarter(marf$DATE_FISHED,T)))
+
+  for(y)
+  for(i in q){
+    catch.data <- na.omit(with(subset(marf,quarter(DATE_FISHED,T)==i),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+    catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+    catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
+    #print(summary(catch.grids))
+    
+    pdf(file.path(wd,'figures',paste0('marfisCatch',i,'.pdf')),width=10,height=7)
+    
+    SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = q)
+    SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
+    dev.off()
+    
+  }
+
+	
+
+```
+### Loop for monthly
+
+```{r}
+	require(animation)# for creating gif
+
+	### GIF animations ###
+	## set some options first
+	oopt = ani.options(interval = 0.4, nmax = length(yrs)* 12, outdir=file.path(wd,'figures'))
+	saveGIF({
+for(y in yrs){
+  fleet <- get(paste0('fleet',y))
+  for(i in 1:12){
+    catch.data <- na.omit(with(subset(fleet,month(DATE_FISHED)==i),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+    catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+    catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
+    #print(summary(catch.grids))
+    
+    #pdf(file.path(wd,'figures',paste0('marfisCatch',y,i,'.pdf')),width=10,height=7)
+    
+    SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = paste(month(i,label=T),y))
+    SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
+    #dev.off()
+    
+  }
+
+	  ani.pause() ## pause for a while (’interval’)
+	}
+	}, interval = 0.1, movie.name = "marfis.gif", ani.width = 900, ani.height = 600)
 
 
 

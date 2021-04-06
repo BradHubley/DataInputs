@@ -5,7 +5,7 @@
 #output: word_document
 #---
 
-FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/data", add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, LF.from='ISFISHLENGTHS'){
+FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/data", add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, LF.from='ISFISHLENGTHS',correct.splitsets=T){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -91,6 +91,7 @@ FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/da
       }
       if(by.sex==F)LF <- LFnosex
       #browser()
+      #LFisfish <-LF
     }
     if(LF.from=="ISFISHLENGTHS"){
       Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
@@ -118,7 +119,12 @@ FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/da
       }
       if(by.sex==F)LF <- LFnosex
       #browser()
+      #LFisfishlengths <-LF
+
     }
+
+
+
     totalfish <- left_join(totalfish,LF)
   }
 
@@ -127,19 +133,39 @@ FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/da
     left_join(.,trips)
 
   ## correct for splitsets
-  HALIBUTSURVEY$SY <- paste0(HALIBUTSURVEY$YEAR,HALIBUTSURVEY$STATION)
-  dr<-subset(HALIBUTSURVEY,duplicated(SY))
+  if(correct.splitsets){
+    if(by.sex==F){
+    HALIBUTSURVEY$SY <- paste0(HALIBUTSURVEY$YEAR,HALIBUTSURVEY$STATION)
+    dr<-subset(HALIBUTSURVEY,duplicated(SY))
 
-  fsdups<-subset(HALIBUTSURVEY,SY%in%dr$SY)
+    fsdups<-subset(HALIBUTSURVEY,SY%in%dr$SY)
 
-  newd<-fsdups %>%
-    group_by(YEAR,STATION,VESS_ID ) %>%
-    summarise(SOAKMINP3P1=sum(SOAKMINP3P1),NUM_HOOK_HAUL=sum(NUM_HOOK_HAUL),across(EST_NUM_CAUGHT:NUM_MEASURED, sum, na.rm=T)) %>%
-    right_join(.,select(dr,YEAR,STATION,which(!names(dr)%in%names(.)))) %>%
-    filter(!duplicated(SY)) %>%
-    data.frame()
+    newd<-fsdups %>%
+      group_by(YEAR,STATION,VESS_ID ) %>%
+      summarise(SOAKMINP3P1=sum(SOAKMINP3P1),NUM_HOOK_HAUL=sum(NUM_HOOK_HAUL),across(EST_NUM_CAUGHT:NUM_MEASURED, sum, na.rm=T)) %>%
+      right_join(.,dplyr::select(dr,YEAR,STATION,which(!names(dr)%in%names(.)))) %>%
+      filter(!duplicated(SY)) %>%
+      data.frame()
 
-  HALIBUTSURVEY <- left_join(subset(HALIBUTSURVEY,!duplicated(SY)),newd)
+    HALIBUTSURVEY <- left_join(subset(HALIBUTSURVEY,!duplicated(SY)),newd)
+    }
+    if(by.sex==T){
+      HALIBUTSURVEY$SYS <- paste0(HALIBUTSURVEY$YEAR,HALIBUTSURVEY$STATION,HALIBUTSURVEY$SEXCD_ID)
+      dr<-subset(HALIBUTSURVEY,duplicated(SYS))
+
+      fsdups<-subset(HALIBUTSURVEY,SYS%in%dr$SYS)
+
+      newd<-fsdups %>%
+        group_by(YEAR,STATION,VESS_ID,SEXCD_ID ) %>%
+        summarise(SOAKMINP3P1=sum(SOAKMINP3P1),NUM_HOOK_HAUL=sum(NUM_HOOK_HAUL),across(EST_NUM_CAUGHT:NUM_MEASURED, sum, na.rm=T)) %>%
+        right_join(.,dplyr::select(dr,YEAR,STATION,SEXCD_ID,which(!names(dr)%in%names(.)))) %>%
+        filter(!duplicated(SYS)) %>%
+        data.frame()
+
+      HALIBUTSURVEY <- left_join(subset(HALIBUTSURVEY,!duplicated(SYS)),newd)
+    }
+
+  }
 
 
 
