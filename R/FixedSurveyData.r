@@ -45,7 +45,9 @@ FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/da
   ## Sets
   isdb$ISSETPROFILE_WIDE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE_WIDE$DATE_TIME3,  isdb$ISSETPROFILE_WIDE$DATE_TIME1, units='min')
   isdb$ISSETPROFILE_WIDE$DEPTH <- rowMeans(isdb$ISSETPROFILE_WIDE[,c("DEP1","DEP2","DEP3","DEP4")],na.rm=T)
-  sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID")], by=c('FISHSET_ID','SET_NO'))
+  sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","HAULCCD_ID","GEAR_ID")], by=c('FISHSET_ID','SET_NO'))
+
+  sets$SOAKMINP3P1[sets$SOAKMINP3P1<0]<-NA
 
   # join gear if desired
   if(add.gear){
@@ -123,6 +125,23 @@ FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/da
 
   HALIBUTSURVEY <- left_join(sets,totalfish) %>%
     left_join(.,trips)
+
+  ## correct for splitsets
+  HALIBUTSURVEY$SY <- paste0(HALIBUTSURVEY$YEAR,HALIBUTSURVEY$STATION)
+  dr<-subset(HALIBUTSURVEY,duplicated(SY))
+
+  fsdups<-subset(HALIBUTSURVEY,SY%in%dr$SY)
+
+  newd<-fsdups %>%
+    group_by(YEAR,STATION,VESS_ID ) %>%
+    summarise(SOAKMINP3P1=sum(SOAKMINP3P1),NUM_HOOK_HAUL=sum(NUM_HOOK_HAUL),across(EST_NUM_CAUGHT:NUM_MEASURED, sum, na.rm=T)) %>%
+    right_join(.,select(dr,YEAR,STATION,which(!names(dr)%in%names(.)))) %>%
+    filter(!duplicated(SY)) %>%
+    data.frame()
+
+  HALIBUTSURVEY <- left_join(subset(HALIBUTSURVEY,!duplicated(SY)),newd)
+
+
 
 
 

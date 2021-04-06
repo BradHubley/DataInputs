@@ -52,7 +52,7 @@ checkLF<-function(datadir,sp=30){
 
   HALIBUTSURVEY$MATCH <- HALIBUTSURVEY$ISFISH_COUNT == HALIBUTSURVEY$NUM_AT_LENGTH
 
-  write.csv(HALIBUTSURVEY,"HalibutSurveyLFcheck.csv")
+  write.csv(HALIBUTSURVEY,file.path(datadir,"HalibutSurveyLFcheck.csv"))
 
   return(HALIBUTSURVEY)
 
