@@ -1,3 +1,4 @@
+#' @export
 get_ps_data<-function(data.dir=getwd(),fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=F){
 
   library(ROracle)

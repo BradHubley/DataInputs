@@ -1,3 +1,4 @@
+#' @export
 constructLF<-function(LFdata, bins,Yrs,sx=c(1,2,0)){
 
   LF=list()

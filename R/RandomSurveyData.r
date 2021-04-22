@@ -1,10 +1,4 @@
-#---
-#  title: "prepare hook data for spatial model"
-#author: "Brad"
-#date: "November 10, 2020"
-#output: word_document
-#---
-
+#' @export
 RandomSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/data", add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS'){
 
   library(Mar.datawrangling)
@@ -96,7 +90,7 @@ RandomSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/d
 
       fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)
 
-      cid=unique(isdb$ISFISH$CATCH_ID)
+      cid=unique(isdb$ISFISHLENGTHS$CATCH_ID)
       LF <-list()
       LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
       #names(LFnosex)[-1]<-paste0("L",bins[-1])

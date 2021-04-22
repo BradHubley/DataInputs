@@ -54,15 +54,16 @@ HookOccupancyData<-PrepareDataHookModel()
 ```{r, echo=FALSE}
 bins=seq(0,260,5)
 
-FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins)
-FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=F)
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISH")
+FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS")
 
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=bins,by.sex=T,hook.data=T)
+RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.LF=T,bins=bins,by.sex=F)
 
 ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=T)
 ```
 
-## Map stations
+## Map Fixed stations
 ```{r}
 xl=c(-69,-47)
 yl=c(40,48)    
@@ -73,6 +74,23 @@ stations_100 <- read.csv(file.path(wd,'data',"FixedStation100.csv"))
 SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Fixed Station Survey")
 points(LATITUDE~LONGITUDE,FixedSurvey2,pch=16,col=rgb(0,0,0,0.2),cex=0.5)
 points(lat.DecDeg~lon.DecDeg,stations_100,pch=21,bg=rgb(1,1,0,0.8))
+
+dev.off()
+
+
+
+```
+
+## Map Random stations
+```{r}
+xl=c(-69,-47)
+yl=c(40,48)    
+#stations_100 <- read.csv(file.path(wd,'data',"FixedStation100.csv"))
+
+  pdf(file.path(wd,'figures','StratfiedRandomSurveyMap2020.pdf'),width=10,height=7)
+                         
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Fixed Station Survey")
+points(LATITUDE~LONGITUDE,subset(RandomSurvey2,YEAR==2020),pch=21,bg=rgb(1,1,0,1))
 
 dev.off()
 
@@ -126,7 +144,12 @@ FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=F)
 FixedSurvey2$SY <- paste0(FixedSurvey2$YEAR,FixedSurvey2$STATION)
 dr<-subset(FixedSurvey2,duplicated(SY))
 fsdups<-subset(FixedSurvey2,SY%in%dr$SY)
-
+fsdups
+RandomSurvey2<-RandomSurveyData(datadir=datadir,by.sex=F)
+RandomSurvey2$SY <- paste0(RandomSurvey2$YEAR,RandomSurvey2$STATION)
+dr<-subset(RandomSurvey2,duplicated(SY))
+fsdups<-subset(RandomSurvey2,SY%in%dr$SY)
+fsdups
 ```
 
 ## Construct LF for plots
@@ -143,7 +166,7 @@ fsdups<-subset(FixedSurvey2,SY%in%dr$SY)
 
   # Construct CLF
   fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = 2009:2020)
-  #fixedLF2=constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = 2009:2020)
+  fixedLF2=constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = 2009:2020)
   RandomLF=constructLF(LFdata=RandomSurvey,bins=bins, Yrs = 2017:2020)
   ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = 2009:2020)
 
@@ -154,9 +177,11 @@ fsdups<-subset(FixedSurvey2,SY%in%dr$SY)
 
 ## LF plots
 ```{r}
-  
+  Yrs = 2009:2020
+
     BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF1"))
-    BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixedLF2"),ymax=320)
+    BarPlotLF(fixedLF2,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF2"))
+    BarPlotLF(fixedLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","fixedLF"),ymax=320)
   
     BarPlotLF(RandomLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","randomLF1"))
     BarPlotLF(RandomLF,yrs=Yrs,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
@@ -164,6 +189,41 @@ fsdups<-subset(FixedSurvey2,SY%in%dr$SY)
     BarPlotLF(ComIndexLF,yrs=2009:2020,rel=T,filen=file.path(wd,"figures","comindexLF1"))
     BarPlotLF(ComIndexLF,yrs=2009:2020,rel=F,filen=file.path(wd,"figures","comindexLF2"),ymax=1400)
 
+
+```
+
+
+```{r}
+
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISH",correct.splitsets = F)
+FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS",correct.splitsets = F)
+
+  Yrs = 2009:2020
+
+  fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs)
+  fixedLF2=constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = Yrs)
+
+      BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF3"))
+    BarPlotLF(fixedLF2,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF4"))
+    
+    
+  HALIBUTSURVEY<- FixedSurvey 
+    
+  HALIBUTSURVEY$SY <- paste0(HALIBUTSURVEY$YEAR,HALIBUTSURVEY$STATION,HALIBUTSURVEY$SEXCD_ID)
+  dr<-subset(HALIBUTSURVEY,duplicated(SY))
+
+  fsdups<-subset(HALIBUTSURVEY,SY%in%dr$SY)
+
+  newd<-fsdups %>%
+    group_by(YEAR,STATION,VESS_ID,SEXCD_ID ) %>%
+    summarise(SOAKMINP3P1=sum(SOAKMINP3P1),NUM_HOOK_HAUL=sum(NUM_HOOK_HAUL),across(EST_NUM_CAUGHT:NUM_MEASURED, sum, na.rm=T)) %>%
+    right_join(.,dplyr::select(dr,YEAR,STATION,which(!names(dr)%in%names(.)))) %>%
+    filter(!duplicated(SY)) %>%
+    data.frame()
+
+  HALIBUTSURVEY <- left_join(subset(HALIBUTSURVEY,!duplicated(SY)),newd)
+  fixedLF=constructLF(LFdata=HALIBUTSURVEY,bins=bins, Yrs = Yrs)
+      BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF5"))
 
 ```
 

@@ -101,55 +101,36 @@ for(y in yrs){
 ```
 
 
-### Loop for quarterly
-
-```{r}
-q=sort(unique(quarter(marf$DATE_FISHED,T)))
-
-  
-  for(i in q){
-    catch.data <- na.omit(with(subset(marf,quarter(DATE_FISHED,T)==i),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
-    catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
-    catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
-    #print(summary(catch.grids))
-    
-    pdf(file.path(wd,'figures',paste0('marfisCatch',i,'.pdf')),width=10,height=7)
-    
-    SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = q)
-    SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
-    dev.off()
-    
-  }
-
-	
-
-
-
-```
-
 ### Loop for quarterly year blocks
 
 ```{r}
-q=sort(unique(quarter(marf$DATE_FISHED,T)))
-
-  for(y)
-  for(i in q){
-    catch.data <- na.omit(with(subset(marf,quarter(DATE_FISHED,T)==i),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+q=1:4
+yrblocks <- list(2001:2005,2006:2010,2011:2015,2016:2020)
+  
+for(i in q){
+  for(j in 1:length(yrblocks)){
+    catch.data <- na.omit(with(subset(marf,quarter(DATE_FISHED)==i&year(DATE_FISHED)%in%yrblocks[[j]]),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
     catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
     catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
     #print(summary(catch.grids))
     
-    pdf(file.path(wd,'figures',paste0('marfisCatch',i,'.pdf')),width=10,height=7)
+    #pdf(file.path(wd,'figures',paste0('marfisCatch','Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]]),'.pdf')),width=10,height=7)
+    png(file.path(wd,'figures',paste0('marfisCatch','Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]]),'.png')),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
     
-    SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = q)
+    SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = paste('Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]])))
     SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
     dev.off()
-    
   }
+}
+
 
 	
 
+
+
 ```
+
+
 ### Loop for monthly
 
 ```{r}
@@ -181,5 +162,27 @@ for(y in yrs){
 
 
 
+```
+
+
+```{r}
+marf$YEAR<-year(marf$DATE_FISHED)
+marf$NAFO <-substr(marf$NAFO_AREA,1,2)
+marf.tab<-marf %>% group_by(YEAR,NAFO) %>% summarise(catch=round(sum(RND_WEIGHT_KGS/1000,na.rm=T),2))%>% pivot_wider(.,names_from = NAFO,values_from = catch)
+marf.tab
+write.csv(marf.tab,"MarfisHalibutLandings_t.csv",row.names=F)
+```
+
+```{r}
+ SpatialHub::bioMap("WSS", mapRes="MR",nafo='all',main=2020)
+ 
+ points(LATITUDE~LONGITUDE,subset(marf,YEAR==2020&NAFO=="4X"))
+ points(LATITUDE~LONGITUDE,subset(marf,YEAR==2020&NAFO=="5Z"),col='blue')
+ 
+ SpatialHub::bioMap("WSS", mapRes="MR",nafo='all',main=2019)
+ 
+ points(LATITUDE~LONGITUDE,subset(marf,YEAR==2019&NAFO=="4X"))
+ points(LATITUDE~LONGITUDE,subset(marf,YEAR==2019&NAFO=="5Z"),col='blue')
+ 
 ```
 

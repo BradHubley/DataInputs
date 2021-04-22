@@ -1,10 +1,4 @@
-#---
-#  title: "prepare hook data for spatial model"
-#author: "Brad"
-#date: "November 10, 2020"
-#output: word_document
-#---
-
+#' @export
 CommercialIndexData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=T, LF.from='ISFISHLENGTHS', add.portsampling=F){
 
   library(Mar.datawrangling)
