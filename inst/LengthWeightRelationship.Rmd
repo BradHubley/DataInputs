@@ -820,7 +820,7 @@ ggplot(hal_datOR) +
 data_byyear <- hal_datOR %>% count(YEAR, TYPE)
 
 ggplot(hal_datOR) +
-  geom_bar(aes(YEAR, stat = "count"))+
+  geom_bar(aes(yr_bin, stat = "count"))+
   facet_grid(TYPE ~ ., scales = "free")
 
 ggplot(hal_datOR) +
@@ -852,7 +852,10 @@ ggplot(hal_datOR, aes(FISH_LENGTH, stat = "count", fill = GEAR, col = GEAR)) +
   facet_grid(NAFO~yr_bin) +
   theme_test() #more recent fishing in 3N, the "trawl" stuff from 1980-1990s in 4 are from silver hake fishery
 ```
+
+
 Looking for month/seasonal 
+
 ```{r}
 hal_datOR <- hal_datOR %>%
   mutate(MONTH = substr(BOARD_DATE, 6,7))
@@ -1173,7 +1176,7 @@ hal_datOR<- hal_datOR %>%
 hal_datOR <- hal_datOR %>%
   mutate(TRIPCD_ID = replace(TRIPCD_ID, TRIPCD_ID %in% c("8", "70", "230", "4320", "7054", "7055","7060", "7061"), "7099"))
 
-hal_datORtrip$TRIPCD_ID <- as.integer(hal_datOR$TRIPCD_ID)
+hal_datORtrip$TRIPCD_ID <- as.integer(hal_datORtrip$TRIPCD_ID)
 
 hal_datORtrip %>% count(TRIPCD_ID)
 
@@ -1345,7 +1348,7 @@ hal_datORmf <-hal_datOR %>%
   filter(SEXCD_ID %in% c("1", "2"))
 
 m1mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
-summary(m1mf)
+#summary(m1mf)
 #simple lm of L X W
 m2mf <- lm(log(FISH_WEIGHT) ~ log(FISH_LENGTH), hal_datORmf)
 #(FE: length; RE: year)
@@ -1412,7 +1415,9 @@ ggplot(monthtest, aes(x = x, y = predicted, colour = group)) +
     x = get_x_title(monthtest),
     y = get_y_title(monthtest),
     title = get_title(monthtest)
-  ) + xlim(200,300) + ylim(200000, 250000)
+  ) 
+
+#xlim(200,300) + ylim(200000, 250000)
 
 #shows that for a given length fish are lightest in january, getting heavier through the year until late summer when weight decreases a bit until december and then stark drop back down to lowest in january
 
@@ -1499,7 +1504,6 @@ ggplot(dectest2, aes(x = x, y = predicted, colour = group)) +
   )
 
 summary(moddecade2)
-
 ```
 
 
@@ -1513,5 +1517,78 @@ ggplot(hal_datORmf, aes(FISH_LENGTH, stat = "count", fill = SEXCD_ID, col = SEXC
 ```
 
 Try to look at prediction for a legal size fish (90cm) for time period
+```{r}
+modyear <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + NAFO_ZONE + YEAR + (1|TRIPCD_ID), hal_datOR)
 
-check on this with the RV survey data
+yeartest <- ggpredict(modyear, terms = c("FISH_LENGTH", "YEAR"), condition = c(SEXCD_ID = c(1,2), NAFO_ZONE = 3), type = "re")
+
+sizeselect <- yeartest %>% filter(x == "80")
+
+ggplot(sizeselect, aes(x = group, y = predicted)) +
+  geom_point() +
+    labs(
+    colour = get_legend_title(sizeselect),
+    x = "YEAR",
+    y = "FISH_WEIGHT",
+    title = "Predicted Values for Fish at Length 80cm Over Time"
+  ) +
+  theme_test()
+
+##same thing but just RV data
+modyearRV <- lm(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + YEAR, hal_datORRV)
+
+yeartestRV <- ggpredict(modyearRV, terms = c("FISH_LENGTH", "YEAR"), condition = c(SEXCD_ID = c(1,2), NAFO_ZONE = 3), type = "re")
+
+sizeselectRV <- yeartestRV %>% filter(x == "80")
+
+ggplot(sizeselectRV, aes(x = group, y = predicted)) +
+  geom_point() +
+    labs(
+    colour = get_legend_title(sizeselectRV),
+    x = "YEAR",
+    y = "FISH_WEIGHT",
+    title = "Predicted Values for Fish at Length 80cm Over Time from RV Data"
+  ) +
+  theme_test()
+
+
+```
+
+Final Model:
+```{r}
+library(sjPlot)
+final_mod <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + (1|YEAR) + (1|TRIPCD_ID), hal_datOR)
+summary(final_mod)
+coef(summary(final_mod))
+coef(final_mod)
+
+df2 <- data.frame(YEAR=row.names(coef(final_mod)[[1]]), coef(final_mod)[[1]])
+
+##overall (without QUARTER)
+final_modOA <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), hal_datOR)
+summary(final_modOA)
+coef(summary(final_modOA))
+
+tab_model(final_mod, final_modOA)
+plot_model(final_mod, type = "pred", terms = c("FISH_LENGTH", "QUARTER")) + theme_test()
+```
+
+
+
+```{r}
+Q1 <- hal_datOR %>% filter(QUARTER == 1)
+Q2 <- hal_datOR %>% filter(QUARTER == 2)
+Q3 <- hal_datOR %>% filter(QUARTER == 3)
+Q4 <- hal_datOR %>% filter(QUARTER == 4)
+
+FQ1_mod <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), Q1)
+summary(FQ1_mod)
+FQ2_mod <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), Q2)
+summary(FQ2_mod)
+FQ3_mod <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), Q3)
+summary(FQ3_mod)
+FQ4_mod <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), Q4)
+summary(FQ4_mod)
+
+```
+
