@@ -1,3 +1,4 @@
+#' @export
 hookData <- function(years=2017:2020, species=30,wdir=getwd()){
 
 library(reshape2)

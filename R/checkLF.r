@@ -1,4 +1,4 @@
-
+#' @export
 checkLF<-function(datadir,sp=30){
 
   isdb <- new.env()

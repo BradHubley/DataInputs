@@ -21,7 +21,7 @@ devtools::install_github("BradHubley/bio.halibut")
 
 
 ```{r setup, include=FALSE}
-rm(list=ls())
+#rm(list=ls())
 ds_all <- Mar.datawrangling::load_datasources()
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -31,9 +31,13 @@ library(devtools)
 library(Mar.datawrangling)
 #library(bio.halibut)
 library(tidyverse)
-source("LandingFunctions.R")
+#source("LandingFunctions.R")
+devtools::load_all(".")
 
-wd ="C:/Users/LiLi/Documents"
+
+#wd ="C:/Users/LiLi/Documents"
+#data.dir="C:/Users/LiLi/Documents/NAFOLanding"
+source(file.path(getwd(), "directories.r"))
 
 # NAFO divisions
 nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
@@ -59,12 +63,12 @@ To get the NAFO landings data 21A, download from here: https://www.nafo.int/Data
 To get the NAFO landings data 21B, download from here:
 https://www.nafo.int/Data/Catch-Statistics. There are multiple zipped files each with  one decade's data except the most recent one. Save and unzip all of them.
 ```{r all-country landings NAFO 21A, 21B, 2014 SCAL}
-nafoA = get_21A(count="others", yearstart = ystart)  #1970
+nafoA = get_21A(count="others", yearstart = ystart, wd=wd)  #1970
 # sort(unique(nafoA$Division))
 
-nafoB=get_21B(count="others",ystart,yend,1)
+nafoB=get_21B(count="others",ystart,yend,1, wd=wd)
 # unique(nafoB$Division)
-nafoBdiv = get_21B(count="others",ystart,yend,2)
+nafoBdiv = get_21B(count="others",ystart,yend,2, wd=wd)
 
 # compare 21A landings between CDN and all countries
 # nafoAll= get_21A(count="other", yearstart = 1970)
@@ -93,17 +97,17 @@ nafoBprev= read.csv("nafoBprevious.csv", header=T)
 nafoBtp= merge(nafoBtotal, nafoBprev)   %>%
   mutate(CatchD=CatchT-CatchAss  )
 
-tiff("barplot_21B.tiff", width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_21B.tiff"), width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoBtp$CatchD~nafoBtp$Year,
  xlab= "Year", ylab="Current - previous versions of 21B (t)",ylim=c(-150, 150))
 dev.off()
 
 
 ## Scal format of 21B  
-nafoBg = get_21B(count="others",1970,2016,4)
+nafoBg = get_21B(count="others",1970,2016,4,wd=wd)
 
 # import scal data from 2014 assessment
-scal=read.table("scal_catch.dat", header=F)
+scal=read.table(file.path(wd,'data',"scal_catch.dat"), header=F)
 colnames(scal)= c("code","Year","LL3scal", "LL4scal", "OT3scal", "OT4scal")
 scal=scal[, 2:6]
 
@@ -116,7 +120,7 @@ Download MARFIS data since 2000
 ```{r MARFIS}
 
  # get_data(db='marfis',data.dir=file.path(wd,'data'),fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
-  get_data(db='marfis',data.dir=file.path(wd,'data'))
+  get_data(db='marfis',data.dir=datadir)
   SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]
   PRO_SPC_INFO = PRO_SPC_INFO  %>%
     filter(!is.na(RND_WEIGHT_KGS) )
@@ -254,12 +258,12 @@ nafoABM34=nafoABM34[, c(1,2,3,4,6,7,8)] %>%
 nafoABM34p = nafoABM34   %>%
     replace(is.na(.), 0)
 
-tiff("barplot_landingD_3.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_landingD_3.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoABM34p$Catch3B_A~nafoABM34p$Year,
  xlab= "Year", ylab="Landing difference in Area 3 (t)",ylim=c(-400, 600))
 dev.off()
 
-tiff("barplot_landingD_4.tiff", width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_landingD_4.tiff"), width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoABM34p$Catch4B_A~nafoABM34p$Year,
  xlab= "Year", ylab="Landing difference in Area 4 (t)", ylim=c(-100, 0))
 dev.off()
@@ -273,7 +277,7 @@ dev.off()
 # plot pre-2000 area 3
 nafoABM34p2= nafoABM34p    %>%
   filter (Year<=2000)
-tiff("barplot_landingD_3_2000.tiff", width=120, height=90, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_landingD_3_2000.tiff"), width=120, height=90, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoABM34p2$Catch3B_A~nafoABM34p2$Year,
  xlab= "Year", ylab="Landing difference in Area 3 (t)",ylim=c(-100, 0))
 dev.off()
@@ -367,23 +371,23 @@ nafoscalp= nafoscal  %>%
    replace(is.na(.), 0) 
 
 ### area 3 
-tiff("barplot_landingD_3LL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_landingD_3LL.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoscalp$LL3d~nafoscalp$Year,
  xlab= "Year", ylab="Landing difference in LL Area 3 (t)",ylim=c(-100, 200))
 dev.off()
 
-tiff("barplot_landingD_3OT.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_landingD_3OT.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoscalp$OT3d~nafoscalp$Year,
  xlab= "Year", ylab="Landing difference in OT Area 3 (t)", ylim=c(-200, 200))
 dev.off()
 
 ### area 4
-tiff("barplot_landingD_4LL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_landingD_4LL.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoscalp$LL4d~nafoscalp$Year,
  xlab= "Year", ylab="Landing difference in LL Area 4 (t)",ylim=c(-150, 150))
 dev.off()
 
-tiff("barplot_landingD_4OT.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_landingD_4OT.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(nafoscalp$OT4d~nafoscalp$Year,
  xlab= "Year", ylab="Landing difference in OT Area 4 (t)", ylim=c(-150, 150))
 dev.off()
@@ -404,23 +408,23 @@ Bscalp= Bscal  %>%
    replace(is.na(.), 0) 
 
 ### area 3 
-tiff("barplot_Bscal_3LL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_Bscal_3LL.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(Bscalp$LL3d~Bscalp$Year,
  xlab= "Year", ylab="Landing difference in LL Area 3 (t)",ylim=c(-100, 200))  
 dev.off()
 
-tiff("barplot_Bscal_3OT.tiff", width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_Bscal_3OT.tiff"), width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
 barplot(Bscalp$OT3d~Bscalp$Year,
  xlab= "Year", ylab="Landing difference in OT Area 3 (t)", ylim=c(-200, 200))
 dev.off()
 
 ### area 4
-tiff("barplot_Bscal_4LL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_Bscal_4LL.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(Bscalp$LL4d~Bscalp$Year,
  xlab= "Year", ylab="Landing difference in LL Area 4 (t)",ylim=c(-150, 150))
 dev.off()
 
-tiff("barplot_Bscal_4OT.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+tiff(file.path(wd,'figures',"barplot_Bscal_4OT.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
 barplot(Bscalp$OT4d~Bscalp$Year,
  xlab= "Year", ylab="Landing difference in OT Area 4 (t)", ylim=c(-150, 150))
 dev.off()
