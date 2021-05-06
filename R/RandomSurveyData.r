@@ -90,7 +90,7 @@ RandomSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/d
 
       fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)
 
-      cid=unique(isdb$ISFISHLENGTHS$CATCH_ID)
+      cid=unique(fishlengths$CATCH_ID)
       LF <-list()
       LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
       #names(LFnosex)[-1]<-paste0("L",bins[-1])

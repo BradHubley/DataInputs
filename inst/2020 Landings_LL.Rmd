@@ -226,7 +226,7 @@ nafoABM=  merge(nafoAB, mardiv, all.x=T)%>%
 nafoABMmiss= nafoABM[is.na(nafoABM$CatchB),]  %>%
   select(Year, Division, CatchA, CatchB)  %>%
   filter (Year<=yend)
-write.csv(nafoABMmiss, "Missing_21B.csv")
+write.csv(nafoABMmiss, file.path(wd,"data","Missing_21B.csv"))
 
 #compare landing by year/division(3 vs 4) from 21A, 21B, and MARFIS
 
@@ -359,6 +359,12 @@ nafoland= rbind(nafoB00, nafoBAM34 ) %>%
   arrange(Year, Division, Gear, Catch)
 
 nafoS= get_SCALformat(nafoland)
+
+
+    with(nafoS, plot(Year,LL4,type='l',ylim=c(0,3000),ylab="Landings (t)"))
+   with(nafoS,  lines(Year,LL3,col=2))
+   with(nafoS,  lines(Year,OT4,lty=2))
+   with(nafoS,  lines(Year,OT3,lty=2,col=2))
 
 nafoscal= merge(nafoS, scal) %>%
   mutate(LL3d=round(LL3scal-LL3),LL4d= round(LL4scal-LL4),
