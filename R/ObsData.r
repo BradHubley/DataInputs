@@ -1,12 +1,17 @@
-ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.sex=T,bins=seq(0,260,5)){
+ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.sex=T,bins=seq(0,260,5),lwA=0.006803616,lwB=3.119924){
 
 
+  # calculate bin weights
+  binwts = lwA*(bins[-1]-diff(bins)/2)^lwB
+  names(binwts)<-paste0("L",bins[-1])
+
+  # get observer data from ISDB
   isdb <- new.env()
 
   Mar.datawrangling::get_data(db='isdb',data.dir=datadir,env=isdb)
 
   # filter for targeded halibut and commercial index trips
-  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(30,7057),]
+  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(12,30,7001,7057),]
 
   # filter for commercial and commercial index sets
   isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == c(1,10),]
@@ -45,8 +50,11 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   cid=unique(fishlengths$CATCH_ID)
   LF <-list()
   LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
+
   #names(LFnosex)[-1]<-paste0("L",bins[-1])
-  LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
+  LFnosex$NUM_MEASURED <- rowSums(LFnosex[paste0("L",bins[-1])],na.rm=T)
+  LFnosex$WEIGHT_MEASURED <- rowSums(sweep(LFnosex[paste0("L",bins[-1])],2,binwts,"*"))/1000
+
   if(by.sex==T){
     sx<-c(1,2,0)
     for(i in 1:3){
@@ -55,13 +63,13 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
     LF <- do.call("rbind",LF)
     #names(LF)[-(1:2)]<-paste0("L",bins[-1])
 
-    LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED')])
+    LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED','WEIGHT_MEASURED')])
   }
   if(by.sex==F)LF <- LFnosex
 
   totalfish <- left_join(totalfish,LF)
 
-  OBSERVERDATA <- left_join(sets,totalfish) %>%
+  OBSERVERDATA <- right_join(sets,totalfish) %>%
     left_join(.,trips)
 
   return(OBSERVERDATA)

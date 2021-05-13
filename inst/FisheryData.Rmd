@@ -10,7 +10,7 @@ library(devtools)
 #install_github("Maritimes/Mar.datawrangling")
 #install_github("Maritimes/Mar.bycatch")
  library(Mar.datawrangling)
- library(Mar.bycatch)
+ library(Mar.fleets)
  library(tidyverse)
 library(CircStats)
 library(lubridate)
@@ -24,6 +24,11 @@ source(file.path(getwd(), "directories.r"))
 #datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 #wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, "passwords.r"))
+ds_all <- Mar.datawrangling::load_datasources()
+devtools::load_all(".")
+
+lwA=0.006803616
+lwB=3.119924
 
 ```
 
