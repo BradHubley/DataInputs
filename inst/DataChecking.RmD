@@ -1,0 +1,135 @@
+---
+title: "DataChecking"
+author: "Brad"
+date: "April 21, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(devtools)
+#install_github("Maritimes/Mar.datawrangling")
+#install_github("Maritimes/Mar.bycatch")
+ library(Mar.datawrangling)
+ library(Mar.bycatch)
+ library(tidyverse)
+
+source(file.path(getwd(), "directories.r"))
+#datadir="C:/Users/hubleyb/Documents/Halibut/data"
+#wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+source(file.path(wd, "passwords.r"))
+
+
+```
+
+
+
+
+## Checking difference between ISFISHLENGTHS and ISFISH
+```{r}
+#sum(abs(FixedSurvey2[,paste0("L",seq(10,260,5))]-FixedSurvey[,paste0("L",seq(10,260,5))]),na.rm=T)
+#sum(FixedSurvey2[,paste0("L",seq(10,260,5))],na.rm=T)
+#sum(FixedSurvey[,paste0("L",seq(10,260,5))],na.rm=T)
+
+#FixedSurvey2020_2 <- subset(FixedSurvey2,YEAR==2020)
+#FixedSurvey2020 <- subset(FixedSurvey,YEAR==2020)
+
+#FixedSurvey2020[rowSums(abs(FixedSurvey2020_2[,paste0("L",seq(10,260,5))]-FixedSurvey2020[,paste0("L",seq(10,260,5))]),na.rm=T)>0,]
+
+
+#subset(FixedSurvey,TRIP=="J20-0019"&SET_NO==2)
+#subset(FixedSurvey2,TRIP=="J20-0019"&SET_NO==2)
+#subset(isdb$ISFISH,CATCH_ID==101911351&SEXCD_ID==0)
+
+
+LFcheck<-checkLF(datadir=datadir)
+
+subset(LFcheck,!MATCH&YEAR==2020&SETCD_ID==5)
+subset(HALIBUTSURVEY,!MATCH&YEAR==2020&TRIP=="J20-0020A"&SETCD_ID%in%4:5)
+subset(LFcheck,!MATCH&YEAR==2020&SETCD_ID==5&!is.na(SMPL_ID))
+
+
+ sum(subset(LFcheck,YEAR==2020&SETCD_ID==5)$ISFISH_COUNT)
+
+ sum(subset(LFcheck,YEAR==2020&SETCD_ID==5)$NUM_AT_LENGTH)
+ 
+ sum(subset(LFcheck,SETCD_ID==5)$ISFISH_COUNT)
+ sum(subset(LFcheck,SETCD_ID==5)$NUM_AT_LENGTH)
+ sum(subset(LFcheck,SETCD_ID==4)$ISFISH_COUNT)
+ sum(subset(LFcheck,SETCD_ID==4)$NUM_AT_LENGTH)
+ sum(subset(LFcheck,SETCD_ID==10)$ISFISH_COUNT)
+ sum(subset(LFcheck,SETCD_ID==10)$NUM_AT_LENGTH)
+ 
+
+```
+## Checked a few differences in the data sheets and they persisted on the page, i.e. length frequency form was inconsistant with halibut survey tagging observations. There are more fish observed in ISFISHLENGTHS so go with that for size composition. 
+
+# checking for duplicate stations
+```{r}
+FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=F)
+FixedSurvey2$SY <- paste0(FixedSurvey2$YEAR,FixedSurvey2$STATION)
+dr<-subset(FixedSurvey2,duplicated(SY))
+fsdups<-subset(FixedSurvey2,SY%in%dr$SY)
+fsdups
+RandomSurvey2<-RandomSurveyData(datadir=datadir,by.sex=F)
+RandomSurvey2$SY <- paste0(RandomSurvey2$YEAR,RandomSurvey2$STATION)
+dr<-subset(RandomSurvey2,duplicated(SY))
+fsdups<-subset(RandomSurvey2,SY%in%dr$SY)
+fsdups
+```
+
+
+```{r}
+
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISH",correct.splitsets = F)
+FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS",correct.splitsets = F)
+
+  Yrs = 2009:2020
+
+  fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs)
+  fixedLF2=constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = Yrs)
+
+      BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF3"))
+    BarPlotLF(fixedLF2,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF4"))
+    
+    
+  HALIBUTSURVEY<- FixedSurvey 
+    
+  HALIBUTSURVEY$SY <- paste0(HALIBUTSURVEY$YEAR,HALIBUTSURVEY$STATION,HALIBUTSURVEY$SEXCD_ID)
+  dr<-subset(HALIBUTSURVEY,duplicated(SY))
+
+  fsdups<-subset(HALIBUTSURVEY,SY%in%dr$SY)
+
+  newd<-fsdups %>%
+    group_by(YEAR,STATION,VESS_ID,SEXCD_ID ) %>%
+    summarise(SOAKMINP3P1=sum(SOAKMINP3P1),NUM_HOOK_HAUL=sum(NUM_HOOK_HAUL),across(EST_NUM_CAUGHT:NUM_MEASURED, sum, na.rm=T)) %>%
+    right_join(.,dplyr::select(dr,YEAR,STATION,which(!names(dr)%in%names(.)))) %>%
+    filter(!duplicated(SY)) %>%
+    data.frame()
+
+  HALIBUTSURVEY <- left_join(subset(HALIBUTSURVEY,!duplicated(SY)),newd)
+  fixedLF=constructLF(LFdata=HALIBUTSURVEY,bins=bins, Yrs = Yrs)
+      BarPlotLF(fixedLF,yrs=Yrs,rel=T,filen=file.path(wd,"figures","fixedLF5"))
+
+```
+
+Checking length against weight for random survey halibut
+
+
+```{r}
+halibut <- ISSETPROFILE_WIDE %>%
+  filter(YEAR == 2020) %>%
+  left_join(ISFISHSETS, by = "FISHSET_ID")%>%
+  filter(SETCD_ID == 5) %>%
+  left_join(ISCATCHES, by = "FISHSET_ID") %>%
+  filter(SPECCD_ID == 30) %>%
+  left_join(ISFISH, by = "CATCH_ID")
+
+halibut$SEXCD_ID <- as.character(halibut$SEXCD_ID)
+
+ggplot(halibut, aes(x=FISH_LENGTH, fill=SEXCD_ID, color=SEXCD_ID)) +
+  geom_histogram(binwidth = 1, position="identity", alpha=0.5) +
+  theme_classic()
+```
+

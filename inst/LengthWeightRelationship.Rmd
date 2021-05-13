@@ -45,14 +45,14 @@ Combining the hal data with the set info to determine strata
 ```{r}
 setdata_halRV <- merge(hal, GSINF, by.x = c("MISSION","SETNO"), 
                        by.y = c("MISSION","SETNO"), all.x = TRUE, all.y = FALSE) %>% 
-  select("MISSION", "SETNO", "SPEC", "FSHNO", "FLEN", "FSEX", "FMAT", "FWT", "AGMAT", "AGE", "CLEN", "REMARKS.x", "SIZE_CLASS", "SDATE", "STRAT", "SLAT", "SLONG", "ELAT", "ELONG", "ETIME", "REMARKS.y", "START_DEPTH", "END_DEPTH", "SURFACE_TEMPERATURE", "BOTTOM_TEMPERATURE", "BOTTOM_SALINITY", "STATION")
+  dplyr::select("MISSION", "SETNO", "SPEC", "FSHNO", "FLEN", "FSEX", "FMAT", "FWT", "AGMAT", "AGE", "CLEN", "REMARKS.x", "SIZE_CLASS", "SDATE", "STRAT", "SLAT", "SLONG", "ELAT", "ELONG", "ETIME", "REMARKS.y", "START_DEPTH", "END_DEPTH", "SURFACE_TEMPERATURE", "BOTTOM_TEMPERATURE", "BOTTOM_SALINITY", "STATION")
 ```
 
 Joining the Stratum table to attach associated NAFO info
 ```{r}
 setdata_halRV <- setdata_halRV %>%
   left_join(GSSTRATUM, by = "STRAT") %>%
-  select(-"DMIN", -"DMAX", -"AREA", -"DEPTH")
+  dplyr::select(-"DMIN", -"DMAX", -"AREA", -"DEPTH")
 ```
 
 Create year column and column of 5yr bins starting in 1970
@@ -191,7 +191,7 @@ hal_rmNAwt <- hal_fish %>%
 Trimming down the dataframe to useful columns
 ```{r}
 hal_fishTrim <- hal_rmNAwt %>%
-  select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
+  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
 ```
 
 Create year column and column of 5yr bins starting in 1970
@@ -330,6 +330,7 @@ hal_rmNAwt %>%
 hal_allcatch <- ISCATCHES %>%
   filter(SPECCD_ID == "30")
 ```
+
 ```{r}
 hal_all <- hal_allcatch %>%
   left_join(ISFISH, by = "CATCH_ID")
@@ -351,7 +352,7 @@ Finding how/when these halibut were caught by isolating the sets and trips where
 hal_allsets <- hal_allrmNAwt %>%
   left_join(ISFISHSETS, by = "FISHSET_ID")
 
-hal_allLATLONG <- ISSETPROFILE_WIDE %>% select(FISHSET_ID, LAT1, LONG1, LAT2, LONG2, LAT3, LONG3, LAT4, LONG4)
+hal_allLATLONG <- ISSETPROFILE_WIDE %>% dplyr::select(FISHSET_ID, LAT1, LONG1, LAT2, LONG2, LAT3, LONG3, LAT4, LONG4)
   
 hal_allsetinfo <- hal_allsets %>%
   left_join(hal_allLATLONG, by = "FISHSET_ID")
@@ -372,14 +373,14 @@ hal_alltrips %>% count(TRIPCD_ID)
 
 trips_halcaught <- hal_alltrips %>%
   left_join(ISTRIPTYPECODES, by = "TRIPCD_ID") %>%
-  select("TRIPCD_ID", "TRIP_TYPE") %>%
+  dplyr::select("TRIPCD_ID", "TRIP_TYPE") %>%
   count(TRIPCD_ID, TRIP_TYPE)
 ```
 
 Trimming down the dataframe to useful columns
 ```{r}
 hal_alltrips <- hal_alltrips %>%
-  select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS", "LAT1", "LONG1", "LAT2", "LONG2", "LAT3", "LONG3", "LAT4", "LONG4")
+  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS", "LAT1", "LONG1", "LAT2", "LONG2", "LAT3", "LONG3", "LAT4", "LONG4")
 ```
 
 
@@ -405,7 +406,7 @@ Silver hake has the most measured halibut (more than the halibut commercial fish
 ```{r}
 SHhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "14") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, NAFO)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, NAFO)
 summary(SHhal)
 
 ggplot(SHhal)+
@@ -417,7 +418,7 @@ Next highest measured halibut is in the cod,haddock,pollock fishery, data from 1
 ```{r}
 CHPhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "7001") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(CHPhal)
 
 
@@ -431,7 +432,7 @@ Check white hake
 ```{r}
 WHhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "12") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR)
 summary(WHhal)
 
 ggplot(WHhal)+
@@ -442,7 +443,7 @@ Check redfish
 ```{r}
 RFhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "23") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(RFhal)
 
 RFhal %>% filter(YEAR == "1990") %>%
@@ -454,7 +455,7 @@ Check flatfish
 ```{r}
 FFhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "49") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(FFhal)
 
 FFhal %>% filter(YEAR == "1990")
@@ -467,7 +468,7 @@ Check skate
 ```{r}
 SKATEhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "211") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(SKATEhal)
 
 
@@ -478,7 +479,7 @@ Check mackerel
 ```{r}
 Mackhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "70") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(Mackhal)
 
 ggplot(Mackhal)+
@@ -489,7 +490,7 @@ Check shrimp
 ```{r}
 shrimphal <- hal_alltrips %>%
   filter(TRIPCD_ID == "2210") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(shrimphal)
 
 
@@ -501,7 +502,7 @@ Check scallop
 ```{r}
 SChal <- hal_alltrips %>%
   filter(TRIPCD_ID == "4320") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(SChal)
 
 ggplot(SChal)+
@@ -511,7 +512,7 @@ Check squid
 ```{r}
 SQhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "4511") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(SQhal)
 
 ggplot(SQhal)+
@@ -521,7 +522,7 @@ Check (SH,SQ,Argentine)
 ```{r}
 SSAhal <- hal_alltrips %>%
   filter(TRIPCD_ID == "7002") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE, YEAR, TRIP)
 summary(SSAhal)
 
 ggplot(SSAhal)+
@@ -544,27 +545,27 @@ allsurveyhal <- hal_alltrips %>%
 
 Sentinel <- allsurveyhal %>%
   filter(TRIPCD_ID == "7050") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
 summary(Sentinel) #data looks somewhat consistent and potentially useful. Length appears cm, weight appears all g. Range from 1995-2019
 
 MGS <- allsurveyhal %>%
   filter(TRIPCD_ID == "7051") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
 summary(MGS) #data looks somewhat consistent and potentially useful. Length appears cm, weight appears all g. Range from 1998-2012
 
 GEAC_juv <- allsurveyhal %>%
   filter(TRIPCD_ID == "7060") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
 summary(GEAC_juv) #few fish (n=26), weight appears to be g and length appearsa to be cm. Range from 2002-2003
 
 snowcrab <- allsurveyhal %>%
   filter(TRIPCD_ID == "7061") %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
 summary(snowcrab) #few data (n=15), weight appears to be g, length appears to be cm. range from 2015-2020.
 
 others <- allsurveyhal %>%
   filter(TRIPCD_ID %in% c("7055", "7054")) %>%
-  select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
+  dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
 print(others) #these are the two fish that were measured for length and weight in the 4VWX skate survey and the 5Z fixed gear survey
 
 ```
@@ -679,10 +680,10 @@ MarRV <- setdata_halRV %>%
 Adding the gear info to the ISDB tables
 ```{r}
 gear <- ISGEARS %>%
-  select(TRIP_ID, GEARCD_ID) 
+  dplyr::select(TRIP_ID, GEARCD_ID) 
 
 ISDBhaltrips <- ISDB_halall %>%
-  select(TRIP_ID, TRIPCD_ID)
+  dplyr::select(TRIP_ID, TRIPCD_ID)
 
 hal_gear <- ISDBhaltrips %>%
   left_join(gear, by = "TRIP_ID")
@@ -692,7 +693,7 @@ hal_gear <- hal_gear %>% count(TRIP_ID, GEARCD_ID)
 n_occur <- data.frame(table(hal_gear$TRIP_ID))  %>% filter(Freq > 1) %>% rename(TRIP_ID = Var1)#47 trips where 2 types of gear are 
 
 n_occur <- n_occur %>%
-  select(TRIP_ID) 
+  dplyr::select(TRIP_ID) 
 
 n_occur2 <- n_occur[,]
 
@@ -712,16 +713,16 @@ hal_gear <- hal_gear  %>%
 #For my purposes Im going to change the harpoon recording to longline (no way of knowing which fish(es) were harpooned)
 hal_gear <- hal_gear %>%
   mutate(GEAR = replace(GEAR, GEAR == "harpoon", "longline")) %>%
-  select(TRIP_ID, GEAR) %>%
+  dplyr::select(TRIP_ID, GEAR) %>%
   distinct()
 
-n_occur3 <- data.frame(table(hal_gear2$TRIP_ID)) %>% filter(Freq > 1)
+n_occur3 <- data.frame(table(hal_gear$TRIP_ID)) %>% filter(Freq > 1)
 hal_gear %>% count(TRIP_ID)
 
 
 #bringing gear into my final tables
 ISDB_halall <- ISDB_halall %>%
-  left_join(hal_gear2, by = "TRIP_ID")
+  left_join(hal_gear, by = "TRIP_ID")
 ```
 
 Bring RV and ISDB together: making new columns and removing some columns in the rv survey data
@@ -732,7 +733,7 @@ MarRV <- MarRV %>%
   mutate(GEAR = "trawl") %>%
   mutate(TRIPCD_ID = "RV") %>%
   mutate(TYPE = "RV") %>%
-  select(-"FMAT", -"AGMAT", -"AGE", -"CLEN", -"SIZE_CLASS", -"ETIME", -"START_DEPTH", -"END_DEPTH", -"SURFACE_TEMPERATURE",
+  dplyr::select(-"FMAT", -"AGMAT", -"AGE", -"CLEN", -"SIZE_CLASS", -"ETIME", -"START_DEPTH", -"END_DEPTH", -"SURFACE_TEMPERATURE",
          -"BOTTOM_TEMPERATURE", -"BOTTOM_SALINITY", -"STATION", -"REMARKS.x", -"REMARKS.y", -"STRAT") %>%
   rename("TRIP" = "MISSION", "SEXCD_ID" = "FSEX", "SET_NO" = "SETNO", "SPECCD_ID" = "SPEC", "FISH_NO" = "FSHNO", 
          "FISH_LENGTH" = "FLEN", "FISH_WEIGHT" = "FWT", "COMMENTS" = "REMARKS", "BOARD_DATE" = "SDATE", "LAT1" = "SLAT", 
@@ -756,7 +757,7 @@ ISDBdat <- ISDB_halall %>%
            ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020", "Error")))))))))))
 
 ISDB_halall <- ISDBdat %>%
-  select(-"FISH_ID", -"TRIP_ID", -"VESS_ID", -"LICENSE_NO", -"LANDING_DATE", -"FISHSET_ID", -"SETCD_ID", -"SPECSCD_ID.x",
+  dplyr::select(-"FISH_ID", -"TRIP_ID", -"VESS_ID", -"LICENSE_NO", -"LANDING_DATE", -"FISHSET_ID", -"SETCD_ID", -"SPECSCD_ID.x",
          -"CATCH_ID", -"MATCD_ID", -"LAT3", -"LONG3", -"LAT4", -"LONG4")
 ```
 
@@ -773,7 +774,7 @@ hal_datAll <- hal_datAll %>%
   mutate(id = row_number())
 
 test_halAll <- hal_datAll %>%
-  select(id, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
+  dplyr::select(id, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
 
 test_halAll$out<-0
 test_halAll<-test_halAll[!is.na(test_hal$FISH_LENGTH),]
@@ -791,7 +792,7 @@ test_full <- test_lenwt.dat.all %>% filter(out == "1")
 
 #bring test_full back together with the other df
 test_full <- test_full %>%
-  select("id") %>%
+  dplyr::select("id") %>%
   left_join(hal_datAll, by = "id")
 
 test_full %>%
@@ -1183,7 +1184,7 @@ hal_datORtrip %>% count(TRIPCD_ID)
 #NA here are the RV trips
 trips_halcaught2 <- hal_datORtrip %>%
   left_join(ISTRIPTYPECODES, by = "TRIPCD_ID") %>%
-  select("TRIPCD_ID", "TRIP_TYPE") %>%
+  dplyr::select("TRIPCD_ID", "TRIP_TYPE") %>%
   count(TRIPCD_ID, TRIP_TYPE)
 ```
 

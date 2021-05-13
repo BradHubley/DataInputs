@@ -1,4 +1,6 @@
 #Nell's ab function
+#' @export
+
 make.ab<-function(dat, wd){
 
 #take data, drop outliers, convert area 5 to 4 to check for difference between 4WVX5Z and 3NOP
