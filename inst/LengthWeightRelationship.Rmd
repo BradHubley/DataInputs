@@ -1561,7 +1561,7 @@ library(sjPlot)
 final_mod <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + (1|YEAR) + (1|TRIPCD_ID), hal_datOR)
 summary(final_mod)
 coef(summary(final_mod))
-coef(final_mod)
+fixef(final_mod)
 
 df2 <- data.frame(YEAR=row.names(coef(final_mod)[[1]]), coef(final_mod)[[1]])
 
@@ -1569,9 +1569,19 @@ df2 <- data.frame(YEAR=row.names(coef(final_mod)[[1]]), coef(final_mod)[[1]])
 final_modOA <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), hal_datOR)
 summary(final_modOA)
 coef(summary(final_modOA))
+coef(final_mod)
 
 tab_model(final_mod, final_modOA)
 plot_model(final_mod, type = "pred", terms = c("FISH_LENGTH", "QUARTER")) + theme_test()
+
+
+
+exp(predict(final_mod, newdata = data.frame(FISH_LENGTH = 80, QUARTER = as.factor(1:4)), type = "response", re.form = NA))
+
+exp(fixef(final_mod)[1])/exp((fixef(final_mod)[1])+(fixef(final_mod)[3]))
+
+5558.274/5753.527
+
 ```
 
 
@@ -1591,5 +1601,26 @@ summary(FQ3_mod)
 FQ4_mod <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), Q4)
 summary(FQ4_mod)
 
+```
+
+Hal LW data collected by observers by year (from directed and not) And then RV
+```{r}
+hal_datOR %>%  filter(TRIPCD_ID %in% c("30", "7057")) %>%
+  ggplot(aes(YEAR, stat = "count", fill = TRIPCD_ID, col = TRIPCD_ID)) +
+  geom_bar()
+
+hal_datOR %>%  filter(TRIPCD_ID != "RV") %>%
+  ggplot(aes(YEAR, stat = "count", fill = TRIPCD_ID, col = TRIPCD_ID)) +
+  geom_bar()
+
+hal_datOR %>% filter(TRIPCD_ID == "RV") %>%
+  ggplot(aes(YEAR, stat = "count")) +
+  geom_bar()
+
+hal_datOR %>% 
+  filter(TRIPCD_ID %in% c(30, 7057)) %>%
+  ggplot(aes(YEAR, stat = "count", fill = TRIPCD_ID, col = TRIPCD_ID))+
+  geom_bar() +
+  facet_wrap(~NAFO_ZONE)
 ```
 
