@@ -1,0 +1,88 @@
+---
+title: "NLsurvey"
+author: "Danni Harper"
+date: "5/13/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+ library(Mar.datawrangling)
+ library(tidyverse)
+ library(lubridate)
+ library(stringr)
+
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/"
+wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+source(file.path(wd, "passwords.r"))
+```
+
+This rmd will be working through the NL RV survey data that was requested in 2021. These csvs only contain data from surveys completed post 1995/1996, the most recent gear change.
+
+Thing to consider when looking at the data with respect to the halibut management area (no mention of areas outside that):
+- we only have the spring survey data (missing autumn survey data, should we get it?)
+- changes in vessels and gear over the time series:
+      - 1971 - 1982: vessel=A.T. Cameron; gear=Yankee-41.5 otter trawl
+      - 1983 - 1995: vessel=A.T. Cameron replaced 1984 with Alfred Needler; gear=Engels-145 high-lift otter trawl
+      - 1996 - present: vessel=combination of Alfred Needler and Telost; gear=Campelen 1800 shrimp trawl
+- 3Ps and 3Pn included in survey in 1972
+- some missing survey coverage over the recent time series to note:
+      - 2006: no sampling in 3Ps + minimal in 3NO
+      - 2014: down 64 sets (mainly within 3NOPs)
+      - 2018: 3 strata missing in 3Ps
+      - 2019: 1 stratum missing in 3O
+- no 2020 data or idea of how that survey went (should I ask for it?)
+- the number of overall sets for the Spring Survey has been declining since 2014 (most drastically in 2014, 2016, 2019)
+      - still enough to consider strata completed
+
+```{r}
+NL_hal_LFraw <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NL_AtlanticHalibut_LF.csv")
+
+NLstrat_length_abundance_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_abundance_details.csv")
+
+NLstrat_length_abundance_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_abundance_summary.csv")
+
+NLstrat_lengthyear_meanabundance_matrix <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_year_mean_abundance_matrix.csv")
+
+NLstrat_lengthyear_totalabundance_matrix <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_year_total_abundance_matrix.csv")
+
+NLstrat_abundance_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_abundance_details.csv")
+
+NLstrat_abundance_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_abundance_summary.csv")
+
+NLstrat_biomass_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_biomass_details.csv")
+
+NLstrat_biomass_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_biomass_summary.csv")
+```
+
+NL_hal_LFraw is just from 2008-2019
+
+```{r}
+NLstrat_length_abundance_detail %>% filter(NAFOdiv == "3N") %>%
+ggplot() +
+   geom_density(aes(length), fill = "lightblue") + 
+   facet_grid(survey.year~.)
+
+NLstrat_length_abundance_detail %>% filter(NAFOdiv == "3O") %>%
+ggplot() +
+   geom_density(aes(length), fill = "lightblue") + 
+   facet_grid(survey.year~.)
+
+NLstrat_length_abundance_detail %>% filter(NAFOdiv == "3P") %>%
+ggplot() +
+   geom_density(aes(length), fill = "lightblue") + 
+   facet_grid(survey.year~.)
+
+NLstrat_length_abundance_detail %>% count(NAFOdiv)
+
+NLstrat_length_abundance_detail %>% count(survey.year, NAFOdiv)
+
+#shows where no halibut caught by year and nafo (keeping in mind that no sets were completed in 3P and minimal in 3NO in 2006, minimal coverage in 2014)
+   ##that makes no sense since 4 halibut were caught in 3P in 2006 (could this be including 3Pn?)
+ggplot(NLstrat_length_abundance_detail) +
+   geom_histogram(aes(survey.year, stat = "count"), binwidth = 1) +
+   facet_wrap(~NAFOdiv)
+
+
+```
+
