@@ -1,9 +1,10 @@
 #' @export
 hookData <- function(years=2017:2020, species=30,wdir=getwd()){
 
-library(reshape2)
+  library(reshape2)
   library(tidyverse)
 
+  # just a comment that Nell got a browser when she tried this function
 
   ### read in hook occupancy data
   hook_occupancy_pre2018 <-  NULL
@@ -92,7 +93,6 @@ library(reshape2)
   hook_occupancy <- subset(hook_occupancy,!is.na(HOOK_CONDITION))
   hook_occupancy[hook_occupancy$TRIP == "J17-0271A1", "TRIP"] = "J17-0271A"
   hook_occupancy[hook_occupancy$TRIP == "J17-0271A2", "TRIP"] = "J17-0271B"
-
 
 
   raw_hook_data <-hook_occupancy

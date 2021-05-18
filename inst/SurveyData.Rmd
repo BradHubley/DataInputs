@@ -8,11 +8,12 @@ output: html_document
 ```{r setup, include=FALSE}
 library(devtools)
 #install_github("Maritimes/Mar.datawrangling")
-#install_github("Maritimes/Mar.bycatch")
+#install_github("Maritimes/Mar.fleets")
  library(Mar.datawrangling)
- library(Mar.bycatch)
+ library(Mar.fleets)
  library(tidyverse)
 
+#install_github("BradHubley/SpatialHub")
 source(file.path(getwd(), "directories.r"))
 #datadir="C:/Users/hubleyb/Documents/Halibut/data"
 #wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
@@ -101,7 +102,7 @@ dev.off()
 
 ## Construct LF for plots
 ```{r}
-  Yrs1 = 2009:2020        
+Yrs1 = 2009:2020        
   Yrs2 = 2017:2020        
   
   #subset by nafo
@@ -117,7 +118,11 @@ dev.off()
   fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs1)
   fixedLF2=constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = Yrs1)
   RandomLF=constructLF(LFdata=RandomSurvey,bins=bins, Yrs = Yrs2)
-  ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = Yrs1)
+```
+
+
+```{r}
+ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = Yrs1)
 
   
 

@@ -9,11 +9,8 @@ PrepareDataHookModel <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibu
 
   library(Mar.datawrangling)
   library(tidyverse)
-  #library(bio.halibut)
-  #wd="C:/Users/hubleyb/Documents/Halibut/git/bio.halibut"
-  #sp=30
 
-  ## Survey data from database (isdb)xc
+  ## Survey data from database (isdb)
   ## Hook data from flat files
 
 
@@ -22,8 +19,6 @@ PrepareDataHookModel <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibu
   hook_data <- hookData(wdir=datadir, species=sp)
 
   # Get Halibut Survey from ISDB
-  #get_data(db='isdb',data.dir=file.path(wd,'data'),fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
-
   isdb <- new.env()
 
   get_data(db='isdb',data.dir=datadir,env=isdb)
