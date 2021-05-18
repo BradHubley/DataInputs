@@ -7,8 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(devtools)
-#install_github("Maritimes/Mar.datawrangling")
-#install_github("Maritimes/Mar.bycatch")
+# install_github("Maritimes/Mar.datawrangling")
+# install_github("Maritimes/Mar.fleet")
  library(Mar.datawrangling)
  library(Mar.fleet)
  library(tidyverse)
@@ -18,10 +18,10 @@ source(file.path(getwd(), "directories.r"))
 #wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
 #datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 #wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
-source(file.path(wd, "passwords.r"))
+
+source(file.path(wd, "passwords.r")) 
 ds_all <- Mar.datawrangling::load_datasources()
 devtools::load_all(".")
-
 
 ```
 
