@@ -10,7 +10,7 @@ library(devtools)
 #install_github("Maritimes/Mar.datawrangling")
 #install_github("Maritimes/Mar.bycatch")
  library(Mar.datawrangling)
- library(Mar.bycatch)
+ library(Mar.fleet)
  library(tidyverse)
 
 source(file.path(getwd(), "directories.r"))
