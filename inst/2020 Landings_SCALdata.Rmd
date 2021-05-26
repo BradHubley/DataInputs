@@ -1,0 +1,590 @@
+---
+title: "Update landings"
+author: "Brad & Lingbo"
+date: "April 22, 2022"
+output: html_document 
+---
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Halibut Update
+
+This is the Halibut landing data for SCAL data input. Multiple data sources were utilized to generate landing by gear (LL, OT, and others) and area (3 and 4) from 1970 to 2019. 
+
+The following section is the setup: load packages, set year ranges, and specify the path of the data inputs d.
+
+bio.halibut is a R package specific for the halibut assessmen. to install:
+devtools::install_github("BradHubley/bio.halibut")
+
+
+```{r setup, include=FALSE}
+rm(list=ls())
+ds_all <- Mar.datawrangling::load_datasources()
+knitr::opts_chunk$set(echo = TRUE)
+
+options(stringsAsFactors = F)
+
+library(devtools)
+library(Mar.datawrangling)
+#library(bio.halibut)
+library(tidyverse)
+source("LandingFunctions.R")
+
+wd ="C:/Users/LiLi/Documents"
+
+# NAFO divisions
+nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
+
+nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
+
+# assessment year
+# ay = 2020
+# 21B start year
+ystart =1970
+# 21B last year
+yendB=2016
+# 21A last year(assessment year)
+yend=2019
+# annual TAC table
+TAC = data.frame(Year=1988:2020,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507))
+
+
+```
+
+## Landings Data: NAFO landings data 21A
+
+To get the NAFO landings data 21A, download from here: https://www.nafo.int/Data/STATLANT. Select HAL - ATLANTIC HALIBUT as the species and save the exported data as Export.csv. 
+
+To get the NAFO landings data 21B, download from here:
+https://www.nafo.int/Data/Catch-Statistics. There are multiple zipped files each with  one decade's data except the most recent one. Save and unzip all of them.
+
+```{r all-country landings NAFO 21A and 21B;  2014 SCAL}
+nafoA = get_21A(count="others", yearstart = ystart)  #1970
+# sort(unique(nafoA$Division))
+
+nafoB=get_21B(count="others",ystart,yend,1)
+# unique(nafoB$Division)
+nafoBdiv = get_21B(count="others",ystart,yend,2)
+
+# current 21B with the version in the  2014 Assessment
+
+nafoBtotal= nafoB %>%
+  replace(is.na(.), 0) %>%
+  group_by(Year) %>%
+  summarise(CatchT=sum(Catch)  )
+
+# 21B data in the 2014 Assessment
+nafoBprev= read.csv("nafoBprevious.csv", header=T)  
+# compare current 21B with the previous 21B
+nafoBtp= merge(nafoBtotal, nafoBprev)   %>%
+  mutate(CatchD=CatchT-CatchAss  )
+
+tiff("barplot_21B.tiff", width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoBtp$CatchD~nafoBtp$Year,
+ xlab= "Year", ylab="Current - previous version of 21B (t)",ylim=c(-150, 150))
+dev.off()
+
+
+## Scal format of 21B  
+nafoBg = get_21B(count="others",ystart,yendB,4)
+
+# import scal data from 2014 assessment
+scal=read.table("scal_catch.dat", header=F)
+colnames(scal)= c("code","Year","LL3scal", "LL4scal", "OT3scal", "OT4scal")
+scal=scal[, 2:6]
+
+
+```
+
+
+Download MARFIS data since 2000.
+
+
+```{r MARFIS}
+
+# get_data(db='marfis',data.dir=file.path(wd,'data'),fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
+  get_data(db='marfis',data.dir=file.path(wd,'data'))
+  SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]
+  PRO_SPC_INFO = PRO_SPC_INFO  %>%
+    filter(!is.na(RND_WEIGHT_KGS) )
+  self_filter()
+  
+## grouping gears. trawls(12, 16 for otterTrawl) , longline (51),  others(handline, seine, gillnet,angling, spear)
+  # sort(unique(PRO_SPC_INFO$GEAR_CODE))
+  NAFOarea=NAFO_UNIT_AREAS[,c(1,2)]
+  names(NAFOarea)
+  colnames(NAFOarea)[1] ="NAFO_UNIT_AREA_ID"
+  
+  PRO_SPC_INFOtrawl = PRO_SPC_INFO  %>%
+    filter (GEAR_CODE %in% c(12,16))  %>%
+    mutate(GEAR="OT")  %>%
+    group_by(NAFO_UNIT_AREA_ID,GEAR, YEAR)  %>%
+    summarise(CATCH = sum(RND_WEIGHT_KGS))
+  PRO_SPC_INFOlline = PRO_SPC_INFO  %>%
+    filter (GEAR_CODE==51)  %>%
+    mutate(GEAR="LL")  %>%
+    group_by(NAFO_UNIT_AREA_ID, GEAR,YEAR)  %>%
+    summarise(CATCH = sum(RND_WEIGHT_KGS))
+  PRO_SPC_INFOother = PRO_SPC_INFO  %>%
+    filter (!(GEAR_CODE %in% c(12, 16,51 )))  %>%
+    mutate(GEAR="Other")  %>%
+    group_by(NAFO_UNIT_AREA_ID,GEAR, YEAR)  %>%
+    summarise(CATCH = sum(RND_WEIGHT_KGS))
+  
+  # MARFIS data for Halibut by year, division (80), gear (LL, OT, other)
+  mar1= rbind(PRO_SPC_INFOtrawl, PRO_SPC_INFOlline, PRO_SPC_INFOother)
+  mar1 = merge(mar1,NAFOarea )  %>%
+    mutate(NAFO_UNIT_AREA_ID=NULL)
+  mar1 =mar1 [c(2,4,1,3)] %>%
+    arrange(YEAR )
+  colnames(mar1)[2]="Division" 
+  colnames(mar1)[1]= "Year"
+  colnames(mar1)[3]= "Gear"
+  sort(unique(mar1$Division))
+  # sort(unique(mar1$Year))
+  # sort(unique(mar1$Division))
+  
+  # MARFIS: Canada landing by year/division/gear
+  
+  div<-c("3N","3O","3P","4VN","4VS","4W","4X","5")
+  mar2=NULL
+  for (i in (1:length(div))) {
+    data1= mar1   %>%
+      filter(grepl(div[i],Division)  )  %>%
+      mutate(Division =div[i]) %>%
+      group_by(Year,Division,Gear )  %>%
+      summarize(CatchM=sum(CATCH)/1000)
+    mar2=rbind(mar2, data1)
+  }
+  
+  mar2 =data.frame(mar2)   %>%
+    mutate( Division=replace(Division, Division=="5", "4X"))   %>%
+    group_by(Year,Division,Gear)  %>%
+    summarize(CatchM=sum(CatchM)) 
+  mar=as.data.frame(mar2)
+  rm(mar1)
+  rm(mar2)
+  
+## MARFIS data by gear/div
+  mar=na.omit(mar)
+
+## check MARFIS OT data
+# Every year has OT ranging 0.06-129
+#   marOT4= mar  %>%
+#       filter(grepl("4",Division), Gear =="OT"  ) 
+#   sort(unique(marOT4$Year))
+#   range(marOT4$CatchM)  
+#   marOT44= marOT4  %>%
+#     group_by(Division ) %>%
+#     summarize(CatchDiv=mean(CatchM)) %>%
+#     arrange(-CatchDiv)
+
+# check gear proportion for AMRFIS; LL dominates catch
+# mar.g=mar  %>%
+#     group_by(Gear) %>%
+#     summarise(Catch=sum(CatchM))%>%
+#     arrange(-Catch)
+
+```
+There are three different landing datasets. NAFO landing 21A contains division and year; NAFO landing 21B contains gear in addition to division and year; MARFIS also contains gear but only for Maritimes with shorter time series. 21B landing is complete before 2000. In 1970s, 21A landing was considerably lower than 21B with Areas 4 missing in many years. From 1980 to 2000, total landing is similar between 21A and 21B. Since 2001, landing of 21B is missing for several years and divisions while data are complete in MARFIS and 21A; landing 21B was considerably lower than 21A in both area 3 and 4. 
+
+```{r  landings comparison}
+
+# MARFIS: catch by year/division aggregating gear
+mardiv = mar   %>%
+  group_by(Year,Division)  %>%
+  summarize(CatchM=round(sum(CatchM)))
+mardiv$Year=as.numeric(mardiv$Year) 
+
+#compare landing by year/division (7) from 21A, 21B, and MARFIS
+# 21A: every year has 7 divisions.
+# missing in both LL and OT for each division
+
+nafoAB=merge(nafoA, nafoBdiv, all.x = T)
+nafoABM=  merge(nafoAB, mardiv, all.x=T)%>%
+  mutate(CatchMA = CatchM-CatchA)  %>%
+  mutate(CatchBA = CatchB-CatchA) 
+
+# export missing data 21B
+nafoABMmiss= nafoABM[is.na(nafoABM$CatchB),]  %>%
+  select(Year, Division, CatchA, CatchB)  %>%
+  filter (Year<=yend)
+write.csv(nafoABMmiss, "Missing_21B.csv")
+
+#compare landing by year/division(3 vs 4) from 21A, 21B, and MARFIS
+
+  # compare landing: Area 4
+
+nafoABM4 = nafoABM %>%
+  filter(grepl("4", Division)) %>%
+  group_by(Year) %>%
+  summarize(Catch4A=sum(CatchA),Catch4B=sum(CatchB), Catch4M=sum(CatchM) ) 
+
+nafoABM3 = nafoABM %>%
+  filter(grepl("3", Division)) %>%
+  group_by(Year) %>%
+  summarize(Catch3A=sum(CatchA),Catch3B=sum(CatchB), Catch3M=sum(CatchM) )
+
+
+## catch comparison among A B M for Areas 3 vs 4 with all gear combined
+## Area4: minimum differences between A and B since 1990, Marfis has larger difference from B. 
+## Areas 3: B has greater catch since 1990 than A with 2014 missing. A was higher only in 2008 and 2013.  
+nafoABM34= cbind(nafoABM3,nafoABM4)
+nafoABM34=nafoABM34[, c(1,2,3,4,6,7,8)] %>%
+  mutate(Catch3B_A = Catch3B-Catch3A,Catch4B_A = Catch4B-Catch4A,
+         Catch4M_A = Catch4M-Catch4A)  %>%
+  filter (Year<=yend)
+
+# plot for the whole time series 
+#Barplot data; replace NA with 0
+
+nafoABM34p = nafoABM34   %>%
+    replace(is.na(.), 0)
+
+tiff("barplot_21A_B_3.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoABM34p$Catch3B_A~nafoABM34p$Year,
+ xlab= "Year", ylab="Landing in Area 3 (t): 21B - 21A ",ylim=c(-400, 600))
+dev.off()
+
+tiff("barplot_21A_B_4.tiff", width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoABM34p$Catch4B_A~nafoABM34p$Year,
+ xlab= "Year", ylab="Landing in Area 4 (t): 21B - 21A ", ylim=c(-100, 0))
+dev.off()
+
+## 2015 Area 3 largest differences between A and B
+
+# dif = nafoABM   %>%
+#   filter(Year =="2016")
+# write.csv(dif, "land2016.csv")
+
+# plot pre-2000 area 3
+nafoABM34p2= nafoABM34p    %>%
+  filter (Year<=2000)
+tiff("barplot_landingD_3_2000.tiff", width=120, height=90, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoABM34p2$Catch3B_A~nafoABM34p2$Year,
+ xlab= "Year", ylab="Landing difference in Area 3 (t)",ylim=c(-100, 0))
+dev.off()
+
+
+```
+To fill missing data in Areas 3 in 21B since 2001,the proportion of landing by gear in each division for 21B was estimated and used to scale 21A as total landing. The division-specific gear proportion was calculated as an average of previous three years for each missing year and estimated each year for the rest of available years. The landing updates increased landing of 21B area 3 to the same as 21A since 2001. 
+
+
+```{r landings by division/gear for areas 3 2001-yendB}
+# 21B catch much smaller than A since 2001 and missing 2014
+# division landing from 21A 
+
+# landing 21B since 2001
+ nafoB03= nafoB  %>%
+     filter(grepl("3", Division)) %>%
+     filter (Year>=2001)%>%
+     replace(is.na(.), 0) 
+   
+## prop for the missing year = average the previous three years
+ propBm= as.data.frame(est_prop(nafoB03, 3, 2014))
+ 
+## Prop for other years since 2001
+ propB1 =as.data.frame( est_prop(nafoB03, 1, 2014)) %>%
+   filter(Year!=2014)
+## prop since 2001 21B
+ propB= rbind( propB1,propBm )
+ 
+ nafoA03 = nafoA  %>%
+   filter(Year>=2001)
+ 
+ ## est landing by div gear since 2001
+ nafoBA03 = merge(nafoA03, propB)  %>%
+   mutate(Catch = CatchA*Prop)  %>%
+   select(Year,Division, Gear, Catch)
+
+```
+
+
+To fill Areas 4 in 21B since 2001, the proportion of landing by gear in each division was estimated annually for MARFIS and used to scale 21A as total landing. Catch by OT was missing in some divisions of Area 4 in 1994, 1996, 1998, and 2000 and replaced with zero. The updates increased landing of 21B Area 4 to the same as 21A since 2001. 
+
+
+```{r proportion by gear for areas 4 since 2001 }
+
+# MARFIS: proportion by gear 
+
+propM =as.data.frame( est_prop(mar, avg=1))%>%
+   filter(Year>=2001& Year <=yend)%>%
+   filter(grepl("4", Division)) 
+
+# est landing by div gear for Area 4 since 2001
+ nafoBM04 = merge(nafoA03, propM) %>%
+   mutate(Catch = CatchA*Prop)  %>%
+   select(Year,Division, Gear, Catch)
+
+ # ested landing in Areas 3 &4 since 2001
+  nafoBAM34 = as.data.frame(rbind(nafoBM04, nafoBA03)) 
+
+# compare estimated landing since 2001 with 21A; estimated div catch = 21A
+#   nafoBAM34.div = nafoBAM34  %>%
+#    group_by(Year, Division)  %>%
+#    summarise(CATCH=sum(Catch)) 
+# nafoBAM34.dif= merge(nafoBAM34.div, nafoA03, all.y = T)  %>%
+#   mutate(catchD= CatchA-CATCH)
+```
+
+As there was no data since 2017 in 21B, landing by gear was estimated as the sum of Canadian landing and foreign landing each year and division. Maritimes and NL landing were combined as Canadian landing in Area 3; Maritimes landing represents Canadian landing in Area 4. The estimate was very similar to Canadian landing in Area 3 and 4 in 21A (<23.6 ton) and used as Canadian landing for 21B. 
+
+```{r yendB-yend CDN landing by gear for Area 3 & 4 }
+
+# landing NL 2016-2020, aggregate LL/OT/other
+  landNL = read.csv("./NAFOlanding/landingNL.csv")
+  unique(landNL$Gear.Name)
+  landNL = landNL   %>%
+    mutate(Catch1 = Landed.RW )  %>%
+    rename (Year = 1, Division = 7) %>%
+    mutate( Gear =replace(Gear.Name, 
+                          Gear.Name=="Bottom Otter Trawl (stern)", "OT")) %>%
+    mutate( Gear =replace(Gear, Gear=="Longline", "LL")) %>%
+    mutate( Gear =replace(Gear, !Gear %in% c("LL", "OT" ), "Other"))  %>%         
+    select(Year,Division, Gear,Catch1 ) %>%
+    group_by(Year,Division, Gear) %>%
+    summarise(Catch = sum(Catch1)) 
+
+# area 3 in  MARFIS 
+  mar03 = mar  %>%
+    filter (Division %in% c(nafodivs3NOPS)) %>%
+    filter (Year>yendB & Year <=yend)%>%
+    mutate (Division = replace (Division, Division =="3P", "3PS")  )
+
+# total CDN catch in Area 3  
+  Division=rep(sort(unique(landNL$Division)),each=3,times=yend-yendB+1)
+  Year=rep(c(yendB:yend), each=9)
+  Gear=rep(c("LL", "OT", "Other"), times=(yend-yendB+1)*3)
+  Divyear=cbind(Year, Division, Gear)
+  
+  landMar03 = merge(Divyear, mar03, all.x=T)  %>%
+      replace(is.na(.), 0) 
+  landNL = merge(Divyear, landNL, all.x=T)  %>%
+      replace(is.na(.), 0) 
+
+# total CDN Landing Area 3 by GEAR(LL/OT/other)/DIVISION yendB-yend 
+  land03div= merge(landMar03, landNL) %>%
+    mutate (Catch = CatchM + Catch  ) %>%
+    select(Year, Division, Gear,Catch) %>%
+    filter (Year>yendB & Year <=yend) 
+
+# total CDN Landing Area 3 by GEAR yendB-yend  
+  land03 = land03div %>%
+    group_by(Year,Gear) %>%
+    summarise(Catch03 = sum(Catch))
+
+# area 4 MARFIS yendB-yend  
+  mar04 = mar  %>%
+    filter(grepl("4",Division))%>%
+    filter(Year >yendB & Year<=yend) %>%
+    rename(Catch=4)
+    
+  land04 = mar04 %>%
+    group_by(Year,Gear) %>%
+    summarise(Catch04 = sum(Catch)) %>%
+    filter(Year >yendB & Year<=yend)
+
+# CDN landing for Area 3 & 4
+    landCDN34= merge(land03, land04) 
+
+#check differences between 21A and landCDN34   
+nafoCDN03 = get_21A(count="CDN", yearstart = ystart) %>%
+    filter(Year >yendB & Year<=yend) %>%
+    filter(grepl("3",Division)) %>%
+    group_by(Year) %>%
+    summarise (CatchA03=sum(CatchA) )
+
+nafoCDN04 = get_21A(count="CDN", yearstart = ystart) %>%
+    filter(Year >yendB & Year<=yend) %>%
+    filter(grepl("4",Division)) %>%
+    group_by(Year) %>%
+    summarise (CatchA04=sum(CatchA) )
+
+land03y = land03 %>%
+    group_by(Year) %>%
+    summarise (Catch03=sum(Catch03) )
+land04y = land04 %>%
+    group_by(Year) %>%
+    summarise (Catch04=sum(Catch04) ) 
+
+
+nafoCDN03 = merge(nafoCDN03, land03y)%>%
+   mutate(Catch03D= CatchA03-Catch03)
+nafoCDN04 = merge(nafoCDN04, land04y)%>%
+   mutate(Catch04D= CatchA04-Catch04)  
+nafoCDN34 = merge (nafoCDN03, nafoCDN04)
+
+# due to small differences between 21A and MARFIS/NL landing data, we 
+# use the land03 and land04 to represent Canada landing by gear
+
+```
+
+Foreign landing by gear and division was estimated as applying the annual gear proportion from NL landing and MARFIS to scale the total landing in Area 3 and 4. The total landing was extracted from 21A with all countries excluding Canada. As 4X was the only division in Area 4 where foreign landing occurred based on 21A, the annual gear proportion in 4X from MARFIS was used to scale the total foreign landing in Area 4. For Area 3, the annual gear proportion in each division was utilized  based on NL landing. 
+
+```{r yendB-yend foreign landing by gear for Area 3 & 4 }
+
+# total foreign landing in Area 3 & 4; area 3>>> area 4
+nafoA3for = get_21A(count="Foreign", yearstart = ystart) %>%
+    filter(Year >yendB & Year<=yend) %>%
+    filter(grepl("3",Division))  
+
+# foreign landing only in 4X
+nafoA4for = get_21A(count="Foreign", yearstart = ystart)  %>%
+    filter(Year >yendB & Year<=yend) %>%
+    filter(grepl("4",Division)) 
+
+# gear proportion from MARFIS for 4 and NL for 3
+
+prop4 =as.data.frame( est_prop(mar, avg=1))%>%
+   filter(Year>yendB& Year <=yend)%>%
+   filter(grepl("4X", Division)) 
+prop3 =as.data.frame( est_prop(landNL, avg=1))%>%
+   filter(Year>yendB& Year <=yend)
+
+nafoA3for = merge(nafoA3for,prop3)  %>%
+   mutate(Catch = CatchA*Prop) %>%
+   select(Year,Division, Gear, Catch)%>%
+   group_by(Year,Gear) %>%
+   summarise(Catch3 = sum(Catch))  
+
+# 2019 no catch at area 4
+nafoA4for = merge(nafoA4for,prop4)  %>%
+   mutate(Catch = CatchA*Prop) %>%
+   select(Year,Division, Gear, Catch)%>%
+   group_by(Year,Gear) %>%
+   summarise(Catch4 = sum(Catch)) 
+
+## foreign landing at area 3 &4 
+landfor34= merge(nafoA3for, nafoA4for, all.x=T) %>%
+      replace(is.na(.), 0) 
+ 
+```
+Gear landing data from 2017-2019 combined the estimated Canada landing and foreign landing. 
+
+```{r all-country landings by gear/area yendB-yend; SCAL format}
+
+land3 = merge (landfor34, landCDN34 ) %>%
+    mutate(Catch3=Catch3+Catch03) %>%
+    select(Year, Gear, Catch3)
+
+land4 = merge (landfor34, landCDN34 ) %>%
+    mutate(Catch4= Catch4+Catch04) %>%
+    select(Year, Gear, Catch4)
+land3S = land3 %>%
+    pivot_wider(names_from = Gear, values_from=Catch3) %>%
+    rename(LL3=2, OT3=3) %>%
+    select(Year,LL3, OT3 )
+land4S = land4 %>%
+    pivot_wider(names_from = Gear, values_from=Catch4) %>%
+      rename(LL4=2, OT4=3)%>%
+    select(Year,LL4, OT4 )
+
+#gear landing data yendB-yend
+land34S =merge( land3S,land4S)
+
+```
+
+THis is the complete version of landing by year, division, and gear combining 21A, 21B, MARFIS,and NL landing data. 
+
+
+```{r combine landings by division/gear  since 2001; COMPARISON}
+# pre2001, replace NA with zero for 1994, 96, 98, 2000 where a couple of divisions missing for OT
+
+nafoB00= nafoB  %>%
+   filter(Year<2001)%>%
+   replace(is.na(.), 0) 
+
+# combine all years before 2017 and change format to SCAL
+nafoland= rbind(nafoB00, nafoBAM34 ) %>%
+  arrange(Year, Division, Gear, Catch)%>%
+  filter (Year<=yendB)
+
+nafoS= get_SCALformat(nafoland)
+
+# FINAL gear landing data
+nafoS= rbind(nafoS,land34S ) 
+
+```
+
+The updated 21B gear landing data was compared with previous data used in 2014 assessment for Area 3 and 4.  
+
+```{r compare updated gear data with previous SCAL}
+nafoscal= merge(nafoS, scal) %>%
+  mutate(LL3d=round(LL3scal-LL3),LL4d= round(LL4scal-LL4),
+         OT3d=round(OT3scal-OT3), OT4d= round(OT4scal-OT4))  %>%
+  select ( Year, contains ("d"), contains("scal") )
+
+###Barplot;updated 21B vs SCAL;  replace NA with 0 to plot
+
+nafoscalp= nafoscal  %>%
+   replace(is.na(.), 0) 
+
+### area 3 
+tiff("barplot_LL3_up21B_SCAL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoscalp$LL3d~nafoscalp$Year,
+ xlab= "Year", ylab="LL3(t): previous SCAL - updated 21B",ylim=c(-100, 200))
+dev.off()
+
+tiff("barplot_OT3_up21B_SCAL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoscalp$OT3d~nafoscalp$Year,
+ xlab= "Year", ylab="OT3 (t): previous SCAL - updated 21B", ylim=c(-200, 200))
+dev.off()
+
+### area 4
+tiff("barplot_LL4_up21B_SCAL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoscalp$LL4d~nafoscalp$Year,
+ xlab= "Year", ylab="LL4 (t): previous SCAL - updated 21B",ylim=c(-150, 150))
+dev.off()
+
+tiff("barplot_OT4_up21B_SCAL.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(nafoscalp$OT4d~nafoscalp$Year,
+ xlab= "Year", ylab="OT4 (t): previous SCAL - updated 21B", ylim=c(-150, 150))
+dev.off()
+
+```
+
+The original 21B were also compared with the 2014 SCAL data  
+
+```{r original 21B vs SCAL}
+######Barplot;original 21B vs SCAL;  replace NA with 0 to plot
+
+Bscal= merge(nafoBg, scal) %>%
+  mutate(LL3d=round(LL3scal-LL3),LL4d= round(LL4scal-LL4),
+         OT3d=round(OT3scal-OT3), OT4d= round(OT4scal-OT4))  %>%
+  select ( Year, contains ("d"), contains("scal") )
+
+Bscalp= Bscal  %>%
+   replace(is.na(.), 0) 
+
+### area 3 
+tiff("barplot_Bscal_LL3.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(Bscalp$LL3d~Bscalp$Year,
+ xlab= "Year", ylab="LL3 (t): previous SCAL - current 21B",ylim=c(-100, 200))  
+dev.off()
+
+tiff("barplot_Bscal_OT3.tiff", width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
+barplot(Bscalp$OT3d~Bscalp$Year,
+ xlab= "Year", ylab="OT3 (t): previous SCAL - current 21B", ylim=c(-200, 200))
+dev.off()
+
+### area 4
+tiff("barplot_Bscal_LL4.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(Bscalp$LL4d~Bscalp$Year,
+ xlab= "Year", ylab="LL4 (t): previous SCAL - current 21B",ylim=c(-150, 150))
+dev.off()
+
+tiff("barplot_Bscal_OT4.tiff", width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(Bscalp$OT4d~Bscalp$Year,
+ xlab= "Year", ylab="OT4 (t): previous SCAL - current 21B", ylim=c(-150, 150))
+dev.off()
+
+```
+
+
+
+
