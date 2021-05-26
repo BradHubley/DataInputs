@@ -41,7 +41,7 @@ get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.passwo
 
 ```
 
-## from Mar.bycatch
+## from Mar.fleets
 ```{r}
 yrs = 2002:2020
 fleets <- list()
@@ -248,6 +248,36 @@ ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
   obsNAFO4VWLL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4VW&GEARCD_ID%in%LL),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4VWLL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4VWLL2"))
 
+
+```
+
+# map location of data
+```{r}
+
+xl=c(-69,-58)
+yl=c(41,46)
+
+obs4x20<-subset(ObserverData,NAFAREA_ID%in%nafo4X&GEARCD_ID%in%LL&YEAR==2020)
+obs4x19<-subset(ObserverData,NAFAREA_ID%in%nafo4X&GEARCD_ID%in%LL&YEAR==2019)
+
+obs4x19<-subset(ObserverData,NAFAREA_ID=='5ZJ'&GEARCD_ID%in%LL&YEAR==2019)
+h<-constructLF(obs4x19,bins=bins,Yrs=2019)
+
+obs20fundianchannel<-subset(ObserverData,TRIP_ID%in%c(100057412,100057428  ))
+f<-constructLF(obs20fundianchannel,bins=bins,Yrs=2020)
+
+obs20northgeorges<-subset(ObserverData,TRIP_ID%in%c(100057154, 10005735, 100057408, 100057487, 100057489))
+g<-constructLF(obs20northgeorges,bins=bins,Yrs=2020)
+
+
+g
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR")
+with(obs4x20,points(LONGITUDE,LATITUDE,pch=16,cex=1,col=rgb(1,0,0,0.2)))
+with(obs4x19,points(LONGITUDE,LATITUDE,pch=16,cex=1,col=rgb(0,0,1,0.2)))
+
+
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR")
+with(subset(ObserverData,NAFAREA_ID=='5ZJ'&GEARCD_ID%in%LL&YEAR==2020),points(LONGITUDE,LATITUDE,pch=16,cex=1,col=rgb(1,0,0,0.2)))
 
 ```
 
