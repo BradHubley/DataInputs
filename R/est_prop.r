@@ -12,7 +12,7 @@ est_prop <- function(landdata, avg, missing){
       mutate(Catchdiv = sum(Catch))%>%
       arrange(Year) %>%
       mutate(Prop=Catch/Catchdiv) %>%
-      select(Year, Division, Gear, Prop)
+      dplyr::select(Year, Division, Gear, Prop)
 
   } else {
 
@@ -27,11 +27,11 @@ est_prop <- function(landdata, avg, missing){
       mutate(CatchT = sum(Catch)) %>%
       group_by(Division,Gear) %>%
       mutate(CatchG = sum(Catch)) %>%
-      select(Year, Division, Gear, CatchG,CatchT)
+      dplyr::select(Year, Division, Gear, CatchG,CatchT)
 
     retdata = unique(landm)  %>%
       mutate(Prop=CatchG/CatchT) %>%
-      select(Year, Division, Gear, Prop)
+      dplyr::select(Year, Division, Gear, Prop)
   }
   return (retdata)
 
