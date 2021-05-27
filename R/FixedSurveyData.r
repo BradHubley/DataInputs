@@ -1,5 +1,5 @@
 #' @export
-FixedSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/data", add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, LF.from='ISFISHLENGTHS',correct.splitsets=T){
+FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, LF.from='ISFISHLENGTHS',correct.splitsets=T){
 
   library(Mar.datawrangling)
   library(tidyverse)
