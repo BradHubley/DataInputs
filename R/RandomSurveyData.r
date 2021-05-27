@@ -1,11 +1,9 @@
 #' @export
-# RandomSurveyData <-function(sp=30, datadir="C:/Users/hubleyb/Documents/Halibut/data", add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS'){
 
-  RandomSurveyData <-function(sp=30, datadir="C:/Users/denheyerc/Documents/Halibut/Assessments/Halibut 2021 Framework/DataInputs/data", add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS'){
+RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS'){
 
   library(Mar.datawrangling)
   library(tidyverse)
-
 
   ## Survey data from database (isdb)
 

@@ -12,12 +12,12 @@
 #'@export
 
 
-get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, wd=getwd()){
-  nafo.70.79 <- read.csv(file.path(wd,'data',"NAFO21B-70-79.txt"), header = TRUE)
-  nafo.80.89 <- read.csv(file.path(wd,'data',"NAFO21B-80-89.txt"), header = TRUE)
-  nafo.90.99 <- read.csv(file.path(wd,'data',"NAFO21B-90-99.txt"), header = TRUE)
-  nafo.00.09 <- read.csv(file.path(wd,'data',"NAFO21B-2000-09.txt"), header = TRUE)
-  nafo.10.16 <- read.csv(file.path(wd,'data',"NAFO-21B-2010-16.txt"), header = TRUE)
+get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
+  nafo.70.79 <- read.csv(file.path(datadir,'Landings',"NAFO21B-70-79.txt"), header = TRUE)
+  nafo.80.89 <- read.csv(file.path(datadir,'Landings',"NAFO21B-80-89.txt"), header = TRUE)
+  nafo.90.99 <- read.csv(file.path(datadir,'Landings',"NAFO21B-90-99.txt"), header = TRUE)
+  nafo.00.09 <- read.csv(file.path(datadir,'Landings',"NAFO21B-2000-09.txt"), header = TRUE)
+  nafo.10.16 <- read.csv(file.path(datadir,'Landings',"NAFO-21B-2010-16.txt"), header = TRUE)
   names(nafo.00.09)[9]<-"Catches"
   names(nafo.10.16)[9]<-"Catches"
   names(nafo.10.16)[3]<-"GearCode"
@@ -25,11 +25,11 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, wd=getwd()
   names(nafo.10.16)[7]<-"Code"
   sort(unique(nafo.10.16$Divcode))
 
-  division <- read.csv(file.path(wd,'data',"divisions.txt"), header = F)
+  division <- read.csv(file.path(datadir,'Landings',"divisions.txt"), header = F)
   colnames(division)=c("Divcode", "Div")
-  gear <- read.csv(file.path(wd,'data',"gear.txt"), header = F)
+  gear <- read.csv(file.path(datadir,'Landings',"gear.txt"), header = F)
   colnames(gear)=c("GearName","GearCode", "Gear")
-  species <- read.csv(file.path(wd,'data',"species.txt"), sep="",header = F)  # A halibut code 120
+  species <- read.csv(file.path(datadir,'Landings',"species.txt"), sep="",header = F)  # A halibut code 120
   # divisions of interest
   divCAN<-division$Divcode[division$Div%in%c("3N","3O","3P","3PS","3NK","4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")]
 
@@ -56,7 +56,7 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, wd=getwd()
   # 3NK only has two years of minor catch. assign3NK to 3N
 
   nafoB1=nafoAH  %>%
-    select(Year, Div,GearName,total )  %>%
+    dplyr::select(Year, Div,GearName,total )  %>%
     filter(Year >= yearstart)  %>%
     mutate( Division=replace(Div, Div=="5ZC", "4X")) %>%
     mutate( Division=replace(Division, Div=="5ZE", "4X"))  %>%
@@ -70,12 +70,12 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, wd=getwd()
   # catch by year/division;
 
   nafoBdiv=nafoB1  %>%
-    select(Year, Division,Gear,total )  %>%
+    dplyr::select(Year, Division,Gear,total )  %>%
     group_by(Year,Division) %>%
     summarise(CatchB=sum(total))
 
   nafoB.gear=nafoB1  %>%
-    select(Year, Division,Gear,total )  %>%
+    dplyr::select(Year, Division,Gear,total )  %>%
     group_by(Gear) %>%
     summarise(Totalgear=sum(total)) %>%
     arrange(-Totalgear)
@@ -117,7 +117,7 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, wd=getwd()
       group_by(Year,Gear)   %>%
       mutate(Catch3 = sum(Catch)  ) %>%
       filter(Gear!="Other")  %>%
-      select(Year, Gear, Catch3)
+      dplyr::select(Year, Gear, Catch3)
     retdata3  = unique(retdata3 ) %>%
       pivot_wider(names_from = Gear, values_from=Catch3) %>%
       rename(LL3=2, OT3=3)
@@ -127,7 +127,7 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, wd=getwd()
       group_by(Year,Gear)   %>%
       mutate(Catch4 = sum(Catch)  ) %>%
       filter(Gear!="Other")  %>%
-      select(Year, Gear, Catch4)
+      dplyr::select(Year, Gear, Catch4)
 
     retdata4  = unique(retdata4 ) %>%
       pivot_wider(names_from = Gear, values_from=Catch4) %>%
@@ -135,7 +135,7 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, wd=getwd()
 
     retdata= cbind(retdata3,retdata4) %>%
       rename(Year=1  )%>%
-      select(Year, LL3, LL4, OT3, OT4)
+      dplyr::select(Year, LL3, LL4, OT3, OT4)
   }
 
  return(retdata)
@@ -149,7 +149,7 @@ get_SCALformat <- function(landingdata){
       group_by(Year,Gear)   %>%
       mutate(Catch3 = sum(Catch)  ) %>%
       filter(Gear!="Other")  %>%
-      select(Year, Gear, Catch3)
+      dplyr::select(Year, Gear, Catch3)
     retdata3  = unique(retdata3 ) %>%
       pivot_wider(names_from = Gear, values_from=Catch3) %>%
       rename(LL3=2, OT3=3)
@@ -159,7 +159,7 @@ get_SCALformat <- function(landingdata){
       group_by(Year,Gear)   %>%
       mutate(Catch4 = sum(Catch)  ) %>%
       filter(Gear!="Other")  %>%
-      select(Year, Gear, Catch4)
+      dplyr::select(Year, Gear, Catch4)
 
     retdata4  = unique(retdata4 ) %>%
       pivot_wider(names_from = Gear, values_from=Catch4) %>%
@@ -167,7 +167,7 @@ get_SCALformat <- function(landingdata){
 
     retdata= cbind(retdata3,retdata4) %>%
       rename(Year=1  )%>%
-      select(Year, LL3, LL4, OT3, OT4)
+      dplyr::select(Year, LL3, LL4, OT3, OT4)
 
 return(retdata)
 
