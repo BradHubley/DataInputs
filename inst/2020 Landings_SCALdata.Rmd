@@ -33,6 +33,7 @@ library(devtools)
 library(Mar.datawrangling)
 
 library(tidyverse)
+devtools::load_all(".")
 #source("LandingFunctions.R")
 source(file.path(getwd(), "directories.r"))
 
@@ -80,7 +81,7 @@ nafoBtotal= nafoB %>%
   summarise(CatchT=sum(Catch)  )
 
 # 21B data in the 2014 Assessment
-nafoBprev= read.csv("nafoBprevious.csv", header=T)  
+nafoBprev= read.csv(file.path(datadir,"nafoBprevious.csv"), header=T) 
 # compare current 21B with the previous 21B
 nafoBtp= merge(nafoBtotal, nafoBprev)   %>%
   mutate(CatchD=CatchT-CatchAss  )
@@ -95,7 +96,7 @@ dev.off()
 nafoBg = get_21B(count="others",ystart,yendB,type=4,datadir=datadir)
 
 # import scal data from 2014 assessment
-scal=read.table(file.path(datadir,"Landings","scal_catch.dat"), header=F)
+scal=read.table(file.path(datadir,"scal_catch.dat"), header=F)
 colnames(scal)= c("code","Year","LL3scal", "LL4scal", "OT3scal", "OT4scal")
 scal=scal[, 2:6]
 
@@ -215,7 +216,7 @@ nafoABM=  merge(nafoAB, mardiv, all.x=T)%>%
 nafoABMmiss= nafoABM[is.na(nafoABM$CatchB),]  %>%
   select(Year, Division, CatchA, CatchB)  %>%
   filter (Year<=yend)
-write.csv(nafoABMmiss, file.path(datadir,"Landings","Missing_21B.csv"))
+write.csv(nafoABMmiss, file.path(wd,"figures","Missing_21B.csv"))
 
 #compare landing by year/division(3 vs 4) from 21A, 21B, and MARFIS
 
@@ -338,7 +339,7 @@ As there was no data since 2017 in 21B, landing by gear was estimated as the sum
 ```{r yendB-yend CDN landing by gear for Area 3 & 4 }
 
 # landing NL 2016-2020, aggregate LL/OT/other
-  landNL = read.csv(file.path(datadir,"landings","landingNL.csv"))
+  landNL = read.csv(file.path(datadir,"landingNL.csv"))
   unique(landNL$Gear.Name)
   landNL = landNL   %>%
     mutate(Catch1 = Landed.RW )  %>%
