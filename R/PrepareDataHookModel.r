@@ -5,7 +5,7 @@
 #output: word_document
 #---
 #' @export
-PrepareDataHookModel <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",add.gear=F){
+PrepareDataHookModel <-function(sp=30,datadir="C:/Users/denheyerc/Documents/Halibut/RDataVault",add.gear=F, getrawdata=FALSE){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -16,7 +16,8 @@ PrepareDataHookModel <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibu
 
 
   ## Get Hook data from flat files
-  hook_data <- hookData(wdir=datadir, species=sp)
+
+  hook_data <- hookData(wdir=datadir, species=sp, getrawdata=getrawdata)
 
   # Get Halibut Survey from ISDB
   isdb <- new.env()

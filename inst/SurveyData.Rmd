@@ -7,13 +7,14 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(devtools)
-#install_github("Maritimes/Mar.datawrangling")
-#install_github("Maritimes/Mar.fleets")
+
+# install_github("Maritimes/Mar.datawrangling")
+# install_github("Maritimes/Mar.fleets")
+
  library(Mar.datawrangling)
-
  library(Mar.fleets)
-
  library(tidyverse)
+ library(SpatialHub)
 
 #install_github("BradHubley/SpatialHub")
 source(file.path(getwd(), "directories.r"))
@@ -21,10 +22,10 @@ source(file.path(getwd(), "directories.r"))
 #wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
 #datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 #wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
-source(file.path(wd, "passwords.r"))
+
+source(file.path(wd, "passwords.r")) 
 ds_all <- Mar.datawrangling::load_datasources()
 devtools::load_all(".")
-
 
 ```
 
@@ -34,21 +35,20 @@ devtools::load_all(".")
 
 # Update data from database 
 
-#get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# open and check setprofile_wide to confirm that you have year, latitude & longitude
 
-get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
-get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
-get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",
-                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 ```
 
 ### SUrvey ABundance Indices
 ## prepare Data for hook occupancy model
 
 ```{r }
-HookOccupancyData<-PrepareDataHookModel()
-
+HookOccupancyData<-PrepareDataHookModel(datadir=datadir)
+HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 ```
 
 ### Size Composition 
@@ -63,7 +63,7 @@ FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "IS
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=bins,by.sex=T,hook.data=T)
 RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.LF=T,bins=bins,by.sex=F)
 
-ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=T)
+#ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=T)
 ```
 
 ## Map Fixed stations

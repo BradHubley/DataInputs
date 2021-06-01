@@ -1,5 +1,7 @@
 #' @export
-hookData <- function(years=2017:2020, species=30,wdir=getwd()){
+# edited by Nell to spit out the data summarized by tub as well as set; default is to summarize by set - if you want data by tub set getrawdata to TRUE
+
+hookData <- function(years=2017:2020, species=30, wdir=getwd(), getrawdata=FALSE){
 
   library(reshape2)
   library(tidyverse)
@@ -98,7 +100,6 @@ hookData <- function(years=2017:2020, species=30,wdir=getwd()){
   raw_hook_data <-hook_occupancy
   hook_occupancy <- raw_hook_data
 
-
   hook_occupancy$labels <- NA
   hook_occupancy$labels[hook_occupancy$HOOK_CONDITION==0] = "empty_unbaited"
   hook_occupancy$labels[hook_occupancy$HOOK_CONDITION==1] = "empty_baited"
@@ -111,13 +112,20 @@ hookData <- function(years=2017:2020, species=30,wdir=getwd()){
   hook_occupancy <- subset(hook_occupancy,!is.na(labels)) # these hooks indicate something was caught but no species identified, should be removed?
   #hook_occupancy[is.na(hook_occupancy)]<-0
 
+  raw_hook_data <-hook_occupancy
 
   hook_data <- hook_occupancy %>% group_by(TRIP,SET_NO) %>% count(labels) %>% pivot_wider(names_from = labels,values_from = n) %>% data.frame()
   hook_data[is.na(hook_data)]<-0
   hook_data$total_sampled=rowSums(hook_data[,3:8])
 
+  # crate summary tub by tub
+  raw_tub_data <- hook_occupancy %>% group_by(TRIP,SET_NO,TUB_NO) %>% count(labels) %>% pivot_wider(names_from = labels,values_from = n) %>% data.frame()
+  hook_data[is.na(hook_data)]<-0
+  hook_data$total_sampled=rowSums(hook_data[,3:8])
 
-  return(hook_data)
-}
+  if(getrawdata==FALSE){return(hook_data)}
+  if(getrawdata==TRUE){return(raw_tub_data)}
+
+  }
 
 
