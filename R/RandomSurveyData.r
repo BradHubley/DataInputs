@@ -115,8 +115,14 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   HALIBUTSURVEY <- left_join(sets,totalfish) %>%
     left_join(.,trips)
 
+  # get assigned strata
+  StnStrt<-read.csv(file.path(datadir,"Survey","HS_STATION_STRATA.csv"))
+  HALIBUTSURVEY$ASSIGNED_STATION<-floor(as.numeric( HALIBUTSURVEY$STATION))
+  HALIBUTSURVEY <- left_join(HALIBUTSURVEY,StnStrt)
+  HALIBUTSURVEY$STRATUM_ID <- HALIBUTSURVEY$ASSIGNED_STRATUM_ID
+
   if(hook.data==T){
-    hookData<-PrepareDataHookModel()
+    hookData<-PrepareDataHookModel(datadir = datadir)
     hooknames <- c("FISHSET_ID", "broken_hook", "empty_baited", "empty_unbaited", "other_species", "target_species", "missing_hook", "total_sampled", "ASSIGNED_STATION", "ASSIGNED_STRATUM_ID")
     HALIBUTSURVEY <-left_join(HALIBUTSURVEY,hookData[,hooknames])
   }

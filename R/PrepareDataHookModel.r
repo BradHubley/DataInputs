@@ -5,7 +5,7 @@
 #output: word_document
 #---
 #' @export
-PrepareDataHookModel <-function(sp=30,datadir="C:/Users/denheyerc/Documents/Halibut/RDataVault",add.gear=F, getrawdata=FALSE){
+PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
 
   library(Mar.datawrangling)
   library(tidyverse)

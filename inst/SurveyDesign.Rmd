@@ -25,9 +25,9 @@ Summarize by strata to get allocation of 100 stations proportional to mean or va
 
 ```{r }
 
-load(file.path(datadir,"SurveyStrata.rdata"))
+load(file.path(datadir,"Survey","SurveyStrata.rdata"))
 
-RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.LF=F,by.sex=F)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.LF=F,by.sex=F,hook.data = T)
 RandomSurvey$EST_NUM_CAUGHT[is.na(RandomSurvey$EST_NUM_CAUGHT)]<-0
 
 RandomSurvey$PID<-as.numeric(substr(RandomSurvey$STRATUM_ID,2,3))
@@ -56,14 +56,14 @@ RSstats
 ```{r}
 
 # colours
-strataColors = c(brewer.pal(3,"Blues"),brewer.pal(3,"Reds"),brewer.pal(3,"Purples"),brewer.pal(3,"Greens"),brewer.pal(3,"PuRd"))
+#strataColors = c(brewer.pal(3,"Blues"),brewer.pal(3,"Reds"),brewer.pal(3,"Purples"),brewer.pal(3,"Greens"),brewer.pal(3,"PuRd"))
 
 
-strataAllocation<-as.data.frame(transmute(RSstats,PID=PID,PName=PID,allocation=var.alloc+n,col=strataColors))
+#strataAllocation<-as.data.frame(transmute(RSstats,PID=PID,PName=PID,allocation=var.alloc+n,col=strataColors))
 
-surveyStrataAllocation<-list(surveyStrataPolyLL,strataAllocation)
+#surveyStrataAllocation<-list(surveyStrataPolyLL,strataAllocation)
 
-newDesign<-allocPoly(surveyStrataAllocation,surveyPolyLL,ntows = 250, mindist=2,pool.size=2,map='halibut')
+#newDesign<-allocPoly(surveyStrataAllocation,surveyPolyLL,ntows = 250, mindist=2,pool.size=2,map='halibut')
 
 ```
 
