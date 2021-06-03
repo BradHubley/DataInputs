@@ -1,7 +1,7 @@
 #' @export
 # edited by Nell to spit out the data summarized by tub as well as set; default is to summarize by set - if you want data by tub set getrawdata to TRUE
 
-hookData <- function(years=2017:2020, species=30, wdir=getwd(), getrawdata=FALSE){
+hookData <- function(years=2017:2020, species=30, datadir, getrawdata=FALSE){
 
   library(reshape2)
   library(tidyverse)
@@ -13,10 +13,10 @@ hookData <- function(years=2017:2020, species=30, wdir=getwd(), getrawdata=FALSE
 
   if(2017 %in% years){
 
-    files_to_get <- list.files(path = file.path(wdir,"Survey/hookoccupancy/2017"))
+    files_to_get <- list.files(path = file.path(datadir,"Survey","hookoccupancy","2017"))
     hook_occupancy <- NULL
     for(i in 1:length(files_to_get)){
-      hook_hold <- read.csv(file = file.path(wdir,"Survey/hookoccupancy/2017", files_to_get[i]), header = TRUE, stringsAsFactors = FALSE)
+      hook_hold <- read.csv(file = file.path(datadir,"Survey","hookoccupancy","2017", files_to_get[i]), header = TRUE, stringsAsFactors = FALSE)
       hook_occupancy <- rbind(hook_occupancy, hook_hold)
     }
     hook_occupancy_2017 = reshape(hook_occupancy,direction = 'long',varying = list(4:33),timevar='hook')
@@ -44,10 +44,10 @@ hookData <- function(years=2017:2020, species=30, wdir=getwd(), getrawdata=FALSE
 
   if(2018 %in% years){
 
-    files_to_get <- list.files(path = file.path(wdir,"Survey/hookoccupancy/2018"))
+    files_to_get <- list.files(path = file.path(datadir,"Survey","hookoccupancy","2018"))
     hook_occupancy_2018 <- NULL
     for(i in 1:length(files_to_get)){
-      hook_hold <- read.csv(file = file.path(wdir,"Survey/hookoccupancy/2018", files_to_get[i]), header = F, stringsAsFactors = FALSE)
+      hook_hold <- read.csv(file = file.path(datadir,"Survey","hookoccupancy","2018", files_to_get[i]), header = F, stringsAsFactors = FALSE)
       hook_occupancy_2018 <- rbind(hook_occupancy_2018, hook_hold)
     }
     colnames(hook_occupancy_2018) <- c("Line_Type", "TRIP", "SET_NO", "GEAR_TYPE", "CAMERA", "NUM_HOOK_HAUL", "NUM_TUBS_SET", "HOOKS_PER_TUB", "TUB_NO", "NUM_FIRST_HOOK_SAMPLED", "SAMPLING_RT", "HOOK_NO", "HOOK_CONDITION", "SPECCD_ID")
@@ -69,10 +69,10 @@ hookData <- function(years=2017:2020, species=30, wdir=getwd(), getrawdata=FALSE
 
   for(y in 3:length(years)){
 
-    files_to_get <- list.files(path = file.path(wdir,"Survey/hookoccupancy",years[y]))
+    files_to_get <- list.files(path = file.path(datadir,"Survey","hookoccupancy",years[y]))
     hook_occupancy_tmp <- NULL
     for(i in 1:length(files_to_get)){
-      hook_hold <- read.fwf(file.path(wdir,"Survey/hookoccupancy",years[y], files_to_get[i]), widths=c(2,10,3,3,3,4,4,3,16))
+      hook_hold <- read.fwf(file.path(datadir,"Survey","hookoccupancy",years[y], files_to_get[i]), widths=c(2,10,3,3,3,4,4,3,16))
       hook_occupancy_tmp <- rbind(hook_occupancy_tmp, hook_hold)
 
     }

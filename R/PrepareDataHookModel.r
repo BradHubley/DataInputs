@@ -17,7 +17,7 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
 
   ## Get Hook data from flat files
 
-  hook_data <- hookData(wdir=datadir, species=sp, getrawdata=getrawdata)
+  hook_data <- hookData(datadir=datadir, species=sp, getrawdata=getrawdata)
 
   # Get Halibut Survey from ISDB
   isdb <- new.env()
