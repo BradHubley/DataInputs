@@ -1,0 +1,736 @@
+---
+title: "Exponential Multinomial Model with Spatial Random Field"
+author: "Jiaxin Luo"
+date: "2021/2/16"
+output: pdf_document
+---
+
+### 2017
+
+```{r}
+# Clear memory
+rm(list=ls())
+
+library(TMB) 
+library(fields)
+library(ggplot2)
+library(marmap)
+library(RandomFields)
+# Call TMB function value
+compile("spatialmodel.cpp")
+# Dynamically link the C++ code
+dyn.load(dynlib("spatialmodel"))
+
+# The halibut data for 2017
+data_2017 = read.csv("data/hdata2017.csv", header = T, stringsAsFactors = F)
+head(data_2017)
+dim(data_2017)
+
+# Corrected Stratum ID
+st_id = read.csv("data/HS_STATION_STRATA_2017_18_19.csv", header = F, stringsAsFactors = F)
+names(st_id) = c("YEAR", "STATION", "STRATA")
+st_id_17 = st_id[which(st_id$YEAR==2017), ]
+# Merge the data
+data2017 = merge(data_2017, st_id_17, by = "STATION")
+head(data_2017)
+dim(data2017)
+
+# Drop the stations (523 and 525) with hook = 30
+not30 = which(data2017$hooks_sampled == 30)
+data2017[not30,]
+data2017 = data2017[-c(not30), ] 
+which(data2017$hooks_sampled == 30)
+dim(data2017)
+
+
+library(sp)
+library(rgdal)
+#To switch for lat-long and project it on a flat surface since the earth is a global
+prj4s=CRS("+init=epsg:4326")
+utm.prj4s=CRS("+init=epsg:32619")
+loc_2017=cbind(data2017$P1LONG,data2017$P1LAT)
+loc_17=cbind(data2017$P1LONG,data2017$P1LAT)
+loc_17=SpatialPoints(loc_17,proj4string = prj4s)
+loc_17=spTransform(loc_17,utm.prj4s)
+
+data2017$P1LONG_proj=loc_17@coords[,1]
+data2017$P1LAT_proj=loc_17@coords[,2]
+
+# Standardize coordinate for choosing a starting value for phi
+spool_17 = sqrt(((length(loc_2017[,1])-1)*var(loc_17@coords[,1])+
+        (length(loc_2017[,2])-1)*var(loc_17@coords[,2]))/
+        (length(loc_2017[,1])+length(loc_2017[,2])))
+data2017$loc1=(loc_17@coords[,1]-median(loc_17@coords[,1]))/spool_17
+data2017$loc2=(loc_17@coords[,2]-median(loc_17@coords[,2]))/spool_17
+dismat_17=cbind(data2017$loc1,data2017$loc2)
+
+# Distance matrix
+Dist_17= as.matrix(dist(dismat_17))
+
+# Put the required data into a matrix (data matrix)
+data2017$empty=data2017$empty_unbaited+data2017$broken_hook
+H_17=with(data2017, cbind(empty_baited, halibut, other_species, empty))
+# Set-specific Soak time
+s_17=data2017$SOAKMINP3P1
+s_17=as.vector(s_17)
+
+# Logit function
+logitp=function(p){log(p/(1-p))}
+# Inverse logist function
+logitpi=function(t){exp(t)/(1+exp(t))}
+
+```
+
+
+### Without Covariate
+
+```{r}
+# The intercept (column of ones)
+colone_17=rep(1,nrow(data2017))
+# Covariate matrix for 2017
+X_170=as.matrix(colone_17)
+data_170=list(H=H_17,s=s_17,X=X_170,D=Dist_17)
+
+param_17tnt0 = list()
+# Initial values for lambda.t, lambda.nt and pnt
+# Use the estimated values as the starting points
+param_17tnt0$betat = log(1.878483e-05)
+param_17tnt0$betant = log(0.001941084)
+param_17tnt0$theta = logitp(0.8795768)
+# Random field
+param_17tnt0$omegat =  rep(0,nrow(H_17))
+param_17tnt0$omegant =  rep(0,nrow(H_17))
+# Smoothness parameter 
+param_17tnt0$lognut = 0
+param_17tnt0$lognunt = 0
+# Range parameter 
+param_17tnt0$logPhit = log(diff(range(dismat_17[,1]))*diff(range(dismat_17[,2])))
+param_17tnt0$logPhint = log(diff(range(dismat_17[,1]))*diff(range(dismat_17[,2])))
+# Variance
+param_17tnt0$logSigmat = 0
+param_17tnt0$logSigmant = 0
+
+newlist_170=list(lognut=factor(NA),lognunt=factor(NA))
+# Construct an R object (f) that represents our C++ function
+# use map and newlist debug
+# Fix lognu at 0
+f_17tnt0 = MakeADFun(data_170,param_17tnt0,random=c("omegat","omegant"),
+                     DLL="spatialmodel",map=newlist_170,silent=TRUE)
+fit_17tnt0 = nlminb(f_17tnt0$par,f_17tnt0$fn,f_17tnt0$gr)
+# Calculate standard deviations of all model parameters
+sdr_17tnt0 = sdreport(f_17tnt0)
+# The estimated parameters and corresponding standard deviations
+sum_sdr170 = summary(sdr_17tnt0)
+
+# C++ file which defines the objective function (usually the negative log likelihood) 
+# R file which sets up data, calls the C++ function, and minimizes the objective function.
+# Minimized negative log likelihood
+fit_17tnt0$objective
+
+# For lambda t
+# Range parameter for lambda t 
+logphit_170 = sum_sdr170[row.names(sum_sdr170) %in% "logPhit", ][1]
+logphit_170
+phit_170 = exp(as.numeric(logphit_170))
+# Variance for lambda t
+logsigmat_170 = sum_sdr170[row.names(sum_sdr170) %in% "logSigmat", ][1]
+logsigmat_170
+vart_170 = (exp(as.numeric(logsigmat_170)))^2
+
+
+# For lambda nt
+# Range parameter for lambda nt 
+logphint_170 = sum_sdr170[row.names(sum_sdr170) %in% "logPhint", ][1]
+logphint_170
+phint_170 = exp(as.numeric(logphint_170))
+# Variance for lambda nt
+logsigmant_170 = sum_sdr170[row.names(sum_sdr170) %in% "logSigmant", ][1]
+logsigmant_170
+varnt_170 = (exp(as.numeric(logsigmant_170)))^2
+```
+
+
+### For 2018
+
+```{r}
+# The halibut data for 2018
+data_2018 = read.csv("data/hdata2018.csv", header = T, stringsAsFactors = F)
+head(data_2018)
+dim(data_2018)
+
+# Corrected Stratum ID
+st_id_18 = st_id[which(st_id$YEAR==2018), ]
+# Merge the data
+data2018 = merge(data_2018, st_id_18, by = "STATION")
+head(data_2018)
+dim(data2018)
+
+#To switch for lat-long and project it on a flat surface since the earth is a global
+loc_2018=cbind(data2018$P1LONG,data2018$P1LAT)
+loc_18=cbind(data2018$P1LONG,data2018$P1LAT)
+loc_18=SpatialPoints(loc_18,proj4string = prj4s)
+loc_18=spTransform(loc_18,utm.prj4s)
+
+data2018$P1LONG_proj=loc_18@coords[,1]
+data2018$P1LAT_proj=loc_18@coords[,2]
+
+# Standardize coordinate for choosing a starting value for phi
+spool_18 = sqrt(((length(loc_2018[,1])-1)*var(loc_18@coords[,1])+
+        (length(loc_2018[,2])-1)*var(loc_18@coords[,2]))/
+        (length(loc_2018[,1])+length(loc_2018[,2])))
+data2018$loc1=(loc_18@coords[,1]-median(loc_18@coords[,1]))/spool_18
+data2018$loc2=(loc_18@coords[,2]-median(loc_18@coords[,2]))/spool_18
+dismat_18=cbind(data2018$loc1,data2018$loc2)
+
+# Distance matrix
+Dist_18 = as.matrix(dist(dismat_18))
+
+# Put the required data into a matrix (data matrix)
+data2018$empty=data2018$empty_unbaited+data2018$miss_broken
+H_18=with(data2018, cbind(empty_baited, halibut, other_species, empty))
+# Soak time
+s_18=data2018$SOAKMINP3P1
+s_18=as.vector(s_18)
+
+```
+
+### Without Covariate
+
+```{r}
+# The intercept (column of ones)
+colone_18=rep(1,nrow(data2018))
+# Covariate matrix for 2018
+X_180=as.matrix(colone_18)
+data_180=list(H=H_18,s=s_18,X=X_180,D=Dist_18)
+
+param_18tnt0 = list()
+# Initial values for lambda.t, lambda.nt and pnt
+# Use the estimated values as the starting points
+param_18tnt0$betat = log(2.671813e-05)
+param_18tnt0$betant = log(0.002076366)
+param_18tnt0$theta = logitp(0.8908183)
+# Random field
+param_18tnt0$omegat =  rep(0,nrow(H_18))
+param_18tnt0$omegant =  rep(0,nrow(H_18))
+# Smoothness parameter 
+param_18tnt0$lognut = 0
+param_18tnt0$lognunt = 0
+# Range parameter 
+param_18tnt0$logPhit = log(diff(range(dismat_18[,1]))*diff(range(dismat_18[,2])))
+param_18tnt0$logPhint = log(diff(range(dismat_18[,1]))*diff(range(dismat_18[,2])))
+# Variance
+param_18tnt0$logSigmat = 0
+param_18tnt0$logSigmant = 0
+
+newlist_180=list(lognut=factor(NA),lognunt=factor(NA))
+# Construct an R object (f) that represents our C++ function
+# use map and newlist debug
+# Fix lognu at 0
+f_18tnt0 = MakeADFun(data_180,param_18tnt0,random=c("omegat","omegant"),
+                     DLL="spatialmodel",map=newlist_180,silent=TRUE)
+fit_18tnt0 = nlminb(f_18tnt0$par,f_18tnt0$fn,f_18tnt0$gr)
+# Calculate standard deviations of all model parameters
+sdr_18tnt0 = sdreport(f_18tnt0)
+# The estimated parameters and corresponding standard deviations
+sum_sdr180 = summary(sdr_18tnt0)
+
+# C++ file which defines the objective function (usually the negative log likelihood) 
+# R file which sets up data, calls the C++ function, and minimizes the objective function.
+# Minimized negative log likelihood
+fit_18tnt0$objective
+
+# For lambda t
+# Range parameter for lambda t 
+logphit_180 = sum_sdr180[row.names(sum_sdr180) %in% "logPhit", ][1]
+logphit_180
+phit_180 = exp(as.numeric(logphit_180))
+# Variance for lambda t
+logsigmat_180 = sum_sdr180[row.names(sum_sdr180) %in% "logSigmat", ][1]
+logsigmat_180
+vart_180 = (exp(as.numeric(logsigmat_180)))^2
+
+```
+
+
+### 2019
+
+```{r}
+# The halibut data for 2019
+data_2019 = read.csv("data/hdata2019.csv", header = T, stringsAsFactors = F)
+head(data_2019)
+dim(data_2019)
+
+# Corrected Stratum ID
+st_id_19 = st_id[which(st_id$YEAR==2019), ]
+# Five stations are with non-integer label
+stat_error = sapply(data_2019$STATION, function(i) i == as.integer(i))
+stat_error_index = which(stat_error == "FALSE")
+data_2019[stat_error_index,]
+data_2019[stat_error_index,]$STATION
+data_2019[stat_error_index,]$STATION = as.integer(data_2019[stat_error_index,]$STATION)
+# Merge the data
+data2019 = merge(data_2019, st_id_19, by = "STATION")
+head(data2019)
+dim(data2019)
+
+#To switch for lat-long and project it on a flat surface since the earth is a global
+loc_2019=cbind(data2019$P1LONG,data2019$P1LAT)
+loc_19=cbind(data2019$P1LONG,data2019$P1LAT)
+loc_19=SpatialPoints(loc_19,proj4string = prj4s)
+loc_19=spTransform(loc_19,utm.prj4s)
+head(loc_19)
+
+data2019$P1LONG_proj=loc_19@coords[,1]
+data2019$P1LAT_proj=loc_19@coords[,2]
+
+# Standardize coordinate for choosing a starting value for phi
+spool_19 = sqrt(((length(loc_2019[,1])-1)*var(loc_19@coords[,1])+
+        (length(loc_2019[,2])-1)*var(loc_19@coords[,2]))/
+        (length(loc_2019[,1])+length(loc_2019[,2])))
+data2019$loc1=(loc_19@coords[,1]-median(loc_19@coords[,1]))/spool_19
+data2019$loc2=(loc_19@coords[,2]-median(loc_19@coords[,2]))/spool_19
+dismat_19=cbind(data2019$loc1,data2019$loc2)
+
+# Distance matrix
+Dist_19 = as.matrix(dist(dismat_19))
+
+# Put the required data into a matrix (data matrix)
+data2019$empty=data2019$empty_unbaited+data2019$broken_hook # May 4, 2021 had to change name of broken_hook column
+H_19=with(data2019, cbind(empty_baited, halibut, other_species, empty))
+# Soak time
+s_19=data2019$SOAKMINP3P1
+s_19=as.vector(s_19)
+
+```
+
+### Without Covariate
+
+```{r}
+# The intercept (column of ones)
+colone_19=rep(1,nrow(data2019))
+# Covariate matrix for 2019
+X_190=as.matrix(colone_19)
+data_190=list(H=H_19,s=s_19,X=X_190,D=Dist_19)
+
+param_19tnt0 = list()
+# Initial values for lambda.t, lambda.nt and pnt
+# Use the estimated values as the starting points
+param_19tnt0$betat = log(2.347294e-05)
+param_19tnt0$betant = log(2.236729e-03)
+param_19tnt0$theta = logitp(8.959482e-01)
+# Random field
+param_19tnt0$omegat =  rep(0,nrow(H_19))
+param_19tnt0$omegant =  rep(0,nrow(H_19))
+# Smoothness parameter 
+param_19tnt0$lognut = 0
+param_19tnt0$lognunt = 0
+# Range parameter 
+param_19tnt0$logPhit = log(diff(range(dismat_19[,1]))*diff(range(dismat_19[,2])))
+param_19tnt0$logPhint = log(diff(range(dismat_19[,1]))*diff(range(dismat_19[,2])))
+# Variance
+param_19tnt0$logSigmat = 0
+param_19tnt0$logSigmant = 0
+
+
+newlist_19=list(lognut=factor(NA),lognunt=factor(NA))
+# Construct an R object (f) that represents our C++ function
+# use map and newlist debug
+# Fix lognu at 0
+f_19tnt0 <- MakeADFun(data_190,param_19tnt0,random=c("omegat","omegant"),
+                     DLL="spatialmodel",map=newlist_19,silent=TRUE)
+fit_19tnt0 = nlminb(f_19tnt0$par,f_19tnt0$fn,f_19tnt0$gr)
+# Calculate standard deviations of all model parameters
+sdr_19tnt0 = sdreport(f_19tnt0)
+# Calculate standard deviations of all model parameters
+sdr_19tnt0 = sdreport(f_19tnt0)
+# The estimated parameters and corresponding standard deviations
+sum_sdr190 = summary(sdr_19tnt0)
+
+# C++ file which defines the objective function (usually the negative log likelihood) 
+# R file which sets up data, calls the C++ function, and minimizes the objective function.
+# Minimized negative log likelihood
+fit_19tnt0$objective
+
+# For lambda t
+# Range parameter for lambda t 
+logphit_190 = sum_sdr190[row.names(sum_sdr190) %in% "logPhit", ][1]
+logphit_190
+phit_190 = exp(as.numeric(logphit_190))
+# Variance for lambda t
+logsigmat_190 = sum_sdr190[row.names(sum_sdr190) %in% "logSigmat", ][1]
+logsigmat_190
+vart_190 = (exp(as.numeric(logsigmat_190)))^2
+
+```
+
+
+### Estimated Relative Abundance Indices
+
+```{r}
+# 2017 without covariate
+# For target species
+head(sum_sdr170[row.names(sum_sdr170) %in% "ldat", ])
+dim(sum_sdr170[row.names(sum_sdr170) %in% "ldat", ])
+lamt_est_170 = data.frame(sum_sdr170[row.names(sum_sdr170) %in% "ldat", ])
+head(lamt_est_170)
+data2017$lamt_se_170 = lamt_est_170$Std..Error
+data2017$lamt_170 = lamt_est_170$Estimate
+# For non-target species
+head(sum_sdr170[row.names(sum_sdr170) %in% "ldant", ])
+dim(sum_sdr170[row.names(sum_sdr170) %in% "ldant", ])
+lamnt_est_170 = data.frame(sum_sdr170[row.names(sum_sdr170) %in% "ldant", ])
+head(lamnt_est_170)
+data2017$lamnt_se_170 = lamnt_est_170$Std..Error
+data2017$lamnt_170 = lamnt_est_170$Estimate
+
+
+# 2018 without covariate
+# For target species
+head(sum_sdr180[row.names(sum_sdr180) %in% "ldat", ])
+dim(sum_sdr180[row.names(sum_sdr180) %in% "ldat", ])
+lamt_est_180 = data.frame(sum_sdr180[row.names(sum_sdr180) %in% "ldat", ])
+head(lamt_est_180)
+data2018$lamt_se_180 = lamt_est_180$Std..Error
+data2018$lamt_180 = lamt_est_180$Estimate
+# For non-target species
+head(sum_sdr180[row.names(sum_sdr180) %in% "ldant", ])
+dim(sum_sdr180[row.names(sum_sdr180) %in% "ldant", ])
+lamnt_est_180 = data.frame(sum_sdr180[row.names(sum_sdr180) %in% "ldant", ])
+head(lamnt_est_180)
+data2018$lamnt_se_180 = lamnt_est_180$Std..Error
+data2018$lamnt_180 = lamnt_est_180$Estimate
+
+# 2019 without covariate
+# For target species
+head(sum_sdr190[row.names(sum_sdr190) %in% "ldat", ])
+dim(sum_sdr190[row.names(sum_sdr190) %in% "ldat", ])
+lamt_est_190 = data.frame(sum_sdr190[row.names(sum_sdr190) %in% "ldat", ])
+head(lamt_est_190)
+data2019$lamt_se_190 = lamt_est_190$Std..Error
+data2019$lamt_190 = lamt_est_190$Estimate
+# For non-target species
+head(sum_sdr190[row.names(sum_sdr190) %in% "ldant", ])
+dim(sum_sdr190[row.names(sum_sdr190) %in% "ldant", ])
+lamnt_est_190 = data.frame(sum_sdr190[row.names(sum_sdr190) %in% "ldant", ])
+head(lamnt_est_190)
+data2019$lamnt_se_190 = lamnt_est_190$Std..Error
+data2019$lamnt_190 = lamnt_est_190$Estimate
+
+```
+
+### Plot the Relative Abundance Indices
+
+### 2017
+
+```{r}
+n_17 = c(1:nrow(data2017))
+indices_17t = data2017$lamt_170
+se_17t = data2017$lamt_se_170
+
+# For target species
+data_17t = data.frame(n=n_17, indices_t=indices_17t,se=se_17t)
+p_17t = ggplot(data_17t, aes(x=n, y=indices_t)) + geom_point() +
+  geom_errorbar(aes(ymin=indices_t-se, ymax=indices_t+se), width=0.5) + 
+  labs(x = "Survey Station", y = "Relative Abundance Indices for Target Species")
+p_17t
+
+# For non-target species
+indices_17nt = data2017$lamnt_170
+se_17nt = data2017$lamnt_se_170
+data_17nt = data.frame(n=n_17, indices_nt=indices_17nt,se2=se_17nt)
+p_17nt = ggplot(data_17nt, aes(x=n, y=indices_nt)) + geom_point()+
+  geom_errorbar(aes(ymin=indices_nt-se2, ymax=indices_nt+se2), width=0.5) + 
+  labs(x = "Survey Station", y = "Relative Abundance Indices for Non-target Species")
+
+p_17nt
+
+```
+
+### 2018
+
+```{r}
+n_18 = c(1:nrow(data2018))
+indices_18t = data2018$lamt_180
+se_18t = data2018$lamt_se_180
+
+# For target species
+data_18t = data.frame(n=n_18, indices_t=indices_18t,se=se_18t)
+p_18t = ggplot(data_18t, aes(x=n, y=indices_t)) + geom_point() +
+  geom_errorbar(aes(ymin=indices_t-se, ymax=indices_t+se), width=0.5) + 
+  labs(x = "Survey Station", y = "Relative Abundance Indices for Target Species")
+p_18t
+
+# For non-target species
+indices_18nt = data2018$lamnt_180
+se_18nt = data2018$lamnt_se_180
+data_18nt = data.frame(n=n_18, indices_nt=indices_18nt,se2=se_18nt)
+p_18nt = ggplot(data_18nt, aes(x=n, y=indices_nt)) + geom_point()+
+  geom_errorbar(aes(ymin=indices_nt-se2, ymax=indices_nt+se2), width=0.5) + 
+  labs(x = "Survey Station", y = "Relative Abundance Indices for Non-target Species")
+
+p_18nt
+
+```
+
+### 2019
+
+```{r}
+n_19 = c(1:nrow(data2019))
+indices_19t = data2019$lamt_190
+se_19t = data2019$lamt_se_190
+
+# For target species
+data_19t = data.frame(n=n_19, indices_t=indices_19t,se=se_19t)
+p_19t = ggplot(data_19t, aes(x=n, y=indices_t)) + geom_point() +
+  geom_errorbar(aes(ymin=indices_t-se, ymax=indices_t+se), width=0.5) + 
+  labs(x = "Survey Station", y = "Relative Abundance Indices for Target Species")
+p_19t
+
+# For non-target species
+indices_19nt = data2019$lamnt_190
+se_19nt = data2019$lamnt_se_190
+data_19nt = data.frame(n=n_19, indices_nt=indices_19nt,se2=se_19nt)
+p_19nt = ggplot(data_19nt, aes(x=n, y=indices_nt)) + geom_point()+
+  geom_errorbar(aes(ymin=indices_nt-se2, ymax=indices_nt+se2), width=0.5) + 
+  labs(x = "Survey Station", y = "Relative Abundance Indices for Non-target Species")
+
+p_19nt
+
+```
+
+
+### Aggregation (area weighted average for the survey indices)
+
+### Dirichlet Method
+
+```{r}
+library(gissr)
+library(deldir)
+library(spatstat)
+library(alphahull)
+
+# Install dependency 
+# devtools::install_github("skgrange/threadr") 
+# Install gissr 
+# devtools::install_github("skgrange/gissr")
+
+
+
+bid = read.csv("data/blockIDkey.csv", header = T)
+loc_id = cbind(bid$lon.DecDeg, bid$lat.DecDeg)
+# Plot Block ID
+plot(loc_id, xlab="Long", ylab="Lat", main="blockIDkey", pch=20)
+
+# With Alpha Hull
+# Find the boundary points using ashape
+# Alpha controls the detail of the boundary
+bound_a = ashape(loc_id, alpha = 0.084)
+bound_a_index = bound_a$alpha.extremes
+plot(loc_id, xlab="Long", ylab="Lat", main="blockIDkey and boundary", pch=20)
+points(loc_id[bound_a_index, ], col=2, pch=20)
+
+```
+
+### alpha = 0.084
+
+```{r}
+# Boundary points and survey stations
+bound_a_pos = loc_id[bound_a_index, ]
+plot(bound_a_pos, pch=20)
+# Extracted block ID boundary and imported boundary
+plot(bound_a_pos, xlab="Long", ylab="Lat", main=" Survey Area Boundary Coordinate", pch=20)
+points(bound_a_pos[,1], bound_a_pos[,2], col="red", pch=20)
+
+# To find the corresponding index
+bound_a_pos = data.frame(long=bound_a_pos[,1], lat=bound_a_pos[,2])
+bound_a_pos$num = 1:length(bound_a_pos$long)
+
+# Fix the boundary 
+dim(bound_a_pos)
+bound_a_pos = bound_a_pos[-c(12,15:21,57,58,579,581,588,594,595,598,599,601,604,605,668,669,828,
+                          834,840,844,845,841,835,773,751,755,320,311:313,326,340,357,361,364,365,
+                          360,356,353,336,325,452,472,495,507,678,685,686,634,630,635,639,638,640,
+                          323,316,306),]
+dim(bound_a_pos)
+plot(bound_a_pos$long, bound_a_pos$lat, pch=20)
+
+# To switch for lat-long for block id
+# and project it on a flat surface since the earth is a global 
+tf_bound_a_pos = SpatialPoints(bound_a_pos,proj4string = prj4s)
+tf_bound_a_pos = spTransform(tf_bound_a_pos,utm.prj4s)
+tf_bound_a_pos = data.frame(long = tf_bound_a_pos@coords[,1], lat = tf_bound_a_pos@coords[,2])
+plot(tf_bound_a_pos)
+
+# List the boundary points in anit-clockwise order
+tf_bound_a_pos2 = sort_points(tf_bound_a_pos, "lat", "long", clockwise = FALSE)
+tf_bound_a_pos2 = data.frame(long = tf_bound_a_pos2$long, lat = tf_bound_a_pos2$lat, num=1:length(bound_a_pos$long))
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_17=ppp(data2017$P1LONG_proj, data2017$P1LAT_proj, window=owin(poly=list(x=tf_bound_a_pos2$long, y=tf_bound_a_pos2$lat)))
+dpp_17 = dirichlet(pp_17)
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_18=ppp(data2018$P1LONG_proj, data2018$P1LAT_proj, window=owin(poly=list(x=tf_bound_a_pos2$long, y=tf_bound_a_pos2$lat)))
+dpp_18 = dirichlet(pp_18)
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_19=ppp(data2019$P1LONG_proj, data2019$P1LAT_proj, window=owin(poly=list(x=tf_bound_a_pos2$long, y=tf_bound_a_pos2$lat)))
+dpp_19 = dirichlet(pp_19)
+
+```
+
+### Dirichlet plot
+
+```{r}
+tf_bound_a_pos22 = tf_bound_a_pos2[926, ]
+tf_bound_a_pos22[1:64, ] =
+  tf_bound_a_pos2[c(918,921,925,929,932,936,935,934,933,931,930,927,926,924,923,922,920,919,
+                    928,937:953,955,954,956,958,960,957,959,40,48,55,61,59,66,67,76,84,87,94,
+                    95,91,97,99,101,102,105,106,110,124), ]
+tf_bound_a_pos22[65:160, ] =
+  tf_bound_a_pos2[c(127,117,120,123,113,116,118,122,125,115,129,134,138,142,148,144,140,136,
+                    131,111,119,128,141,146,150,152,156,158,162,163,166,167,170,176,179,181,
+                    185,186,189,190,194,195,191,196,199,201,202,205,215,214,213,212,207,211,
+                    210,209,206,204,198,192,187,182,177,174,171,164,161,154,151,145,135,133,
+                    130,112,108,107,104,96,92,90,89,83,80,77,75,70,68,64,62,60,57,54,52,46,
+                    43,37), ]
+tf_bound_a_pos22[161:250, ] =
+  tf_bound_a_pos2[c(36,27,29,28,23,17,14,12,10,13,15,19,22,20,18,6,5,2,963,961,962,1,3,4,
+                    7:9,11,16,21,24,25,26,33,35,32,30,31,34,38,39,42,45,49,41,44,47,50,51,53,
+                    56,58,63,65,69,73,81,86,78,71,72,74,79,82,85,88,93,98,100,103,109,114,121,
+                    126,132,137,139,143,147,149,153,155,157,159,160,165,168,169,172,173), ]
+tf_bound_a_pos22[251:371, ] =
+  tf_bound_a_pos2[c(175,178,180,183,184,188,193,197,200,203,208,216:235,250,260,265,272,280,
+                    283,294,295,292,290,286,285,288,287,281,278,277,276,274,271,270,269,266,
+                    261,254,247,245,240,236,241,237,242,238,243,248,244,239,246,251,255,252,
+                    256,253,249,257:259,262:264,267,268,273,275,279,282,284,289,291,293,
+                    296:306,309,307,308,310:321,323,328,332,331), ]
+tf_bound_a_pos22[372:444, ] =
+  tf_bound_a_pos2[c(327,325,322,324,330,326,329,333:349,352,351,350,353:398), ]
+tf_bound_a_pos22[445:545, ] =
+  tf_bound_a_pos2[c(401,400,399,402:405,426,447,460,469,486,491,512,517,522,530,523,531,524,
+                    519,516,526,535,540,549,557,559,555,563,571,576,577,574,560,562,570,572,
+                    567,564,566,569,558,551,548,543,545,542,544,541,538,537,532,527,533,528,
+                    525,521,518,508,514,510,506,511,507,504,499,505,501,496,502,497,503,498,
+                    493,487,483,480,484,482,479,477,476,474,473,470,466,461,458,457,463,459,
+                    455,453,445,444,449,446,451,450,441), ]
+tf_bound_a_pos22[546:615, ] =
+  tf_bound_a_pos2[c(439,437,443,440,438,436,427,409,406,407,413,431,435,434,424,420,428,425,
+                    422,418,415,411,408,417,414,410,421,416,412,423,419,432,430,429,433,442,
+                    448,452,454,456,462,464,465,467,468,471,472,475,478,481,485,488,489,490,
+                    492,494,495,500,509,513,515,520,539,534,536,539,546,547,550,552), ]
+tf_bound_a_pos22[616:688, ] =
+  tf_bound_a_pos2[c(553,554,556,561,565,568,573,575,578:612,620,619,618,617,616,615,614,613,
+                    627,626,625,624,623,622,621,633,632,631,630,629,628,639,638,637,636,635,
+                    634,645,644,643), ]
+tf_bound_a_pos22[689:785, ] =
+  tf_bound_a_pos2[c(642,641,640,650,649,648,647,646,656,655,654,653,652,651,657:739), ]
+tf_bound_a_pos22[786:874, ] =
+  tf_bound_a_pos2[c(750,756,764,769,780,777,776,773,770,779,766,765,761,754,752,749,746,744,
+                    751,757,760,768,778,775,772,767,763,759,758,747,745,742,741,740,743,753,
+                    748,755,762,774,771,781,783,782,784:786,790,803,815:818,811,810,806,808,
+                    798,800,802,792,794:796,799,804,805,807,797,791,787:789,793,801,809,812,
+                    819,822,824,825,823,814,813,821,820,826,828,827), ]
+tf_bound_a_pos22[875:963, ] = tf_bound_a_pos2[c(829:913,915,914,916:917), ]
+
+tf_bound_a_pos22 = data.frame(long = tf_bound_a_pos22$long, lat = tf_bound_a_pos22$lat,
+                              num=1:length(tf_bound_a_pos22$long))
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_17=ppp(data2017$P1LONG_proj, data2017$P1LAT_proj, window=owin(poly=list(x=tf_bound_a_pos22$long, y=tf_bound_a_pos22$lat)))
+dpp_17 = dirichlet(pp_17)
+plot(dpp_17,border="black",main="")
+plot(pp_17,add=TRUE,chars=20,col="red", main="Dirichlet Tiles Plot for 2017")
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_18=ppp(data2018$P1LONG_proj, data2018$P1LAT_proj, window=owin(poly=list(x=tf_bound_a_pos22$long, y=tf_bound_a_pos22$lat)))
+dpp_18 = dirichlet(pp_18)
+plot(dpp_18,border="black",main="")
+plot(pp_18,add=TRUE,chars=20,col="red")
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_19=ppp(data2019$P1LONG_proj, data2019$P1LAT_proj, window=owin(poly=list(x=tf_bound_a_pos22$long, y=tf_bound_a_pos22$lat)))
+dpp_19 = dirichlet(pp_19)
+plot(dpp_19,border="black",main="")
+plot(pp_19,add=TRUE,chars=20,col="red")
+
+```
+
+### Area
+
+### 2017
+
+```{r}
+wts_17 = sapply(tiles(dpp_17),area.owin)
+cat("Sum of weights:\n")
+print(sum(wts_17)/1000000)
+# Target
+dweight_ave_17t = sum((data2017$lamt_170)*wts_17)/sum(wts_17)
+dweight_ave_17t
+# Standard error calculation
+wts_17 = as.matrix(wts_17)
+# wi/sum(wi)
+wts_172 = wts_17/(sum(wts_17))
+# covariance matrix for estimated lambda t
+cov_17 = sdr_17tnt0$cov
+cov_17t = cov_17[1:nrow(data2017), 1:nrow(data2017)]
+# Check if lamt_se_170 and cov_17t are the same 
+plot((data2017$lamt_se_170)^2,diag(cov_17t))
+sum(((data2017$lamt_se_170)^2-diag(cov_17t)))
+# Standard error for Dirichlet method 
+se_dir_17t = t(wts_172)%*%cov_17t%*%wts_172
+sqrt(se_dir_17t)
+
+```
+
+### 2018
+
+```{r}
+wts_18 = sapply(tiles(dpp_18),area.owin)
+cat("Sum of weights:\n")
+print(sum(wts_18)/1000000)
+# Target
+dweight_ave_18t = sum((data2018$lamt_180)*wts_18)/sum(wts_18)
+dweight_ave_18t
+# Standard error calculation
+wts_18 = as.matrix(wts_18)
+# wi/sum(wi)
+wts_182 = wts_18/(sum(wts_18))
+# covariance matrix for estimated lambda t
+cov_18 = sdr_18tnt0$cov
+cov_18t = cov_18[1:nrow(data2018),1:nrow(data2018)]
+# Check if lamt_se_180 and cov_18t are the same 
+plot((data2018$lamt_se_180)^2,diag(cov_18t))
+sum(((data2018$lamt_se_180)^2-diag(cov_18t)))
+# Standard error for Dirichlet method 
+se_dir_18t = t(wts_182)%*%cov_18t%*%wts_182
+sqrt(se_dir_18t)
+
+```
+
+### 2019
+
+```{r}
+wts_19 = sapply(tiles(dpp_19),area.owin)
+cat("Sum of weights:\n")
+print(sum(wts_19)/1000000)
+# Target
+dweight_ave_19t = sum((data2019$lamt_190)*wts_19)/sum(wts_19)
+dweight_ave_19t
+# Standard error calculation
+wts_19 = as.matrix(wts_19)
+# wi/sum(wi)
+wts_192 = wts_19/(sum(wts_19))
+# covariance matrix for estimated lambda t
+cov_19 = sdr_19tnt0$cov
+cov_19t = cov_19[1:nrow(data2019),1:nrow(data2019)]
+# Check if lamt_se_190 and cov_19t are the same 
+plot((data2019$lamt_se_190)^2,diag(cov_19t))
+sum(((data2019$lamt_se_190)^2-diag(cov_19t)))
+# Standard error for Dirichlet method 
+se_dir_19t = t(wts_192)%*%cov_19t%*%wts_192
+sqrt(se_dir_19t)
+
+```
+
+
