@@ -35,8 +35,10 @@ library(Mar.datawrangling)
 library(tidyverse)
 #source("LandingFunctions.R")
 source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r"))
 
 #wd ="C:/Users/LiLi/Documents"
+
 
 # NAFO divisions
 nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")

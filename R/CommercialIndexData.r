@@ -83,11 +83,11 @@ CommercialIndexData <-function(sp=30,datadir,add.gear=F,add.LF=T,bins=seq(5,260,
       #browser()
     }
     if(LF.from=="ISFISHLENGTHS"){
-      Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
+      Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"),env=isdb)
 
       #The new tables get downloaded and/or loaded in and you can filter them manually
-      ISSAMPLES = subset(ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
-      ISFISHLENGTHS=subset(ISFISHLENGTHS,SMPL_ID %in% ISSAMPLES$SMPL_ID,c("SMPL_ID","FISH_LENGTH","NUM_AT_LENGTH"))
+      ISSAMPLES = subset(isdb$ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
+      ISFISHLENGTHS=subset(isdb$ISFISHLENGTHS,SMPL_ID %in% ISSAMPLES$SMPL_ID,c("SMPL_ID","FISH_LENGTH","NUM_AT_LENGTH"))
 
       fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)
 
@@ -119,12 +119,19 @@ CommercialIndexData <-function(sp=30,datadir,add.gear=F,add.LF=T,bins=seq(5,260,
   if(add.portsampling==T){
     psdata <- subset(get_ps_data(data.dir=datadir),!is.na(TRIP_NUMBER))
 
+    write.csv(psdata,file.path(datadir,"CommercialIndexPortSampledData.csv"),row.names = F)
+    write.csv(HALIBUTSURVEY,file.path(datadir,"CommercialIndexData.csv"),row.names = F)
+    return(list(HALIBUTSURVEY,psdata))
+
+  } else{
+   write.csv(HALIBUTSURVEY,file.path(datadir,"CommercialIndexData.csv"),row.names = F)
+   return(HALIBUTSURVEY)
+
   }
 
 
 
-write.csv(HALIBUTSURVEY,file.path(datadir,"CommercialIndexData.csv"),row.names = F)
-return(HALIBUTSURVEY)
+
 }
 
 

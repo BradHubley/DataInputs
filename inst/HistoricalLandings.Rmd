@@ -1,0 +1,83 @@
+---
+title: "Historical Landings"
+author: "Brad"
+date: "6/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(xlsx)
+
+source(file.path(getwd(), "directories.r"))
+
+
+```
+
+## Read data from excel
+
+```{r }
+
+HL1 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=1, header=TRUE,startRow = 3)   # old format
+HL2 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=2, header=TRUE,startRow = 8)   # Canadian
+HL3 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=3, header=TRUE,startRow = 5)   # NS-NB by county
+HL4 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=4, header=TRUE,startRow = 5)   # NS-NB in/off
+HL5 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=5, header=TRUE,startRow = 10)  # NL by area
+HL6 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=6, header=TRUE,startRow = 6)   # steam trawlers
+HL7 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=7, header=TRUE,startRow = 9)   # NACFI area
+HL8 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=8, header=TRUE,startRow = 3)   # turbot
+HL9 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=9, header=TRUE,startRow = 3)   # Can livers
+HL10 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=10, header=TRUE,startRow = 3) # NL exports 1936-48
+HL11 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=11, header=TRUE,startRow = 3) # ICNAF 1951-1991
+HL12 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=12, header=TRUE,startRow = 1) # ICNAF 1883-1951
+HL13 <- read.xlsx(file.path(datadir,"Landings","Historical halibut landings.xls"), sheetIndex=13, header=TRUE,startRow = 1) # ICNAF 1991-2005
+
+```
+
+## Including Plots
+
+PLot time series HL1 (old format)
+
+```{r }
+
+HL1$tons <- HL1$'Atlantic.total.lb...converted.' * 0.000453592
+HL1$Year <- as.numeric(substr(HL1$Year,1,4))
+
+
+with(subset(HL1,!is.na(tons)), plot(Year,tons,type='l',ylab="Landings (t)",las=1))
+
+```
+
+
+PLot time series HL2 (Canadian)
+
+```{r }
+
+HL2$tons <- HL2$convert.to.lbs * 0.000453592
+HL2$Year <- as.numeric(substr(HL2$Year,1,4))
+
+
+with(subset(HL2,Region=="CAN"), plot(Year,tons,type='l',ylab="Landings (t)",las=1))
+with(subset(HL2,Region=="NS"), lines(Year,tons,col=2))
+with(subset(HL2,Region=="NB"), lines(Year,tons,col=3))
+with(subset(HL2,Region=="QC"), lines(Year,tons,col=4))
+with(subset(HL2,Region=="NL"), lines(Year,tons,col=5))
+with(subset(HL2,Region=="BC"), lines(Year,tons,col=6))
+legend('topleft',c("CAN","NS","NB","QC","NL","BC"),col=1:6,lty=1)
+
+
+with(subset(HL2,Region=="NS"), plot(Year,tons,type='l',ylab="Landings (t)",las=1,col=2))
+with(subset(HL2,Region=="NB"), lines(Year,tons,col=3))
+with(subset(HL2,Region=="QC"), lines(Year,tons,col=4))
+with(subset(HL2,Region=="NL"), lines(Year,tons,col=5))
+legend('topleft',c("NS","NB","QC","NL"),col=2:5,lty=1)
+
+
+```
+
+PLot time series
+
+```{r }
+
+
+```
