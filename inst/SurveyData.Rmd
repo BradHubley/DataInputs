@@ -63,7 +63,7 @@ FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "IS
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=bins,by.sex=T,hook.data=T)
 RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.LF=T,bins=bins,by.sex=F)
 
-#ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=T)
+ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=F)
 ```
 
 ## Map Fixed stations
@@ -175,6 +175,32 @@ print(SR20)
     
     BarPlotLF(ComIndexLF,yrs=2009:2020,rel=T,filen=file.path(wd,"figures","comindexLF1"))
     BarPlotLF(ComIndexLF,yrs=2009:2020,rel=F,filen=file.path(wd,"figures","comindexLF2"),ymax=1400)
+
+
+```
+
+# commercial Index comparison to survey
+```{r}
+ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,by.sex=F,add.portsampling=F,add.LF = F)
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=F, bins=bins, add.LF = F)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=F,bins=bins,by.sex=F,hook.data=F)
+```
+
+# plot
+```{r}
+
+ComIndex$KGPHH<-ComIndex$EST_COMBINED_WT/ComIndex$NUM_HOOK_HAUL
+CI<-with(ComIndex,tapply(KGPHH,YEAR, mean, na.rm=T))
+plot(as.numeric(names(CI)),CI,xlab = '',ylim=c(0,0.5),type='b')
+
+FixedSurvey$KGPHH<-FixedSurvey$EST_COMBINED_WT/FixedSurvey$NUM_HOOK_HAUL
+FS<-with(FixedSurvey,tapply(KGPHH,YEAR, mean, na.rm=T))
+lines(as.numeric(names(FS)),FS,type='b',col=2)
+
+RandomSurvey$KGPHH<-RandomSurvey$EST_COMBINED_WT/RandomSurvey$NUM_HOOK_HAUL
+RS<-with(RandomSurvey,tapply(KGPHH,YEAR, mean, na.rm=T))
+lines(as.numeric(names(RS)),RS,type='b',col=3)
+
 
 
 ```
