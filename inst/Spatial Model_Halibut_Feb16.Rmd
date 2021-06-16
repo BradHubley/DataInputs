@@ -9,6 +9,7 @@ output: pdf_document
 
 ```{r}
 # Clear memory
+# change chang sake
 rm(list=ls())
 
 library(TMB) 
