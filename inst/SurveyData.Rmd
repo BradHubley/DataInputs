@@ -27,6 +27,8 @@ source(file.path(wd, "passwords.r"))
 ds_all <- Mar.datawrangling::load_datasources()
 devtools::load_all(".")
 
+# png(paste0(filen,".png"), width = wd, height = ht,units='in',pointsize=12, res=300,type='cairo')
+
 ```
 
 ## Update data from database 
