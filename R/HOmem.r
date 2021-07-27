@@ -72,7 +72,7 @@ HOmem<-function(data, year, tmbdir, filename="rep_code"){
   # Use the values calculated previously as the starting points
   param$theta = c(log(ldathat),log(ldanthat),logitp(pnthat))
   # paramfixed$theta = c(log(ldathat),log(ldanthat),logitp(pnthat)) #fixed soak time
-browser()
+#browser()
   # Construct an R object (f) that represents our C++ function
   # MakeADFun calls C++
   f = MakeADFun(data, param, DLL=filename)

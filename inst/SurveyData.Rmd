@@ -206,6 +206,13 @@ lines(as.numeric(names(RS)),RS,type='b',col=3)
 
 
 ```
+```{r}
+RandomSurveyHO<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=T)
+
+with(RandomSurveyHO,plot((other_species+empty_unbaited)/(other_species+empty_unbaited+empty_baited),avglength,xlab="competition"))
+with(RandomSurveyHO,abline(lm(avglength~(other_species+empty_unbaited)/(other_species+empty_unbaited+empty_baited))))
+
+```
 
 
 ## RV survey
