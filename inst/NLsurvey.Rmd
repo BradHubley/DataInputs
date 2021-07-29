@@ -56,7 +56,6 @@ NLstrat_biomass_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVau
 ```
 
 NL_hal_LFraw is just from 2008-2019
-
 ```{r}
 NLstrat_length_abundance_detail %>% filter(NAFOdiv == "3N") %>%
 ggplot() +
@@ -83,6 +82,515 @@ ggplot(NLstrat_length_abundance_detail) +
    geom_histogram(aes(survey.year, stat = "count"), binwidth = 1) +
    facet_wrap(~NAFOdiv)
 
+
+```
+
+Quick look at overall length frequencies by year
+```{r}
+ggplot(NLstrat_length_abundance_summary) +
+   geom_col(aes(length, total)) +
+   facet_wrap(~survey.year, scales = "free")
+```
+
+Binning length data (what goes in "num.at.len = ")
+```{r}
+NL_binlength <- binNumAtLen(num.at.len = NLstrat_length_abundance_detail$obs, len = NLstrat_length_abundance_detail$length, bins = seq(0, 260, 5))
+
+view(NL_binlength)
+```
+
+Graph of stratified length/abundance (detailed)
+```{r}
+ggplot(NLstrat_length_abundance_detail) +
+   geom_col(aes(length, obs)) +
+   theme_classic()
+```
+
+Binned (but including the 3 sex categories, which is wrong right?)...atrificially inflated by repeat values in female+male+unsexed
+```{r}
+NL_binlengthT <- as.data.frame(NL_binlength)
+
+NL_binlengthT <- tibble::rownames_to_column(NL_binlengthT, "length")
+
+NL_binlengthT <- NL_binlengthT %>%
+   rename(count = NL_binlength)
+
+NL_binlengthT$length<-gsub("L"," ", as.character(NL_binlengthT$length))
+
+NL_binlengthT$length <- as.numeric(NL_binlengthT$length)
+
+
+ggplot(NL_binlengthT) +
+   geom_col(aes(length, count)) +
+   xlim(0, 200) + 
+   theme_classic()
+```
+
+Checking same as above but with only female+male+unsexed
+```{r}
+NL_datUS <- NLstrat_length_abundance_detail %>%
+   filter(sex == "female+male+unsexed")
+
+NL_binlengthUS <- binNumAtLen(num.at.len = NL_datUS$obs, len = NL_datUS$length, bins = seq(0, 260, 5))
+
+NL_binlengthUS.tab <- as.data.frame(NL_binlengthUS)
+
+NL_binlengthUS.tab <- tibble::rownames_to_column(NL_binlengthUS.tab, "length")
+
+NL_binlengthUS.tab <- NL_binlengthUS.tab %>%
+   rename(count = NL_binlengthUS)
+
+NL_binlengthUS.tab$length<-gsub("L"," ", as.character(NL_binlengthUS.tab$length))
+
+NL_binlengthUS.tab$length <- as.numeric(NL_binlengthUS.tab$length)
+
+
+ggplot(NL_binlengthUS.tab) +
+   geom_col(aes(length, count)) +
+   xlim(0, 200) +
+   theme_classic()
+```
+
+
+Graph same data as above but just 1996-2013 
+```{r}
+NL_predatUS <- NL_datUS %>%
+   filter(between(survey.year, 1996, 2013))
+
+
+NL_binpreUS <- binNumAtLen(num.at.len = NL_predatUS$obs, len = NL_predatUS$length, bins = seq(0, 260, 5))
+
+NL_binpreUS.tab <- as.data.frame(NL_binpreUS)
+
+NL_binpreUS.tab <- tibble::rownames_to_column(NL_binpreUS.tab, "length")
+
+NL_binpreUS.tab <- NL_binpreUS.tab %>%
+   rename(count = NL_binpreUS)
+
+NL_binpreUS.tab$length<-gsub("L"," ", as.character(NL_binpreUS.tab$length))
+
+NL_binpreUS.tab$length <- as.numeric(NL_binpreUS.tab$length)
+
+
+ggplot(NL_binpreUS.tab) +
+   geom_col(aes(length, count)) +
+   xlim(0, 200) +
+   theme_classic()
+
+```
+
+Graph same data as above but just 1996-2013 with 3cm bins to try to match previous plot
+```{r}
+NL_predatUS <- NL_datUS %>%
+   filter(between(survey.year, 1996, 2013))
+
+
+NL_bin3preUS <- binNumAtLen(num.at.len = NL_predatUS$obs, len = NL_predatUS$length, bins = seq(0, 200, 3))
+
+NL_binpre3US.tab <- as.data.frame(NL_bin3preUS)
+
+NL_binpre3US.tab <- tibble::rownames_to_column(NL_binpre3US.tab, "length")
+
+NL_binpre3US.tab <- NL_binpre3US.tab %>%
+   rename(count = NL_bin3preUS)
+
+NL_binpre3US.tab$length<-gsub("L"," ", as.character(NL_binpre3US.tab$length))
+
+NL_binpre3US.tab$length <- as.numeric(NL_binpre3US.tab$length)
+
+
+ggplot(NL_binpre3US.tab) +
+   geom_col(aes(length, count)) +
+   scale_x_continuous(breaks=seq(2,200,6)) +
+   theme_classic()
+
+```
+Fish caught by length for most recent time period (2014-2019)
+```{r}
+NL_datNEW <- NL_datUS %>%
+   filter(between(survey.year, 2014, 2019))
+
+
+NL_bindatNEW <- binNumAtLen(num.at.len = NL_datNEW$obs, len = NL_datNEW$length, bins = seq(0, 260, 5))
+
+NL_bindatNEW.tab <- as.data.frame(NL_bindatNEW)
+
+NL_bindatNEW.tab <- tibble::rownames_to_column(NL_bindatNEW.tab, "length")
+
+NL_bindatNEW.tab <- NL_bindatNEW.tab %>%
+   rename(count = NL_bindatNEW)
+
+NL_bindatNEW.tab$length<-gsub("L"," ", as.character(NL_bindatNEW.tab$length))
+
+NL_bindatNEW.tab$length <- as.numeric(NL_bindatNEW.tab$length)
+
+
+ggplot(NL_bindatNEW.tab) +
+   geom_col(aes(length, count)) +
+   xlim(0, 200) +
+   theme_classic()
+```
+Producing length frequency plots for every year (1996-2019)
+```{r}
+#example plot 
+NL_1996 <- NL_datUS %>%
+   filter(survey.year == 1996)
+
+NL_bin1996 <- binNumAtLen(num.at.len = NL_1996$totals, len = NL_1996$length, bins = seq(0, 260, 5))
+
+NL_bin1996.tab <- as.data.frame(NL_bin1996)
+
+NL_bin1996.tab <- tibble::rownames_to_column(NL_bin1996.tab, "length")
+
+NL_bin1996.tab <- NL_bin1996.tab %>%
+   rename(totals = NL_bin1996)
+
+NL_bin1996.tab$length<-gsub("L"," ", as.character(NL_bin1996.tab$length))
+
+NL_bin1996.tab$length <- as.numeric(NL_bin1996.tab$length)
+
+ggplot(NL_bin1996.tab) +
+   geom_col(aes(length, totals)) +
+   xlim(0, 200) +
+   theme_classic()
+
+#1997
+NL_1997 <- NL_datUS %>%
+   filter(survey.year == 1997)
+
+NL_bin1997 <- binNumAtLen(num.at.len = NL_1997$totals, len = NL_1997$length, bins = seq(0, 260, 5))
+
+NL_bin1997.tab <- as.data.frame(NL_bin1997)
+
+NL_bin1997.tab <- tibble::rownames_to_column(NL_bin1997.tab, "length")
+
+NL_bin1997.tab <- NL_bin1997.tab %>%
+   rename(totals = NL_bin1997)
+
+NL_bin1997.tab$length<-gsub("L"," ", as.character(NL_bin1997.tab$length))
+
+NL_bin1997.tab$length <- as.numeric(NL_bin1997.tab$length)
+
+ggplot(NL_bin1997.tab) +
+   geom_col(aes(length, totals)) +
+   xlim(0, 200) +
+   theme_classic()
+```
+
+Making above plots for older data set (to include all available data)
+```{r}
+#reading in old data
+#missing LF data from 1971, 1992, 1993
+
+NL_1972_1991 <- read.csv("R:/Science/Population Ecology Division/Shared/Atlantic Halibut/Assessments & Updates/2021 Framework/Data/Newfoundland Data/3cm_lfs_1973_1991.csv")
+
+NL_1994_2007 <- read.csv("R:/Science/Population Ecology Division/Shared/Atlantic Halibut/Assessments & Updates/2021 Framework/Data/Newfoundland Data/1cm_lfs_1994_2007.csv")
+
+#getting only data we need from NL_1972_1991
+NL_1972_1991 <- NL_1972_1991 %>%
+   filter(Species == "893", Division %in% c("3N", "3O", "3P"), Month %in% c(3,4,5,6))
+
+NL_1972_1991a <- NL_1972_1991 %>%
+   pivot_longer(cols = 17:116, names_to = "length", values_to = "count")
+
+NL_1972_1991a$length<-gsub("X"," ", as.character(NL_1972_1991a$length))
+
+NL_1972_1991a$length <- as.numeric(NL_1972_1991a$length)
+
+unique(NL_1972_1991a$Sex) #only 1 and 5, so no unsexed
+
+unique(NL_1972_1991a$Year) #only 1973 to 1991, all good
+
+#getting data finished up and graphing for 1972-198 (Yankee trawl data)
+NL_yankeeLF <- NL_1972_1991a %>%
+   filter(between(Year, 73, 82))
+
+NL_yankeeLF <- binNumAtLen(num.at.len = NL_yankeeLF$count, len = NL_yankeeLF$length, bins = seq(0, 260, 5))
+
+NL_yankeeLF.tab <- as.data.frame(NL_yankeeLF)
+
+NL_yankeeLF.tab <- tibble::rownames_to_column(NL_yankeeLF.tab, "length")
+
+NL_yankeeLF.tab <- NL_yankeeLF.tab %>%
+   rename(count = NL_yankeeLF)
+
+NL_yankeeLF.tab$length<-gsub("L"," ", as.character(NL_yankeeLF.tab$length))
+
+NL_yankeeLF.tab$length <- as.numeric(NL_yankeeLF.tab$length)
+
+
+ggplot(NL_yankeeLF.tab) +
+   geom_col(aes(length, count)) +
+   xlim(0, 200) +
+   theme_classic()
+
+#binned LF data from 1983-1991
+NL_Engel1 <- NL_1972_1991a %>%
+   filter(between(Year, 83, 91))
+
+
+NL_Engel1 <- binNumAtLen(num.at.len = NL_Engel1$count, len = NL_Engel1$length, bins = seq(0, 260, 5))
+
+NL_Engel1.tab <- as.data.frame(NL_Engel1)
+
+NL_Engel1.tab <- tibble::rownames_to_column(NL_Engel1.tab, "length")
+
+NL_Engel1.tab <- NL_Engel1.tab %>%
+   rename(count = NL_Engel1)
+
+NL_Engel1.tab$length<-gsub("L"," ", as.character(NL_Engel1.tab$length))
+
+NL_Engel1.tab$length <- as.numeric(NL_Engel1.tab$length)
+
+#getting data for rest of engel series (1994, 1995)
+NL_1994_2007 <- NL_1994_2007 %>%
+   filter(Species == "893", Division %in% c("3N", "3O", "3P"), Month %in% c(3,4,5,6), Year %in% c(94, 95))
+
+NL_1994_2007a <- NL_1994_2007 %>%
+   pivot_longer(cols = 17:216, names_to = "length", values_to = "count")
+
+NL_1994_2007a$length<-gsub("X"," ", as.character(NL_1994_2007a$length))
+
+NL_1994_2007a$length <- as.numeric(NL_1994_2007a$length)
+
+unique(NL_1994_2007a$Sex) #only 1 and 5, so no unsexed
+
+unique(NL_1994_2007a$Year) #only 1994 and 1995, all good
+
+#getting data finished up for 1994 and 1995 (Engel trawl data)
+NL_Engel2<- NL_1994_2007a
+
+NL_Engel2 <- binNumAtLen(num.at.len = NL_Engel2$count, len = NL_Engel2$length, bins = seq(0, 260, 5))
+
+NL_Engel2.tab <- as.data.frame(NL_Engel2)
+
+NL_Engel2.tab <- tibble::rownames_to_column(NL_Engel2.tab, "length")
+
+NL_Engel2.tab <- NL_Engel2.tab %>%
+   rename(count = NL_Engel2)
+
+NL_Engel2.tab$length<-gsub("L"," ", as.character(NL_Engel2.tab$length))
+
+NL_Engel2.tab$length <- as.numeric(NL_Engel2.tab$length)
+
+#bring Engel data together to graph
+NL_engelLF <- NL_Engel1.tab %>%
+   left_join(NL_Engel2.tab, by = "length") %>%
+   mutate(count = count.x + count.y) %>%
+   select(-"count.x", -"count.y")
+
+ggplot(NL_engelLF) +
+   geom_col(aes(length, count)) +
+   xlim(0, 200) +
+   theme_classic()
+
+```
+Overall LF panel, including the 3 separate time series
+```{r}
+NL_LFoverall <- NL_bindatNEW.tab %>% 
+   left_join(NL_binpreUS.tab, by = "length") %>%
+   left_join(NL_yankeeLF.tab, by = "length") %>%
+   left_join(NL_engelLF, by = "length") %>%
+   rename("Yankee" = count.x.x, "Engel" = count.y.y, "Campelen1" = count.y, "Campelen2" = count.x)
+
+NL_LFoverall <- NL_LFoverall %>%
+   pivot_longer(cols = 2:5, names_to = "gear", values_to = "count") 
+
+NL_LFoverall_labels <- data.frame(gear = c("Yankee", "Engel", "Campelen1", "Campelen2"), label = c("1973-1982", "1983-1991, 1994, 1995", "1996-2013", "2014-2019"))
+
+NL_LFoverall$gear <- factor(NL_LFoverall$gear, levels = c("Yankee", "Engel", "Campelen1", "Campelen2"))
+
+Camp1 <- ggplot(NL_LFoverall) +
+   geom_col(aes(length, Campelen2)) +
+   xlim(0, 200) 
+
+yankee <- ggplot(NL_LFoverall) +
+   geom_col(aes(length, yankee)) +
+   xlim(0, 200) 
+
+install.packages("ggpubr")
+library("ggpubr")
+
+C2<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Campelen2)) +
+   xlim(0, 200)+
+   labs(title = "3NOP RV Survey 2014-2019 Combined")+
+   xlab("") + ylab("")+
+   theme_classic()
+   
+C1<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Campelen1)) +
+   xlim(0, 200)+
+   labs(title = "3NOP RV Survey 1996-2013 Combined")+
+   xlab("") + ylab("")+
+   theme_classic()
+
+Y<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Yankee)) +
+   xlim(0, 200)+
+   labs(title = "3NOP RV Survey 1973-1982 Combined")+
+   xlab("") + ylab("")+
+   theme_classic()
+
+E<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Engel)) +
+   xlim(0, 200)+
+   labs(title = "3NOP RV Survey 1983-1991, 1994, and 1995 Combined")+
+   xlab("") + ylab("")+
+   theme_classic()
+
+overall <- ggarrange(Y, E, C1, C2, ncol = 1, nrow = 4)
+
+overall <- annotate_figure(overall, left = "Numbers at Length", bottom = "Length Bin Midpoint")
+```
+
+
+Using matrix provided, trying to bin and plot. Data for Brad! Also data I will plot my year
+```{r}
+NL_bin1996totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y1996, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin1997totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y1997, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin1998totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y1998, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin1999totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y1999, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2000totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2000, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2001totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2001, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2002totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2002, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2003totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2003, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2004totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2004, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2005totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2005, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2006totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2006, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2007totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2007, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2008totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2008, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2009totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2009, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2010totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2010, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2011totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2011, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2012totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2012, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2013totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2013, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2014totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2014, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2015totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2015, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2016totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2016, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2017totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2017, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2018totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2018, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bin2019totals <- binNumAtLen(num.at.len = NLstrat_lengthyear_totalabundance_matrix$y2019, len = NLstrat_lengthyear_totalabundance_matrix$length, bins = seq(0, 260, 5))
+
+NL_bintotals.tab <- data.frame(yr1996 = NL_bin1996totals, yr1997 = NL_bin1997totals, yr1998 = NL_bin1998totals, yr1999 = NL_bin1999totals, yr2000 = NL_bin2000totals, yr2001 = NL_bin2001totals, yr2002 = NL_bin2002totals, yr2003 = NL_bin2003totals, yr2004 = NL_bin2004totals, yr2005 = NL_bin2005totals, yr2006 = NL_bin2006totals, yr2007 = NL_bin2007totals, yr2008 = NL_bin2008totals, yr2009 = NL_bin2009totals, yr2010 = NL_bin2010totals, yr2011 = NL_bin2011totals, yr2012 = NL_bin2012totals, yr2013 = NL_bin2013totals, yr2014 = NL_bin2014totals, yr2015 = NL_bin2015totals, yr2016 = NL_bin2016totals, yr2017 = NL_bin2017totals, yr2018 = NL_bin2018totals, yr2019 = NL_bin2019totals)
+
+NL_bintotals.tab <- tibble::rownames_to_column(NL_bintotals.tab, "length")
+
+NL_bintotals.tab$length<-gsub("L"," ", as.character(NL_bintotals.tab$length))
+
+NL_bintotals.tab$length <- as.numeric(NL_bintotals.tab$length)
+
+NL_bintotals.tabLong <- gather(NL_bintotals.tab, "year", "totals", -"length")
+
+
+ggplot(NL_bintotals.tabLong) +
+   geom_col(aes(length, totals)) +
+   xlim(0, 200) +
+   facet_wrap(~year)+
+   scale_y_continuous(labels = scales::comma) +
+   theme_bw() + 
+   theme(panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank())
+
+library(data.table)
+
+NL_bintotals.tab2 <- transpose(NL_bintotals.tab, keep.names = "yr", make.names = "length")
+
+NL_bintotals.tab2$yr <- gsub("yr"," ", as.character(NL_bintotals.tab2$yr))
+
+NL_bintotals.tab2 <- NL_bintotals.tab2 %>%
+   rename(year = yr)
+
+write.csv(NL_bintotals.tab2, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NL_lengthdata_binned.csv", row.names = FALSE)
+```
+
+
+Finding mean fish per tow using the summary data
+```{r}
+ggplot(NLstrat_abundance_summary, aes(survey.year, mean)) +
+   geom_line(size = 1.5, colour = "grey") +
+   geom_errorbar(aes(ymin = mean.lcl, ymax = mean.ucl))+
+   scale_y_continuous(breaks=seq(0,0.4,0.1)) +
+   theme_classic()
+```
+
+Finding mean fish per tow using the summary data to replicate previous data (1996-2013)
+```{r}
+NLstrat_abundance_summary_pre <- NLstrat_abundance_summary %>%
+   filter(between(survey.year, 1996, 2013))
+
+ggplot(NLstrat_abundance_summary_pre, aes(survey.year, mean)) +
+   geom_line(size = 1.5, colour = "grey") +
+   geom_errorbar(aes(ymin = mean.lcl, ymax = mean.ucl))+
+   scale_y_continuous(breaks=seq(0,0.4,0.1)) +
+   theme_classic()
+```
+means for new data
+```{r}
+summary(NL_datNEW$length)
+
+#pre 2014
+
+NL_dat1996_2013 <- NL_datUS %>%
+   filter(between(survey.year, 1996, 2013))
+
+summary(NL_dat1996_2013$length)
+
+#all Campelen
+summary(NL_datUS$length)
+```
+
+updating abundance table by sex
+```{r}
+NL_females <- NLstrat_length_abundance_detail %>%
+   filter(sex == "female")
+
+NL_males <- NLstrat_length_abundance_detail %>%
+   filter(sex == "male")
+
+NL_unsexed <- NLstrat_length_abundance_detail %>%
+   filter(sex == "unsexed")
+
+NL_females <- NL_females %>%
+   select(survey.year, obs) %>%
+   group_by(survey.year) %>%
+   summarise(n())
+View(NL_females)
+
+NL_males <- NL_males %>%
+   select(survey.year, obs) %>%
+   group_by(survey.year) %>%
+   summarise(n())
+View(NL_males)
+
+NL_unknowns <- NL_unsexed %>%
+   select(survey.year, obs) %>%
+   group_by(survey.year) %>%
+   summarise(n())
+View(NL_unknowns)
 
 ```
 
