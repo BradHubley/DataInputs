@@ -88,11 +88,11 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
       #LFisfish <-LF
     }
     if(LF.from=="ISFISHLENGTHS"){
-      Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
+      Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"),env=isdb)
 
       #The new tables get downloaded and/or loaded in and you can filter them manually
-      ISSAMPLES = subset(ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
-      ISFISHLENGTHS=subset(ISFISHLENGTHS,SMPL_ID %in% ISSAMPLES$SMPL_ID,c("SMPL_ID","FISH_LENGTH","NUM_AT_LENGTH"))
+      ISSAMPLES = subset(isdb$ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
+      ISFISHLENGTHS=subset(isdb$ISFISHLENGTHS,SMPL_ID %in% ISSAMPLES$SMPL_ID,c("SMPL_ID","FISH_LENGTH","NUM_AT_LENGTH"))
 
       fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)
 
@@ -120,6 +120,8 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
 
 
     totalfish <- left_join(totalfish,LF)
+  } else{
+    totalfish$NUM_MEASURED<-NA
   }
 
 

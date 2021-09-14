@@ -1,0 +1,113 @@
+---
+title: "SurveyDesign"
+author: "Brad"
+date: "6/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(SpatialHub)
+library(tidyverse)
+library(PBSmapping)
+library(RColorBrewer)
+
+source(file.path(getwd(), "directories.r"))
+devtools::load_all(".")
+
+
+```
+
+## Random survey data
+
+Summarize by strata to get allocation of 100 stations proportional to mean or variance. Compare with allocation of 150 stations proportional to area and allocation of random survey in 2020 
+
+```{r }
+
+load(file.path(datadir,"Survey","SurveyStrata.rdata"))
+
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.LF=F,by.sex=F,hook.data = T)
+RandomSurvey$EST_NUM_CAUGHT[is.na(RandomSurvey$EST_NUM_CAUGHT)]<-0
+
+RandomSurvey$PID<-as.numeric(substr(RandomSurvey$STRATUM_ID,2,3))
+RandomSurvey<-subset(RandomSurvey,PID>10)
+
+RSbyY <- group_by(RandomSurvey,PID,YEAR) %>%
+  count()
+
+RSbyY
+
+RSstats <- group_by(RandomSurvey,PID) %>%
+  summarize(mean = mean(EST_NUM_CAUGHT),var=var(EST_NUM_CAUGHT)) %>%
+  mutate(mean.alloc=round(mean/sum(mean)*100),var.alloc=round(var/sum(var)*100),area.alloc=round(StrataAreas$area/sum(StrataAreas$area)*150)) %>%
+  left_join(subset(RSbyY,YEAR==2020,c("PID","n"))) 
+
+RSstats
+
+
+
+
+```
+
+
+## try using allocPoly from SpatialHub
+
+```{r}
+
+# colours
+#strataColors = c(brewer.pal(3,"Blues"),brewer.pal(3,"Reds"),brewer.pal(3,"Purples"),brewer.pal(3,"Greens"),brewer.pal(3,"PuRd"))
+
+
+#strataAllocation<-as.data.frame(transmute(RSstats,PID=PID,PName=PID,allocation=var.alloc+n,col=strataColors))
+
+#surveyStrataAllocation<-list(surveyStrataPolyLL,strataAllocation)
+
+#newDesign<-allocPoly(surveyStrataAllocation,surveyPolyLL,ntows = 250, mindist=2,pool.size=2,map='halibut')
+
+```
+
+has issuses....  but no worries we can just select from the block ID
+
+## 
+
+```{r}
+
+blockID<-read.csv(file.path(datadir,"Survey","blockIDkey.csv"))
+blockID$PID=blockID$s.id*10
+
+Allocation<-transmute(RSstats,PID=PID,allocation=var.alloc+n)
+
+newDesign<-list()
+
+for(i in 1:nrow(Allocation)){
+  stratablock<-subset(blockID,PID==Allocation$PID[i])
+  newDesign[[i]]<-stratablock[sample(nrow(stratablock),Allocation$allocation[i]),]
+}
+newDesign <-do.call("rbind",newDesign)
+
+newDesign
+```
+
+### Map it
+
+```{r}
+
+# map
+NAFO <- rgdal::readOGR(file.path(datadir,"Mapping","NAFODivisions","Divisions.shp"))
+
+cols = c(brewer.pal(3,"Blues"),brewer.pal(3,"Reds"),brewer.pal(3,"Purples"),brewer.pal(3,"Greens"),brewer.pal(3,"PuRd"))
+props=data.frame(Allocation,col=cols,border=NA)
+
+#pdf("SurveyDesign.pdf", width = 11, height = 7)
+bioMap(xlim=c(-68,-47),ylim=c(41,49),poly.lst = list(surveyStrataPolyLL,props),plot.rivers=F,isobaths = NULL,mapRes="MR",LT=)
+plot(NAFO,add=T)
+text(coordinates(NAFO)[,1], coordinates(NAFO)[,2],NAFO$ZONE)
+
+points(lat.DecDeg~lat.DecDeg,newDesign)
+#dev.off()
+
+
+```
+
+
