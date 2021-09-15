@@ -191,7 +191,7 @@ hal_rmNAwt <- hal_fish %>%
 Trimming down the dataframe to useful columns
 ```{r}
 hal_fishTrim <- hal_rmNAwt %>%
-  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
+  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
 ```
 
 Create year column and column of 5yr bins starting in 1970
@@ -326,6 +326,8 @@ hal_rmNAwt %>%
 
 
 #----Repeating above to pull all halibut from ISDB, not just ones from halibut directed trips----
+
+***********important shift
 ```{r}
 hal_allcatch <- ISCATCHES %>%
   filter(SPECCD_ID == "30")
@@ -380,7 +382,7 @@ trips_halcaught <- hal_alltrips %>%
 Trimming down the dataframe to useful columns
 ```{r}
 hal_alltrips <- hal_alltrips %>%
-  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS", "LAT1", "LONG1", "LAT2", "LONG2", "LAT3", "LONG3", "LAT4", "LONG4")
+  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS", "LAT1", "LONG1", "LAT2", "LONG2", "LAT3", "LONG3", "LAT4", "LONG4")
 ```
 
 
@@ -757,7 +759,7 @@ ISDBdat <- ISDB_halall %>%
            ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020", "Error")))))))))))
 
 ISDB_halall <- ISDBdat %>%
-  dplyr::select(-"FISH_ID", -"TRIP_ID", -"VESS_ID", -"LICENSE_NO", -"LANDING_DATE", -"FISHSET_ID", -"SETCD_ID", -"SPECSCD_ID.x",
+  dplyr::select(-"FISH_ID", -"TRIP_ID", -"VESS_ID", -"LICENSE_NO", -"LANDING_DATE", -"FISHSET_ID", -"SETCD_ID", -"SPECSCD_ID",
          -"CATCH_ID", -"MATCD_ID", -"LAT3", -"LONG3", -"LAT4", -"LONG4")
 ```
 
@@ -1027,7 +1029,7 @@ mod5OA <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + (1 + QUARTER|YEAR
 
 anova(mod1OA, mod2OA, mod3OA, mod4OA, mod5OA)
 
-cc <- scales::seq_gradient_pal("yellow", "blue", "Lab")(seq(0,1,length.out=51))
+cc <- scales::seq_gradient_pal("yellow", "blue", "Lab")(seq(0,1,length.out=52))
 ggplot(hal_datOR3, aes(x = FISH_LENGTH, y = FISH_WEIGHT, colour = YEAR)) +
   scale_colour_manual(values = cc) +
       facet_wrap(~QUARTER) +   
@@ -1067,7 +1069,7 @@ mod5m <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + (1 + QUARTER|YEAR)
 
 anova(mod1m, mod2m, mod3m, mod4m, mod5m)
 
-cc <- scales::seq_gradient_pal("yellow", "blue", "Lab")(seq(0,1,length.out=51))
+cc <- scales::seq_gradient_pal("yellow", "blue", "Lab")(seq(0,1,length.out=52))
 ggplot(hal_male, aes(x = FISH_LENGTH, y = FISH_WEIGHT, colour = YEAR)) +
   scale_colour_manual(values=cc)+
       facet_wrap(~QUARTER) + 
@@ -1084,7 +1086,7 @@ ggplot(hal_male, aes(x = FISH_LENGTH, y = FISH_WEIGHT, colour = QUARTER)) +
       theme(legend.position = "none",
             panel.spacing = unit(2, "lines"))
 
-cc <- scales::seq_gradient_pal("yellow", "blue", "Lab")(seq(0,1,length.out=51))
+cc <- scales::seq_gradient_pal("yellow", "blue", "Lab")(seq(0,1,length.out=52))
 ggplot(hal_male, aes(x = FISH_LENGTH, y = FISH_WEIGHT, colour = YEAR)) +
   scale_colour_manual(values=cc)+
       facet_wrap(~QUARTER) + 
@@ -1157,7 +1159,7 @@ ggplot(hal_datsex, aes(FISH_LENGTH, FISH_WEIGHT, col = TYPE)) +
 dev.off()
 ```
 
-models for presentation
+for presentation
 ```{r}
 ggplot(hal_datsex, aes(FISH_LENGTH, FISH_WEIGHT, col = TYPE)) +
   geom_point(alpha = 0.2) +
@@ -1220,6 +1222,7 @@ Checking the predicted values for the different sexes (male = 1, female = 2, unk
 ```{r}
 mod_all1 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datOR)
 
+library("ggeffects")
 sextest <- ggpredict(mod_all1, terms = c("FISH_LENGTH", "SEXCD_ID"), condition = c(QUARTER = 2, NAFO_ZONE = 3), type = "re") #since QUARTER and NAFO_ZONE are categorical I don't actually need to put these conditions in here because ggpredict() picks a reference level of each categorical predictor anyways
 
 ggplot(sextest, aes(x = x, y = predicted, colour = group)) +
@@ -1234,6 +1237,7 @@ ggplot(sextest, aes(x = x, y = predicted, colour = group)) +
 
 
 plot(sextest)
+plot_model(mod_all1, type = "pred", terms = c("FISH_LENGTH", "SEXCD_ID"))
 ```
 
 ```{r}
@@ -1341,6 +1345,8 @@ m11 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + NAFO_ZONE + (1|YEAR)
 
 
 anova(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11) 
+
+plot_model(m1, type = "pred", terms = c("FISH_LENGTH", "QUARTER", "NAFO_ZONE", "SEXCD_ID"))
 ```
 
 ```{r}
@@ -1375,8 +1381,11 @@ m11mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + NAFO_ZONE + (1|YEA
 
 anova(m1mf, m2mf, m3mf, m4mf, m5mf, m6mf, m7mf, m8mf, m9mf, m10mf, m11mf)
 #AIC smaller  = better...in the case where it's negative, would most negative be better? (if so: m9 and m1 are very close...only difference is NAFO_ZONE is not in m9, so that would make is a slightly better model as NAFO_ZONE as a parameter does basically nothing?)
-#m5 and m8 are basically the same (according to the anova) which makes sense since NAFO seems to have bascially no effect (not significant and visualizations show total overlap)
+#m5 and m8 are basically the same (according to the anova) which makes sense since NAFO seems to have basically no effect (not significant and visualizations show total overlap)
+
+plot_model(m1mf, type = "pred", terms = c("FISH_LENGTH", "QUARTER", "SEXCD_ID", "NAFO_ZONE"))
 ```
+
 ```{r}
 m1mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
 
@@ -1394,6 +1403,7 @@ ggplot(sextest4, aes(x = x, y = predicted, colour = group)) +
 
 
 plot(sextest4)
+plot_model(m1mf, type = "pred", terms = c("FISH_LENGTH", "SEXCD_ID"))
 ```
 
 Looking at month (to see whether season trend still there or is quarter is just noise)
@@ -1467,7 +1477,7 @@ moddecadeRV <- lm(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + yr_bin10, hal_datORRV)
 
 dectestRV <- ggpredict(moddecadeRV, terms = c("FISH_LENGTH", "yr_bin10"), condition = c(SEXCD_ID = c(1,2), NAFO_ZONE = 3), type = "re")
 
-cc <- scales::seq_gradient_pal("pink", "blue", "Lab")(seq(0,1,length.out=5))
+cc <- scales::seq_gradient_pal("pink", "blue", "Lab")(seq(0,1,length.out=6))
 ggplot(dectestRV, aes(x = x, y = predicted, colour = group)) +
   scale_colour_manual(values=cc)+
   geom_line(size = 1) +
@@ -1572,7 +1582,8 @@ coef(summary(final_modOA))
 coef(final_mod)
 
 tab_model(final_mod, final_modOA)
-plot_model(final_mod, type = "pred", terms = c("FISH_LENGTH", "QUARTER")) + theme_test()
+tab_model(final_mod)
+plot_model(final_mod, type = "pred", terms = c("FISH_LENGTH", "QUARTER"), colors = "bw") + theme_classic()
 
 
 
@@ -1622,5 +1633,23 @@ hal_datOR %>%
   ggplot(aes(YEAR, stat = "count", fill = TRIPCD_ID, col = TRIPCD_ID))+
   geom_bar() +
   facet_wrap(~NAFO_ZONE)
+```
+
+Some final figures potentially (should the unknowns be removed?? I can't remember what we decided?)
+```{r}
+m1everything <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datOR)
+library("see")
+plot_model(m1everything, type = "pred", terms = c("FISH_LENGTH", "QUARTER", "NAFO_ZONE", "SEXCD_ID"))
+
+#OR
+pQ <- plot_model(m1everything, type = "pred", terms = c("FISH_LENGTH", "QUARTER")) + theme_classic() + xlab("") + ylab("") + ggtitle("")
+pS <- plot_model(m1everything, type = "pred", terms = c("FISH_LENGTH", "SEXCD_ID")) + theme_classic() + xlab("") + ylab("") + ggtitle("")
+pN <- plot_model(m1everything, type = "pred", terms = c("FISH_LENGTH", "NAFO_ZONE")) + theme_classic() + xlab("") + ylab("") + ggtitle("")
+
+library("ggpubr")
+var_plot <- ggarrange(pQ, pS, pN, ncol = 1, nrow = 3)
+var_plot
+var_plot <- annotate_figure(var_plot, left = "Predicted Fish Weight (g)", bottom = "Fish Length (cm)")
+var_plot
 ```
 
