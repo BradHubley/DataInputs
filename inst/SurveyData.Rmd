@@ -59,8 +59,9 @@ HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 ```{r, echo=FALSE}
 bins=seq(0,260,5)
 
-FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISH")
-FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS")
+#FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISH")
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS")
+FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=F, bins=bins, LF.from = "ISFISHLENGTHS")
 
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=bins,by.sex=T,hook.data=T)
 RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.LF=T,bins=bins,by.sex=F)
@@ -94,7 +95,7 @@ yl=c(40,48)
 
   pdf(file.path(wd,'figures','StratfiedRandomSurveyMap2020.pdf'),width=10,height=7)
                          
-SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Fixed Station Survey")
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Stratified Random Survey")
 points(LATITUDE~LONGITUDE,subset(RandomSurvey2,YEAR==2020),pch=21,bg=rgb(1,1,0,1))
 
 dev.off()
@@ -106,7 +107,7 @@ dev.off()
 
 ## Construct LF for plots
 ```{r}
-Yrs1 = 2009:2020        
+  Yrs1 = 2009:2020        
   Yrs2 = 2017:2020        
   
   #subset by nafo
@@ -126,7 +127,8 @@ Yrs1 = 2009:2020
 
 
 ```{r}
-ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = Yrs1)
+
+  ComIndexLF=constructLF(LFdata=ComIndex,bins=bins, Yrs = Yrs1)
 
   
 
@@ -218,12 +220,48 @@ with(RandomSurveyHO,abline(lm(avglength~(other_species+empty_unbaited)/(other_sp
 ## RV survey
 
 ```{r}
-RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=F,datadir=data.dir)
-RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=T,datadir=data.dir)
+RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=F,datadir=datadir)
+RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=T,datadir=datadir)
   
 rvLF=constructLF(LFdata=RVSurvey,bins=bins, Yrs = Yrs1)
     
 BarPlotLF(rvLF,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","RVLF1"))
 BarPlotLF(rvLF,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF2"),ymax=50)
 
+
+RVnumbers<-RVindex(uid, pwd, use.local=F,datadir=datadir)
+RVnumbers
 ```
+
+
+```{r}
+
+xl=c(-69,-47)
+yl=c(40,48)    
+Yrs1 = 2009:2020        
+  Yrs2 = 2017:2020        
+
+for(i in Yrs2){
+  
+  
+	# interpolate abundance
+		interp.data<-subset(RandomSurvey2,YEAR==i,c('FISHSET_ID','LONGITUDE','LATITUDE','EST_NUM_CAUGHT'))
+		interp.data$EST_NUM_CAUGHT[is.na(interp.data$EST_NUM_CAUGHT)]<-0
+		hal.contours<-interpolation(interp.data,ticks='define',place=3,nstrata=5,str.min=0,interp.method='gstat',blank=T,res=0.1,smooth=F,idp=3.5)
+
+		# define contour lines
+		print(hal.contours$str.def)
+		lvls=c(1, 2, 5, 10, 20, 50, 100)
+
+	  cont.lst<-contourGen(hal.contours$image.dat,lvls,col="YlGn",colorAdj=1)
+	  
+    pdf(file.path(wd,'figures',paste0('StratfiedRandomSurveyMap',i,'.pdf')),width=10,height=7)
+                             
+    SpatialHub::bioMap(xlim = xl, ylim = yl,contours=cont.lst, mapRes="MR", title = paste("Stratified Random Survey",i))
+    points(LATITUDE~LONGITUDE,subset(RandomSurvey2,YEAR==2020),pch=21,bg=rgb(1,1,0,1))
+
+dev.off()
+}
+
+```
+
