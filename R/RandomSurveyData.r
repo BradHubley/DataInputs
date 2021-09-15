@@ -41,6 +41,8 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   # join gear if desired
   if(add.gear){
     ## Gear
+    baitcodes<-isdb$ISGEARFEATURECODES$GEARFCD_ID[isdb$ISGEARFEATURECODES$GEARFCL_ID=="BAIT TYPES"]
+    isdb$ISGEARFEATURES$FEATURE_VALUE[isdb$ISGEARFEATURES$GEARFCD_ID %in%baitcodes]<-1
     gear <- left_join(isdb$ISGEARFEATURES[,c("GEAR_ID","GEARFCD_ID","FEATURE_VALUE")], isdb$ISGEARFEATURECODES[,c("GEARFCD_ID","FEATURE")]) %>%
       select(.,GEAR_ID,FEATURE_VALUE,FEATURE) %>%
       pivot_wider(.,names_from = FEATURE,values_from = FEATURE_VALUE) %>%
@@ -52,7 +54,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
     names(gear)<-gsub(".", "_", names(gear), fixed = TRUE)
 
 
-    sets <- left_join(sets,select(gear,!c(HERRING,MUSTAD)),by=c('GEAR_ID','TRIP_ID'))
+    sets <- left_join(sets,select(gear,!c(MUSTAD)),by=c('GEAR_ID','TRIP_ID'))
   }
 
   ##### Fish
