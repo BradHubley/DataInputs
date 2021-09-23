@@ -65,6 +65,7 @@ FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=F, bins=bins, LF.from = "IS
 
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=T,add.LF=T,bins=bins,by.sex=T,hook.data=T)
 RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.LF=T,bins=bins,by.sex=F)
+RandomSurveyAudit<-RandomSurveyData(sp=30,datadir=datadir,add.LF=F,bins=bins,by.sex=F,add.gear = T)
 
 ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=F)
 ```
@@ -222,15 +223,19 @@ with(RandomSurveyHO,abline(lm(avglength~(other_species+empty_unbaited)/(other_sp
 ```{r}
 RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=F,datadir=datadir)
 RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=T,datadir=datadir)
-  
+
+
 rvLF=constructLF(LFdata=RVSurvey,bins=bins, Yrs = Yrs1)
     
 BarPlotLF(rvLF,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","RVLF1"))
 BarPlotLF(rvLF,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF2"),ymax=50)
 
 
-RVnumbers<-RVindex(uid, pwd, use.local=F,datadir=datadir)
-RVnumbers
+#RVnumbers<-RVindex(uid, pwd, use.local=F,plot=F,datadir=datadir)
+
+RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020)
+
 ```
 
 

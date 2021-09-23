@@ -1,6 +1,10 @@
 #' @export
 constructLF<-function(LFdata, bins,Yrs,sx=c(1,2,0)){
 
+  if(sx=='all'){
+    LFdata$SEXCD_ID='all'
+  }
+
   LF=list()
   bins = paste0("L",bins[-1])
   LFdata$N_MEASURED <- rowSums(LFdata[,bins])
