@@ -36,9 +36,11 @@ lwB=3.119924
 ## Marfis from data,wrangling
 ```{r }
 
-get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+#get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
-get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle')
+MARFISdata<-getMARFISdata(datadir,sp=130,gear=1)
+
+
 
 
 ```
@@ -57,15 +59,14 @@ fleets[[1]]$CALC_AREA<-NA
 marf<-do.call("rbind",fleets)
 
 
-```
-
-##
-```{r }
 catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==2020),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
 catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
 summary(catch.data)
 
 ```
+
+
+
 
 # plot annual
 ```{r}
@@ -90,9 +91,11 @@ xl=c(-69,-47)
 yl=c(40,48)
 
 for(y in yrs){
-  catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==y),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
-  catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+  #catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==y),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+  #catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
   #summary(catch.data)
+  tmp<-subset(MARFISdata,YEAR==y)
+  catch.data <- data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  )
   catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
   
   pdf(file.path(wd,'figures',paste0('marfisCatch',y,'.pdf')),width=10,height=7)
@@ -116,10 +119,12 @@ yrblocks <- list(2001:2005,2006:2010,2011:2015,2016:2020)
   
 for(i in q){
   for(j in 1:length(yrblocks)){
-    catch.data <- na.omit(with(subset(marf,quarter(DATE_FISHED)==i&year(DATE_FISHED)%in%yrblocks[[j]]),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
-    catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
-    catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
+    #catch.data <- na.omit(with(subset(marf,quarter(DATE_FISHED)==i&year(DATE_FISHED)%in%yrblocks[[j]]),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+    #catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
     #print(summary(catch.grids))
+  tmp<-subset(MARFISdata,quarter(DATE_FISHED)==i&YEAR%in%yrblocks[[j]])
+  catch.data <- data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  )
+  catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
     
     #pdf(file.path(wd,'figures',paste0('marfisCatch','Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]]),'.pdf')),width=10,height=7)
     png(file.path(wd,'figures',paste0('marfisCatch','Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]]),'.png')),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
@@ -142,23 +147,22 @@ for(i in q){
 
 ```{r}
 	require(animation)# for creating gif
-
+  yrs = 2002:2020
 	### GIF animations ###
 	## set some options first
 	oopt = ani.options(interval = 0.4, nmax = length(yrs)* 12, outdir=file.path(wd,'figures'))
 	saveGIF({
-for(y in yrs){
-  fleet <- get(paste0('fleet',y))
-  for(i in 1:12){
-    catch.data <- na.omit(with(subset(fleet,month(DATE_FISHED)==i),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
-    catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+  for(y in yrs){
+    for(i in 1:12){
+    tmp<-subset(MARFISdata,month(DATE_FISHED)==i&YEAR%in%yrblocks[[j]])
+    catch.data <- data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  )
     catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
-    #print(summary(catch.grids))
-    
-    #pdf(file.path(wd,'figures',paste0('marfisCatch',y,i,'.pdf')),width=10,height=7)
-    
-    SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = paste(month(i,label=T),y))
-    SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
+      #print(summary(catch.grids))
+      
+      #pdf(file.path(wd,'figures',paste0('marfisCatch',y,i,'.pdf')),width=10,height=7)
+      
+      SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = paste(month(i,label=T),y))
+      SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
     #dev.off()
     
   }
