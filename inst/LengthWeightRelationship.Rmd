@@ -143,7 +143,7 @@ setdata_halRV[is.na(setdata_halRV$FWT),] #there are 1188 fish missing weights
 
 Pull ISDB data from where it is stored locally (previously pulled from database using oracle)
 ```{r}
-get_data("isdb", data.dir = datadir)
+#get_data("isdb", data.dir = datadir)
 ```
 
 Pulling the halibut trips from the trips table (30 = halibut, 7057 = halibut longline survey, 7058 = halibut port sampling)
@@ -1534,9 +1534,10 @@ modyear <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + NAFO_ZONE + YEA
 yeartest <- ggpredict(modyear, terms = c("FISH_LENGTH", "YEAR"), condition = c(SEXCD_ID = c(1,2), NAFO_ZONE = 3), type = "re")
 
 sizeselect <- yeartest %>% filter(x == "80")
-
-ggplot(sizeselect, aes(x = group, y = predicted)) +
-  geom_point() +
+ggplot(sizeselect, aes(group, predicted)) + geom_line()
+library(ggeffects)
+ggplot(sizeselect, aes(group, predicted, group = 1)) +
+  geom_line(aes(group, predicted, group = key))+
     labs(
     colour = get_legend_title(sizeselect),
     x = "YEAR",
