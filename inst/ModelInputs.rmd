@@ -1,0 +1,88 @@
+---
+title: "ModelRuns"
+author: "Brad"
+date: "8/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(devtools)
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r")) 
+
+scaldir<-file.path(datadir,"scal")
+#scaldir<-"R:/Science/Population Ecology Division/Shared/Atlantic Halibut/Assessments & Updates/2021 Framework/Data/Model Inputs"
+
+devtools::load_all(".")
+
+
+bins=seq(0,260,5)
+
+
+```
+
+## Rerun previous model
+
+# read in data from old inputs
+
+```{r }
+old_data_inputs<-getOldScalInputs(scaldir=scaldir)
+
+# Old Model Starting parameters
+old_ipars<-lisread(file.path(scaldir,'scal_base.pin'))
+
+```
+
+
+
+# Output biological parameters table
+```{r }
+bioPars<-old_data_inputs[c("lInf_m","lInf_f","vonK_m","vonK_f","wt_a","wt_b","aMat_50","aMat_95","prior_initM","dM")]
+bioPars$dM2<-bioPars$dM[3]
+bioPars$dM<-bioPars$dM[1]
+bioPars$wt_a=0.006803616
+bioPars$wt_b=3.119924
+bioParsTab<-tibble(data.frame(Parameter=names(bioPars),Value=unlist(bioPars)))
+write.csv(bioParsTab,file.path(scaldir,"bioPars.csv"),row.names=F)
+
+```
+
+#RV survey
+
+```{r}
+
+RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020)
+
+```
+
+
+
+#Halibut Survey
+```{r}
+  Yrs1 = 2009:2020        
+  Yrs2 = 2017:2020        
+
+FixedSurvey <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=T)
+FixedSurvey2 <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=F)
+RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
+RandomSurvey2 <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=F)
+
+  # Construct CLF
+  fixedLF <- constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs1)
+  fixedLF2 <- constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = Yrs1)
+  RandomLF <- constructLF(LFdata=RandomSurvey,bins=bins, Yrs = Yrs2)
+  RandomLF2 <- constructLF(LFdata=RandomSurvey2,bins=bins, Yrs = Yrs2)
+  
+  
+
+
+
+```
+
+#Landings
+```{r}
+scalland<-read.csv()
+```
+
+

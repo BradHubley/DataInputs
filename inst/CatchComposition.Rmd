@@ -15,9 +15,16 @@ library(devtools)
  library(Mar.bycatch)
  library(tidyverse)
 
-datadir="C:/Users/hubleyb/Documents/Halibut/data"
-wd="C:/Users/hubleyb/Documents/Halibut/git/DataInputs"
-source(file.path(wd,".passwords"))
+#install_github("BradHubley/SpatialHub")
+source(file.path(getwd(), "directories.r"))
+#datadir="C:/Users/hubleyb/Documents/Halibut/data"
+#wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+
+source(file.path(wd, "passwords.r")) 
+ds_all <- Mar.datawrangling::load_datasources()
+devtools::load_all(".")
 
 ```
 
@@ -26,10 +33,9 @@ source(file.path(wd,".passwords"))
 # get observer data
 ```{r }
 
-bycatch<-fleet_halibut(dateStart = "2018-01-01", data.dir=datadir,oracle.username=uid,oracle.password=pwd,usepkg='roracle',oracle.dsn='ptran', useLocal=F)
+#bycatch<-fleet_halibut(dateStart = "2018-01-01", data.dir=datadir,oracle.username=uid,oracle.password=pwd,usepkg='roracle',oracle.dsn='ptran', useLocal=F)
 #get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
-Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",
-                                   fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 ```
 

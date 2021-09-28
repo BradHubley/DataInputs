@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 library(devtools)
 #install_github("Maritimes/Mar.datawrangling")
-#install_github("Maritimes/Mar.bycatch")
+#1
  library(Mar.datawrangling)
  library(Mar.fleets)
  library(tidyverse)
@@ -37,6 +37,8 @@ lwB=3.119924
 ```{r }
 
 get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle')
 
 
 ```

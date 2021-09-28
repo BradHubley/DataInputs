@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 
 library(xlsx)
+library(tidyverse)
 
 source(file.path(getwd(), "directories.r"))
 
@@ -75,9 +76,18 @@ legend('topleft',c("NS","NB","QC","NL"),col=2:5,lty=1)
 
 ```
 
-PLot time series
+PLot time series comparison
 
 ```{r }
 
+HL2BC<-subset(HL2,Region=="BC",c("Year","tons"))
+names(HL2BC)[2]<-"BCtons"
+HL2atl <-  merge(subset(HL2,Region=="CAN",c("Year","tons")),HL2BC,all=T)
+
+HL2atl$BCtons[is.na(HL2atl$BCtons)] <- 0 
+HL2atl$atltons<-HL2atl$tons - HL2atl$BCtons
+
+with(subset(HL1,!is.na(tons)), plot(Year,tons,type='l',ylab="Landings (t)",las=1))
+with(HL2atl, lines(Year,atltons,lty=2))
 
 ```
