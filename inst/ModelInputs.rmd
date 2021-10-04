@@ -21,7 +21,27 @@ bins=seq(0,260,5)
 
 ```
 
-## Rerun previous model
+
+## Update data from database 
+
+```{r }
+
+
+# Update data from database 
+
+# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# open and check setprofile_wide to confirm that you have year, latitude & longitude
+
+# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+
+#get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+
+# get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+
+```
+
 
 # read in data from old inputs
 
@@ -64,25 +84,65 @@ RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020)
   Yrs2 = 2017:2020        
 
 FixedSurvey <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=T)
-FixedSurvey2 <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=F)
 RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
-RandomSurvey2 <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=F)
 
   # Construct CLF
-  fixedLF <- constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs1)
-  fixedLF2 <- constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = Yrs1)
+  FixedLF <- constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs1)
   RandomLF <- constructLF(LFdata=RandomSurvey,bins=bins, Yrs = Yrs2)
-  RandomLF2 <- constructLF(LFdata=RandomSurvey2,bins=bins, Yrs = Yrs2)
-  
-  
 
-
+  # Fixed survey numbers at length    
+  HSFixed_males<-getNAL(FixedLF,sex=1)
+  HSFixed_females<-getNAL(FixedLF,sex=2)
+  HSFixed_combined<-getNAL(FixedLF,sex='all')
+  
+  # Random survey numbers at length    
+  HSRandom_males<-getNAL(RandomLF,sex=1)
+  HSRandom_females<-getNAL(RandomLF,sex=2)
+  HSRandom_combined<-getNAL(RandomLF,sex='all')
+  
 
 ```
 
 #Landings
 ```{r}
-scalland<-read.csv()
+scalland<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
 ```
 
+#Catch Composition
+```{r}
+CCyrs=1978:2020
+
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
+
+PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
+portNAFO3OT=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+portNAFO4OT=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+portNAFO3LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+portNAFO4LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+
+ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
+obsNAFO3OT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+obsNAFO4OT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+obsNAFO3LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+obsNAFO4LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+
+
+LLNafo4_males<-getNAL(portNAFO4LL,sex=1)+getNAL(obsNAFO4LL,sex=1)
+LLNafo4_females<-getNAL(portNAFO4LL,sex=2)+getNAL(obsNAFO4LL,sex=2)
+LLNafo4_combined<-getNAL(portNAFO4LL,sex='all')+getNAL(obsNAFO4LL,sex='all')
+
+LLNafo3_males<-getNAL(portNAFO3LL,sex=1)+getNAL(obsNAFO3LL,sex=1)
+LLNafo3_females<-getNAL(portNAFO3LL,sex=2)+getNAL(obsNAFO3LL,sex=2)
+LLNafo3_combined<-getNAL(portNAFO3LL,sex='all')+getNAL(obsNAFO3LL,sex='all')
+
+OTNafo4_males<-getNAL(portNAFO4OT,sex=1)+getNAL(obsNAFO4OT,sex=1)
+OTNafo4_females<-getNAL(portNAFO4OT,sex=2)+getNAL(obsNAFO4OT,sex=2)
+OTNafo4_combined<-getNAL(portNAFO4OT,sex='all')+getNAL(obsNAFO4OT,sex='all')
+
+OTNafo3_males<-getNAL(portNAFO3OT,sex=1)+getNAL(obsNAFO3OT,sex=1)
+OTNafo3_females<-getNAL(portNAFO3OT,sex=2)+getNAL(obsNAFO3OT,sex=2)
+OTNafo3_combined<-getNAL(portNAFO3OT,sex='all')+getNAL(obsNAFO3OT,sex='all')
+
+```
 

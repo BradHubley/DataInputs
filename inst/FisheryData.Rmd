@@ -38,30 +38,30 @@ lwB=3.119924
 
 #get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
-MARFISdata<-getMARFISdata(datadir,sp=130,gear=1)
+MARFISdataLL<-getMARFISdata(datadir,sp=130,gear=1)
+MARFISdataLL$CLASS <-NA
+MARFISdataLL$CLASS[MARFISdataLL$LOA<35]<-"LL35"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=35&MARFISdataLL$LOA<45]<-"LL35-45"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=45&MARFISdataLL$LOA<65]<-"LL45-65"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>65]<-"LL65"
+MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
+MARFISdataOT$CLASS <-"OT"
+
+MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
+
+yrs1<-2002:2011
+yrs2<-2012:2021
+
+table1<- MARFISdata %>% filter(!is.na(CLASS)&YEAR%in%yrs1&!is.na(NAFO)) %>% group_by(NAFO,CLASS) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = CLASS,values_from = Landings) %>% tibble()
+table1<-table1[c("NAFO","LL35", "LL35-45", "LL45-65", "LL65", "OT")]
 
 
+table2<- MARFISdata %>% filter(!is.na(CLASS)&YEAR%in%yrs2&!is.na(NAFO)) %>% group_by(NAFO,CLASS) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = CLASS,values_from = Landings) %>% tibble()
+table2<-table2[c("NAFO","LL35", "LL35-45", "LL45-65", "LL65", "OT")]
 
+write.csv(table6,file.path(datadir,"MARFIStable1.csv"),row.names=F)
+write.csv(table7,file.path(datadir,"MARFIStable2.csv"),row.names=F)
 
-```
-
-## from Mar.fleets
-```{r}
-yrs = 2002:2020
-fleets <- list()
-        for (i in 1:length(yrs)){
-          cat(yrs[i])
-          thisyear = fleet_halibut(useLocal=F, data.dir=datadir, dateStart=paste0(yrs[i],'-01-01'), dateEnd=paste0(yrs[i],'-12-31'), keepSurveyTrips=T, oracle.username=uid, oracle.password=pwd, oracle.dsn='ptran',usepkg="roracle")
-          fleets[[i]]<-thisyear$marf$MARF_SETS
-          rm(thisyear)
-        }
-fleets[[1]]$CALC_AREA<-NA
-marf<-do.call("rbind",fleets)
-
-
-catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==2020),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
-catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
-summary(catch.data)
 
 ```
 
@@ -74,6 +74,9 @@ summary(catch.data)
 lvls=seq(0,7000,1000)
 xl=c(-69,-47)
 yl=c(40,48)
+
+  tmp<-subset(MARFISdata,YEAR==2020)
+  catch.data <- data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  )
 
 
 catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
@@ -197,6 +200,49 @@ write.csv(marf.tab,"MarfisHalibutLandings_t.csv",row.names=F)
  
 ```
 
+## Port sample data
+```{r}
+bins=seq(0,260,5)
+PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
+
+
+ Yrs1 = 1985:2002 
+ Yrs2 = 2003:2020 
+ #dput(sort(unique(ObserverData$NAFAREA_ID)))
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
+ 
+
+  portNAFO3OT1=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(portNAFO3OT1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","portNAFO3OT1"))
+
+  portNAFO3OT2=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(portNAFO3OT2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","portNAFO3OT2"))
+
+  portNAFO3LL1=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(portNAFO3LL1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","portNAFO3LL1"))
+
+  portNAFO3LL2=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(portNAFO3LL2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","portNAFO3LL2"))
+
+  portNAFO4OT1=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(portNAFO4OT1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","portNAFO4OT1"))
+
+  portNAFO4OT2=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(portNAFO4OT2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","portNAFO4OT2"))
+
+  portNAFO4LL1=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(portNAFO4LL1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","portNAFO4LL1"))
+
+  portNAFO4LL2=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(portNAFO4LL2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","portNAFO4LL2"))
+  
+ 
+
+```
+
+
+## Observer Data
 ```{r}
 bins=seq(0,260,5)
 
@@ -205,37 +251,33 @@ ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
  Yrs1 = 1991:2005 
  Yrs2 = 2006:2020 
  #dput(sort(unique(ObserverData$NAFAREA_ID)))
- nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS")
- nafo4 = c("4VB", "4VC", "4VN", "4VS", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XS", "5YB", "5ZJ", "5ZM", "5ZN")
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
  
- OT = 12
- LL = 50:51
- 
- 
- 
-  obsNAFO3OT1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEARCD_ID==OT),bins=bins, Yrs = Yrs1)
-  BarPlotLF(obsNAFO3OT1,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","obsNAFO3OT1"))
 
-  obsNAFO3OT2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEARCD_ID==OT),bins=bins, Yrs = Yrs2)
-  BarPlotLF(obsNAFO3OT2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO3OT2"))
+  obsNAFO3OT1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(obsNAFO3OT1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO3OT1"))
 
-  obsNAFO3LL1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEARCD_ID%in%LL),bins=bins, Yrs = Yrs1)
-  BarPlotLF(obsNAFO3LL1,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","obsNAFO3LL1"))
+  obsNAFO3OT2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(obsNAFO3OT2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO3OT2"))
 
-  obsNAFO3LL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEARCD_ID%in%LL),bins=bins, Yrs = Yrs2)
-  BarPlotLF(obsNAFO3LL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO3LL2"))
+  obsNAFO3LL1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(obsNAFO3LL1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO3LL1"))
 
-  obsNAFO4OT1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEARCD_ID==OT),bins=bins, Yrs = Yrs1)
-  BarPlotLF(obsNAFO4OT1,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","obsNAFO4OT1"))
+  obsNAFO3LL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(obsNAFO3LL2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO3LL2"))
 
-  obsNAFO4OT2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEARCD_ID==OT),bins=bins, Yrs = Yrs2)
-  BarPlotLF(obsNAFO4OT2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4OT2"))
+  obsNAFO4OT1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(obsNAFO4OT1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO4OT1"))
 
-  obsNAFO4LL1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEARCD_ID%in%LL),bins=bins, Yrs = Yrs1)
-  BarPlotLF(obsNAFO4LL1,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","obsNAFO4LL1"))
+  obsNAFO4OT2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(obsNAFO4OT2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO4OT2"))
 
-  obsNAFO4LL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEARCD_ID%in%LL),bins=bins, Yrs = Yrs2)
-  BarPlotLF(obsNAFO4LL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4LL2"))
+  obsNAFO4LL1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs1)
+  BarPlotLF(obsNAFO4LL1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO4LL1"))
+
+  obsNAFO4LL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  BarPlotLF(obsNAFO4LL2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO4LL2"))
   
   
   
@@ -248,10 +290,10 @@ ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
 
   
   
-  obsNAFO4XLL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4X&GEARCD_ID%in%LL),bins=bins, Yrs = Yrs2)
+  obsNAFO4XLL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4X&GEAR=="LL"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4XLL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4XLL2"))
 
-  obsNAFO4VWLL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4VW&GEARCD_ID%in%LL),bins=bins, Yrs = Yrs2)
+  obsNAFO4VWLL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4VWLL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4VWLL2"))
 
 
@@ -263,10 +305,10 @@ ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
 xl=c(-69,-58)
 yl=c(41,46)
 
-obs4x20<-subset(ObserverData,NAFAREA_ID%in%nafo4X&GEARCD_ID%in%LL&YEAR==2020)
-obs4x19<-subset(ObserverData,NAFAREA_ID%in%nafo4X&GEARCD_ID%in%LL&YEAR==2019)
+obs4x20<-subset(ObserverData,NAFAREA_ID%in%nafo4X&GEAR=="LL"&YEAR==2020)
+obs4x19<-subset(ObserverData,NAFAREA_ID%in%nafo4X&GEAR=="LL"&YEAR==2019)
 
-obs4x19<-subset(ObserverData,NAFAREA_ID=='5ZJ'&GEARCD_ID%in%LL&YEAR==2019)
+obs4x19<-subset(ObserverData,NAFAREA_ID=='5ZJ'&GEAR=="LL"&YEAR==2019)
 h<-constructLF(obs4x19,bins=bins,Yrs=2019)
 
 obs20fundianchannel<-subset(ObserverData,TRIP_ID%in%c(100057412,100057428  ))
@@ -283,7 +325,37 @@ with(obs4x19,points(LONGITUDE,LATITUDE,pch=16,cex=1,col=rgb(0,0,1,0.2)))
 
 
 SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR")
-with(subset(ObserverData,NAFAREA_ID=='5ZJ'&GEARCD_ID%in%LL&YEAR==2020),points(LONGITUDE,LATITUDE,pch=16,cex=1,col=rgb(1,0,0,0.2)))
+with(subset(ObserverData,NAFAREA_ID=='5ZJ'&GEAR=="LL"&YEAR==2020),points(LONGITUDE,LATITUDE,pch=16,cex=1,col=rgb(1,0,0,0.2)))
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+## from Mar.fleets
+#```{r}
+yrs = 2002:2020
+fleets <- list()
+        for (i in 1:length(yrs)){
+          cat(yrs[i])
+          thisyear = fleet_halibut(useLocal=F, data.dir=datadir, dateStart=paste0(yrs[i],'-01-01'), dateEnd=paste0(yrs[i],'-12-31'), keepSurveyTrips=T, oracle.username=uid, oracle.password=pwd, oracle.dsn='ptran',usepkg="roracle")
+          fleets[[i]]<-thisyear$marf$MARF_SETS
+          rm(thisyear)
+        }
+fleets[[1]]$CALC_AREA<-NA
+marf<-do.call("rbind",fleets)
+
+
+catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==2020),data.frame(LOG_EFRT_STD_INFO_ID,LONGITUDE,LATITUDE,RND_WEIGHT_KGS)))
+catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
+summary(catch.data)
+
+#```
 

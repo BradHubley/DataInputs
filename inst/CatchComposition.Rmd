@@ -10,9 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(devtools)
 #install_github("Maritimes/Mar.datawrangling")
-#install_github("Maritimes/Mar.bycatch")
  library(Mar.datawrangling)
- library(Mar.bycatch)
  library(tidyverse)
 
 #install_github("BradHubley/SpatialHub")
@@ -26,35 +24,69 @@ source(file.path(wd, "passwords.r"))
 ds_all <- Mar.datawrangling::load_datasources()
 devtools::load_all(".")
 
+NAFOunits<-list(
+nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS"),
+nafo4 = c("4VB", "4VC", "4VN", "4VS", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XS", "5YB", "5ZJ", "5ZM", "5ZN"))
+
+bins=seq(0,260,5)
+
 ```
 
 ## Update data from database 
 
-# get observer data
 ```{r }
 
-#bycatch<-fleet_halibut(dateStart = "2018-01-01", data.dir=datadir,oracle.username=uid,oracle.password=pwd,usepkg='roracle',oracle.dsn='ptran', useLocal=F)
+
+# Update data from database 
+
+# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# open and check setprofile_wide to confirm that you have year, latitude & longitude
+
+# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+
 #get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
-Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 ```
 
-# get port sampling data
 
-```{r}
-#get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
-psdata <- get_ps_data(data.dir=datadir)
-
-```
-
-
-
-
-##  Plots
-
-
+## 
 
 ```{r,  echo=FALSE}
+Yrs=1978:2020
+
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
+
+PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
+portNAFO3OT=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs)
+portNAFO4OT=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs)
+portNAFO3LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs)
+portNAFO4LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs)
+
+
+ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
+obsNAFO3OT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs)
+obsNAFO4OT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs)
+obsNAFO3LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs)
+obsNAFO4LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs)
+
+
+LLmalesNafo4<-getNAL(portNAFO4LL,sex=1)+getNAL(obsNAFO4LL,sex=1)
+LLfemalesNafo4<-getNAL(portNAFO4LL,sex=2)+getNAL(obsNAFO4LL,sex=2)
+LLcombinedNafo4<-getNAL(portNAFO4LL,sex='all')+getNAL(obsNAFO4LL,sex='all')
+
+LLmalesNafo3<-getNAL(portNAFO3LL,sex=1)+getNAL(obsNAFO3LL,sex=1)
+LLfemalesNafo3<-getNAL(portNAFO3LL,sex=2)+getNAL(obsNAFO3LL,sex=2)
+LLcombinedNafo3<-getNAL(portNAFO3LL,sex='all')+getNAL(obsNAFO3LL,sex='all')
+
+OTmalesNafo4<-getNAL(portNAFO4OT,sex=1)+getNAL(obsNAFO4OT,sex=1)
+OTfemalesNafo4<-getNAL(portNAFO4OT,sex=2)+getNAL(obsNAFO4OT,sex=2)
+OTcombinedNafo4<-getNAL(portNAFO4OT,sex='all')+getNAL(obsNAFO4OT,sex='all')
+
+OTmalesNafo3<-getNAL(portNAFO3OT,sex=1)+getNAL(obsNAFO3OT,sex=1)
+OTfemalesNafo3<-getNAL(portNAFO3OT,sex=2)+getNAL(obsNAFO3OT,sex=2)
+OTcombinedNafo3<-getNAL(portNAFO3OT,sex='all')+getNAL(obsNAFO3OT,sex='all')
+
 
 ```
 

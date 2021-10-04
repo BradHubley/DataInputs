@@ -34,6 +34,10 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME4","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID")], by=c('FISHSET_ID','SET_NO'))
   sets <- left_join(sets,isdb$ISGEARS[,c("GEAR_ID","TRIP_ID","GEARCD_ID", "HOOKCD_ID","HOOKSIZE")])
   sets$SOAKMINP3P1[sets$SOAKMINP3P1<0]<-NA
+  sets$GEAR<-NA
+  sets$GEAR[sets$GEARCD_ID%in%50:51]<-"LL"
+  sets$GEAR[sets$GEARCD_ID%in%c(1:4,10:12)]<-"OT"
+  names(sets)[which(names(sets)=="NAFAREA_ID")]<-"NAFO"
 
   ## Fish
   totalfish <- isdb$ISCATCHES[,c("FISHSET_ID","CATCH_ID","EST_NUM_CAUGHT","EST_COMBINED_WT")]

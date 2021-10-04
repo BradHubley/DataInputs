@@ -1,7 +1,7 @@
 #' @export
 constructLF<-function(LFdata, bins,Yrs,sx=c(1,2,0)){
 
-  if(sx=='all'){
+  if(sx[1]=='all'){
     LFdata$SEXCD_ID='all'
   }
 

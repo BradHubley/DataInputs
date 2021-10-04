@@ -34,7 +34,7 @@ get_ps_data<-function(data.dir=getwd(),fn.oracle.username = uid, fn.oracle.passw
 
   samples <- left_join(GPSAMPLES,data.frame(AREA=GPUNIQ_AREA2$AREACODE,NAFO=GPUNIQ_AREA2$DESCRIPTION2))
 
-  samples <- left_join(subset(samples,SPECIES=="030",c("SAMPLE","DATELANDED","SAMPLED","CFV","TRIP_NUMBER","NAFO")),GPMARKETS)
+  samples <- left_join(subset(samples,SPECIES=="030",c("SAMPLE","DATELANDED","SAMPLED","CFV","TRIP_NUMBER","FISHING","NAFO")),GPMARKETS)
 
   portSamples <- left_join(samples,GPLENGTHS)
 
