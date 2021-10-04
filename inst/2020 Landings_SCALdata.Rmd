@@ -2,7 +2,7 @@
 title: "Update landings"
 author: "Brad & Lingbo"
 date: "September 12, 2021"
-output: html_document; SCAL data 1970-2019:nafoS  
+output: html_document; SCAL data 1970-2020:nafoS  
 ---
 
 ## R Markdown
@@ -36,9 +36,9 @@ library(tidyverse)
 # devtools::load_all(".")
 #source("LandingFunctions.R")
 source(file.path(getwd(), "directories.r"))
-source(file.path(wd, "passwords.r"))
+# source(file.path(wd, "passwords.r"))
 
-#wd ="C:/Users/LiLi/Documents"
+# wd ="C:/Users/LiLi/Documents"
 
 
 # NAFO divisions
@@ -53,7 +53,7 @@ ystart =1970
 # 21B last year
 yendB=2016
 # 21A last year(assessment year)
-yend=2019
+yend=2020
 # annual TAC table
 TAC = data.frame(Year=1988:2020,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507))
 # figure width and height
