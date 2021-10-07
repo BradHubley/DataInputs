@@ -19,7 +19,7 @@ devtools::load_all(".")
 
 
 bins=seq(0,260,5)
-
+# labelled by upper bound
 
 ```
 
@@ -51,7 +51,7 @@ bins=seq(0,260,5)
 old_data_inputs<-getOldScalInputs(scaldir=scaldir)
 
 # Old Model Starting parameters
-old_ipars<-lisread(file.path(scaldir,'scal_base.pin'))
+#old_ipars<-lisread(file.path(scaldir,'scal_base.pin'))
 
 ```
 
@@ -76,14 +76,21 @@ BiologicalParameters$bins<-bins
 ```{r}
 
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020,raw=T)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020, raw=T)
 NSRV_Index<-RVinputs$Index
 NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,NSRV_females=RVinputs$NSRV_females,NSRV_combined=RVinputs$NSRV_combined)
+
+BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2020,path=file.path(wd,'figures'),filen='RVSurvey',inches=0.3)
+
 
 NLRV_Lengths<-read.csv(file.path(scaldir,"NLSurveyCAL.csv"))
 row.names(NLRV_Lengths)<-NLRV_Lengths$year
 NLRV_Lengths<-NLRV_Lengths[,-1]
 names(NLRV_Lengths)<-paste0("L",bins[-1])
+
+
+BubblePlotLF(NLRV_Lengths,bins=bins,yrs=1996:2020,path=file.path(wd,'figures'),filen='NLRVSurvey',inches=0.3)
+
 
 NLRV_Index<-rowSums(NLRV_Lengths)
 
@@ -127,13 +134,14 @@ NLRV_Index<-rowSums(NLRV_Lengths)
 #Landings
 ```{r}
 Landings_t<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
+
 ```
 
 #Fishery Catch Composition
 ```{r}
 CCyrs=1978:2020
 
- nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PS", "3U")
  nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
 
 PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
@@ -142,7 +150,7 @@ portNAFO4OT=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="OT"),bins=bi
 portNAFO3LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = CCyrs)
 portNAFO4LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = CCyrs)
 
-ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins,min.length=80)
+ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins,min.length=0)
 obsNAFO3OT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = CCyrs)
 obsNAFO4OT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = CCyrs)
 obsNAFO3LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = CCyrs)
