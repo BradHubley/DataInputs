@@ -1,4 +1,4 @@
-ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.sex=T,bins=seq(0,260,5),lwA=0.006803616,lwB=3.119924){
+ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.sex=T,bins=seq(0,260,5),lwA=0.006803616,lwB=3.119924,min.length=0){
 
 
   # calculate bin weights
@@ -11,7 +11,9 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   Mar.datawrangling::get_data(db='isdb',data.dir=datadir,env=isdb)
 
   # filter for targeded halibut and commercial index trips
-  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(12,30,7001,7057),]
+  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[!isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(14, 41, 2210, 4511, 7002,7052,7050,7051,7053,7055),]
+  # tripcd_id NOT IN (14, 41, 2210, 4511, 7002) /* per K Trzinski request, excluding Trip Types: SILVER HAKE; MACKEREL; SHRIMP; SQUID; SILVER HAKE, SQUID, ARGENTINE */
+  # TRIPCD_ID NOT IN (7052,7050,7051,7053,7055) /*per N den Heyer, May 5, 2014 - these are surveys*/
 
   # filter for commercial and commercial index sets
   isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == c(1,10),]
@@ -53,7 +55,7 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
 
   cid=unique(fishlengths$CATCH_ID)
   LF <-list()
-  LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
+  LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s&FISH_LENGTH>min.length),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
 
   #names(LFnosex)[-1]<-paste0("L",bins[-1])
   LFnosex$NUM_MEASURED <- rowSums(LFnosex[paste0("L",bins[-1])],na.rm=T)
@@ -62,7 +64,7 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   if(by.sex==T){
     sx<-c(1,2,0)
     for(i in 1:3){
-      LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s&SEXCD_ID==sx[i]), binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
+      LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s&FISH_LENGTH>min.length&SEXCD_ID==sx[i]), binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
     }
     LF <- do.call("rbind",LF)
     #names(LF)[-(1:2)]<-paste0("L",bins[-1])

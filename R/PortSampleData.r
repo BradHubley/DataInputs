@@ -10,7 +10,7 @@ PortSampleData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data
   samples$GEAR<-NA
   samples$GEAR[samples$FISHING==3]<-"LL"
   samples$GEAR[samples$FISHING==7]<-"OT"
-  samples$YEAR<-year(samples$DATELANDED)
+  samples$YEAR<-lubridate::year(samples$DATELANDED)
 
   sid=unique(psdata$SAMPLE)
   LF <-list()

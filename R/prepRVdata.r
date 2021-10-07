@@ -1,5 +1,5 @@
 
-prepRVdata<-function(RVdata,years, bins, pal=F){
+prepRVdata<-function(RVdata,years, bins, pal=F,raw=F){
 
   options(warn = -1)
   ##edit of rv data
@@ -14,12 +14,15 @@ prepRVdata<-function(RVdata,years, bins, pal=F){
   survF.lst<-list()
   stratF.lst<-list()
   F.lst<-list()
+  Fraw.lst<-list()
   survM.lst<-list()
   stratM.lst<-list()
   M.lst<-list()
+  Mraw.lst<-list()
   surv.lst<-list()
   strat.lst<-list()
   Total.lst<-list()
+  Traw.lst<-list()
 
   print(paste("Year", "Nstr", "N(000s)", "B(t)"))
   for (i in 1:length(years)){
@@ -57,26 +60,38 @@ prepRVdata<-function(RVdata,years, bins, pal=F){
     survF.lst[[i]][is.na(survF.lst[[i]])]<-0
     stratF.lst[[i]]<-aggregate(survF.lst[[i]][c(paste("L",bins[-1],sep=''),"TUNITS")], list(survF.lst[[i]]$STRAT), mean)
     F.lst[[i]]<-colSums(sweep(stratF.lst[[i]][paste("L",bins[-1],sep='')],1,FUN='*',stratF.lst[[i]]$TUNITS))
+    Fraw.lst[[i]]<-colSums(survF.lst[[i]][paste("L",bins[-1],sep='')])
+
     # Males
     survM.lst[[i]][is.na(survM.lst[[i]])]<-0
     stratM.lst[[i]]<-aggregate(survM.lst[[i]][c(paste("L",bins[-1],sep=''),"TUNITS")], list(survM.lst[[i]]$STRAT), mean)
     M.lst[[i]]<-colSums(sweep(stratM.lst[[i]][paste("L",bins[-1],sep='')],1,FUN='*',stratM.lst[[i]]$TUNITS))
+    Mraw.lst[[i]]<-colSums(survM.lst[[i]][paste("L",bins[-1],sep='')])
+
     # Combined
     surv.lst[[i]][is.na(surv.lst[[i]])]<-0
     strat.lst[[i]]<-aggregate(surv.lst[[i]][c(paste("L",bins[-1],sep=''),"TUNITS")], list(surv.lst[[i]]$STRAT), mean)
     Total.lst[[i]]<-colSums(sweep(strat.lst[[i]][paste("L",bins[-1],sep='')],1,FUN='*',strat.lst[[i]]$TUNITS))
+    Traw.lst[[i]]<-colSums(surv.lst[[i]][paste("L",bins[-1],sep='')])
+
   }
   RVcatlenF<-do.call("rbind",F.lst)
   RVcatlenM<-do.call("rbind",M.lst)
   RVcatlenC<-do.call("rbind",Total.lst)
-  row.names(RVcatlenF)<-years
-  row.names(RVcatlenM)<-years
-  row.names(RVcatlenC)<-years
   if(pal==TRUE){
     RVcatlenF<-proportions(RVcatlenF,1)
     RVcatlenM<-proportions(RVcatlenM,1)
     RVcatlenC<-proportions(RVcatlenC,1)
   }
+
+  if(raw==TRUE){
+    RVcatlenF<-do.call("rbind",Fraw.lst)
+    RVcatlenM<-do.call("rbind",Mraw.lst)
+    RVcatlenC<-do.call("rbind",Traw.lst)
+  }
+  row.names(RVcatlenF)<-years
+  row.names(RVcatlenM)<-years
+  row.names(RVcatlenC)<-years
 
   Index<-data.frame(year=years,N=N,B=B)
 
@@ -84,5 +99,5 @@ prepRVdata<-function(RVdata,years, bins, pal=F){
   Index<-merge(Index,tunits)
   Index$NPT<-Index$N/Index$tunits
 
-  list(Index=Index,NSRV_males=RVcatlenM,NSRV_females=RVcatlenF,NSRV_combined=RVcatlenC,test=survF.lst)
+  list(Index=Index,NSRV_males=RVcatlenM,NSRV_females=RVcatlenF,NSRV_combined=RVcatlenC)
 }

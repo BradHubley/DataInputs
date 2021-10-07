@@ -250,33 +250,33 @@ ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
 
  Yrs1 = 1991:2005 
  Yrs2 = 2006:2020 
- #dput(sort(unique(ObserverData$NAFAREA_ID)))
+ #dput(sort(unique(ObserverData$NAFO)))
  nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
  nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
  
 
-  obsNAFO3OT1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs1)
+  obsNAFO3OT1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs1)
   BarPlotLF(obsNAFO3OT1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO3OT1"))
 
-  obsNAFO3OT2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs2)
+  obsNAFO3OT2=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO3OT2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO3OT2"))
 
-  obsNAFO3LL1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs1)
+  obsNAFO3LL1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs1)
   BarPlotLF(obsNAFO3LL1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO3LL1"))
 
-  obsNAFO3LL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  obsNAFO3LL2=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO3LL2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO3LL2"))
 
-  obsNAFO4OT1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs1)
+  obsNAFO4OT1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs1)
   BarPlotLF(obsNAFO4OT1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO4OT1"))
 
-  obsNAFO4OT2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs2)
+  obsNAFO4OT2=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4OT2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO4OT2"))
 
-  obsNAFO4LL1=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs1)
+  obsNAFO4LL1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs1)
   BarPlotLF(obsNAFO4LL1,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","obsNAFO4LL1"))
 
-  obsNAFO4LL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  obsNAFO4LL2=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4LL2,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","obsNAFO4LL2"))
   
   
@@ -290,10 +290,10 @@ ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
 
   
   
-  obsNAFO4XLL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4X&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  obsNAFO4XLL2=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4X&GEAR=="LL"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4XLL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4XLL2"))
 
-  obsNAFO4VWLL2=constructLF(LFdata=subset(ObserverData,NAFAREA_ID%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = Yrs2)
+  obsNAFO4VWLL2=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4VWLL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4VWLL2"))
 
 
