@@ -9,5 +9,6 @@ getPAL<-function(LF, sex){
     PAL<-proportions(do.call("rbind",lapply(LF,subset,sex==sx)),1)
 
   }
+  row.names(NAL)<-names(LF)
   return(PAL)
 }
