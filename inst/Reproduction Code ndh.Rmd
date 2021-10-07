@@ -1,0 +1,773 @@
+---
+title: "Reproduction Code"
+author: "Jiaxin Luo modified by Nell den Heyer"
+date: "2020/2/13"
+output: pdf_document
+---
+
+# Jiaxin version of code read in the data year by year.  Now how have single file with all years, that includes the hook occupancy and total count data from all years.  Station stratification correctly assigned but still gaps -  incomplete sets, temperature or depth lacking
+
+data needed:  
+-stratified random catch data
+-Block IDs
+-temperature & depth data
+-code to create the ultimate survey map
+
+dyn.load  require 32 bit R
+
+# set up directory
+```{r, setup}
+  library(knitr)
+  opts_knit$set(root.dir=normalizePath('C:/Users/DenHeyerC/Documents/Students/Jiaxin/MEM code/'))
+```
+
+# Install dependency
+```{r}
+# Install dependency
+# devtools::install_github("skgrange/threadr")
+# Install gissr
+# devtools::install_github("skgrange/gissr")
+```
+
+# read in data
+What should be limit for number of hooks observed to count as a set? And how do we handle the other 700 to 800+ hooks where empty hooks are not observed. Here limit is 200 hooks observed. 
+```{r}
+# Clear memory
+rm(list=ls())
+# Import 2017 data
+dataSR = read.csv("data/HalibutSurveyHookData.csv", header = TRUE)
+summary(dataSR)
+dim(dataSR)
+
+# Drop sets with incomplete HO data: 5 sets some have only 30, others have 180
+not300 = which(dataSR$total_sampled<=200)
+dataSR[not300,]
+dataSR = dataSR[-c(not300), ] 
+dim(dataSR)
+
+with(dataSR, table(STRATUM_ID, YEAR))
+
+```
+
+# Use TMB to reproduce the stratified random results from llsurv
+```{r, echo=FALSE}
+library(TMB) 
+# Call TMB function value
+# compile(cpp.file)
+compile("rep_code.cpp") 
+
+# Dynamically link the C++ code
+# dyn.load(dll.file)))
+dyn.load("rep_code.dll")  # PROBLEM IN set-up for R studio, should not have to hard code in the directory here.  The global satement above is not working
+```
+
+# create function to calculate the mean cpue using MEM -- with either fixed (mean soak) or individual soak
+At present set-up for hook occupancy data -- could add feature to do with just 1000 or 700 + 300
+also not no spatial structure or strata involved in the calculation
+NB the fixed (average) soak time is deprecated, it could be an option
+
+
+# Write function to apply MEM to each set in the survey apply year by year
+```{r}
+
+hoModel<-function(data = dataSR, year=year,  cpp.file="rep_code.cpp", rep_code.dll="rep_code.dll"){
+  data <- data[which(data$YEAR==year), ]
+
+#  year=2017
+#  data <- dataSR[which(dataSR$YEAR==year), ] 
+  
+  # define data
+  nb=data$empty_baited # nb is the number of baited hooks at the end of the soak time
+  nt=data$target_species # nt is the number of individuals of the target species caught 
+  nnt=data$other_species # nnt is the number of individuals of the non-target species caught
+  ne=data$empty_unbaited+data$broken_hook # ne is the number of empty hooks at the end of the soak time
+  st=data$SOAKMINP3P1  # st is the soak time
+  empty = data$empty_unbaited+data$broken_hook
+  # Put the required data into a matrix
+  
+  # The mean of the soak time (fix at the mean of the soak time)
+  st_fixed=rep(mean(st),length(st))
+  
+  ## Calculate the initial values for TMB estimation 
+  # Using the explicit equation to calculate the estimators (MEM1 with pt=0 from Etienne 2010)
+  soak=mean(st)
+  # lambda for target species
+  ldathat=(sum(nt)/(sum(nt+nnt+ne+nb)-sum(nb)))*(1/soak)*
+              log(sum(nt+nnt+ne+nb)/sum(nb))
+  ldathat
+  # lambda non-target species
+  ldanthat=((sum(nnt)+sum(ne))/(sum(nt+nnt+ne+nb)-sum(nb)))*
+              (1/soak)*log(sum(nt+nnt+ne+nb)/sum(nb))
+  ldanthat
+  # Escaping probability for target species
+  pthat=0
+  pthat
+  # Escaping probability for non-target species
+  pnthat=sum(ne)/(sum(ne)+sum(nnt))
+  pnthat
+  
+  # Logit function
+  logitp=function(p){log(p/(1-p))}
+  # Inverse logist function
+  logitpi=function(t){exp(t)/(1+exp(t))}
+
+  
+## Use TMB to reproduce the results
+library(TMB) 
+# Call TMB function value
+ 
+compile("rep_code.cpp") 
+#  compile(cpp.file)
+
+# Dynamically link the C++ code
+# dyn.load(dll.file)))
+dyn.load('C:/Users/DenHeyerC/Documents/Students/Jiaxin/MEM code/rep_code.dll')
+
+  # data$empty = data$empty_unbaited+data$broken_hook
+  # Put the required data into a matrix
+  x = with(data, cbind(empty_baited, target_species, other_species, empty))
+  
+  # Soak time
+  stv = as.vector(st)
+  # st_fixedv = as.vector(st_fixed)  #fixed soak time
+  
+  # Data list
+  data = list(x=x,s=stv)
+  # datafixed = list(x=x,s=st_fixedv) #fixed soak time
+  
+  # Parameter list
+  param = list()
+  # paramfixed = list() #fixed soak time
+  # Initial values for lambda.t, lambda.nt and pnt
+  # Use the values calculated previously as the starting points
+  param$theta = c(log(ldathat),log(ldanthat),logitp(pnthat))
+  # paramfixed$theta = c(log(ldathat),log(ldanthat),logitp(pnthat)) #fixed soak time
+  
+  # Construct an R object (f) that represents our C++ function
+  # MakeADFun calls C++
+  f = MakeADFun(data, param, DLL="rep_code")
+  # ffixed = MakeADFun(datafixed, paramfixed, DLL="rep_code") #fixed soak time
+  
+  # Call TMB function value
+  fit = nlminb(f$par,f$fn,f$gr)
+  # fitfixed = nlminb(ffixed$par,ffixed$fn,ffixed$gr) #fixed soak time
+  # Calculate standard deviations of all model parameters
+  
+  sdr = sdreport(f)
+  # Estimated results for model with actual soak time 
+  summary(sdr)
+  
+  # sdrfixed = sdreport(ffixed) #fixed soak time
+  # Estimated results for model with actual soak time 
+  # summary(sdrfixed)#fixed soak time
+  
+  return(summary(sdr))
+}
+
+
+```
+
+
+# run the MEM model ::: not weighting other that the number of stations ... which are area weighted excepted for 2029
+```{r}
+repcd2017<-hoModel(year=2017)
+repcd2018<-hoModel(year=2018)
+repcd2019<-hoModel(year=2019)
+repcd2020<-hoModel(year=2020)
+
+
+head(repcd2017)
+head(repcd2018)
+head(repcd2019)
+head(repcd2020)
+
+
+repcd2017["ldat",1]
+repcd2017["ldat",2]
+
+
+repcd2018["ldat",1]
+repcd2018["ldat",2]
+
+repcd2019["ldat",1]
+repcd2019["ldat",2]
+
+repcd2020["ldat",1]
+repcd2020["ldat",2]
+
+
+```
+
+
+
+# Write function to apply MEM to each set and generate stratified mean in the survey apply year by year
+# Note the stratified mean being undermined by 6 strata.  Only 2018 works 
+  # 2017 H13
+  # 2018: all runs good
+  # 2019 H13, H42, H52 
+  # 2020 H13, H42
+# Dropping H13 as did Jiaxin, why is H42 and H52 problme here but not for here 
+```{r}
+hoStratifiedModel<-function(data = dataSR, year=year,  cpp.file="rep_code.cpp", rep_code.dll="rep_code.dll"){
+  dataA <- data[which(data$YEAR==year), ]
+
+
+  strata <- sort(unique(dataA$STRATUM_ID))
+  Strat.mean <- NULL
+  strat.se <- NULL
+  
+
+  for (i in 1:length(strata)) {
+      data <- dataA[which(dataA$STRATUM_ID==strata[i]),]
+      print(paste(i,strata[i]))
+        
+      # define data
+      nb=data$empty_baited # nb is the number of baited hooks at the end of the soak time
+      nt=data$target_species # nt is the number of individuals of the target species caught 
+      nnt=data$other_species # nnt is the number of individuals of the non-target species caught
+      ne=data$empty_unbaited+data$broken_hook # ne is the number of empty hooks at the end of the soak time
+      st=data$SOAKMINP3P1  # st is the soak time
+      empty = data$empty_unbaited+data$broken_hook
+      # Put the required data into a matrix
+      
+      # The mean of the soak time (fix at the mean of the soak time)
+      st_fixed=rep(mean(st),length(st))
+      
+      ## Calculate the initial values for TMB estimation 
+      # Using the explicit equation to calculate the estimators (MEM1 with pt=0 from Etienne 2010)
+      soak=mean(st)
+      # lambda for target species
+      ldathat=(sum(nt)/(sum(nt+nnt+ne+nb)-sum(nb)))*(1/soak)*
+                  log(sum(nt+nnt+ne+nb)/sum(nb))
+      ldathat
+      # lambda non-target species
+      ldanthat=((sum(nnt)+sum(ne))/(sum(nt+nnt+ne+nb)-sum(nb)))*
+                  (1/soak)*log(sum(nt+nnt+ne+nb)/sum(nb))
+      ldanthat
+      # Escaping probability for target species
+      pthat=0
+      pthat
+      # Escaping probability for non-target species
+      pnthat=sum(ne)/(sum(ne)+sum(nnt))
+      pnthat
+      
+      # Logit function
+      logitp=function(p){log(p/(1-p))}
+      # Inverse logist function
+      logitpi=function(t){exp(t)/(1+exp(t))}
+    
+      
+    ## Use TMB to reproduce the results
+    # library(TMB) 
+    # Call TMB function value
+    compile("rep_code.cpp") 
+
+    # Dynamically link the C++ code
+    dyn.load("c:/Users/DenHeyerC/Documents/Students/Jiaxin/MEM code/rep_code.dll")
+    
+      # data$empty = data$empty_unbaited+data$broken_hook
+      # Put the required data into a matrix
+      x = with(data, cbind(empty_baited, target_species, other_species, empty))
+      
+      # Soak time
+      stv = as.vector(st)
+      # st_fixedv = as.vector(st_fixed)  #fixed soak time
+      
+      # Data list
+      data = list(x=x,s=stv)
+      # datafixed = list(x=x,s=st_fixedv) #fixed soak time
+      
+      # Parameter list
+      param = list()
+      # paramfixed = list() #fixed soak time
+      # Initial values for lambda.t, lambda.nt and pnt
+      # Use the values calculated previously as the starting points
+      param$theta = c(log(ldathat),log(ldanthat),logitp(pnthat))
+      # paramfixed$theta = c(log(ldathat),log(ldanthat),logitp(pnthat)) #fixed soak time
+      
+      # Construct an R object (f) that represents our C++ function
+      # MakeADFun calls C++
+      f <- NULL
+      f = MakeADFun(data, param, DLL="rep_code")
+      # ffixed = MakeADFun(datafixed, paramfixed, DLL="rep_code") #fixed soak time
+      
+      # Call TMB function value
+      fit <- NULL
+      fit = nlminb(f$par,f$fn,f$gr)
+      # fitfixed = nlminb(ffixed$par,ffixed$fn,ffixed$gr) #fixed soak time
+      # Calculate standard deviations of all model parameters
+      sdr <- NULL
+      sdr = sdreport(f)
+      # Estimated results for model with actual soak time 
+    
+      # sdrfixed = sdreport(ffixed) #fixed soak time
+      # Estimated results for model with actual soak time 
+      # summary(sdrfixed)#fixed soak time
+      
+      Strat.mean[i] <- summary(sdr)[4,1]
+      strat.se[i] <- summary(sdr)[4,2]
+      
+      }
+
+  startified.mean <- mean(strat.mean)
+  return(start.mean)
+
+}
+
+
+```
+
+
+
+# Write function to apply MEM to each stara and generate stratified mean in the survey apply year by year
+# Note the stratified mean being undermined by 6 strata.  Only 2018 works 
+  # 2017 H13
+  # 2018: all runs good
+  # 2019 H13, H42, H52 
+  # 2020 H13, H42
+# therefore can only run for 2018
+```{r}
+hoStratifiedModel2<-function(data = dataSR, year=year,  cpp.file="rep_code.cpp", rep_code.dll="rep_code.dll"){
+  
+  # 
+  # i=1
+  # year=2018
+  # dataA <- dataSR[which(dataSR$YEAR==year), ]
+  # 
+  # define data
+  nb=NULL
+  nt=NULL 
+  nnt=NULL
+  ne=NULL
+  st=NULL
+  empty=NULL
+  
+  dataA <- data[which(data$YEAR==year), ]
+  strata <- sort(unique(dataA$STRATUM_ID))
+
+    for (i in 1:length(strata)) {
+        data <- dataA[which(dataA$STRATUM_ID==strata[i]),]
+        print(paste(i,strata[i]))
+          
+        # define data
+        nb[i]=sum(data$empty_baited) # nb is the number of baited hooks at the end of the soak time
+        nt[i]=sum(data$target_species) # nt is the number of individuals of the target species caught 
+        nnt[i]=sum(data$other_species) # nnt is the number of individuals of the non-target species caught
+        ne[i]=sum(data$empty_unbaited+data$broken_hook) # ne is the number of empty hooks at the end of the soak time
+        st[i]=mean(data$SOAKMINP3P1)  # st is the soak time
+        empty[i] = sum(data$empty_unbaited+data$broken_hook)
+        # Put the required data into a matrix
+        }
+        
+  # The mean of the soak time (fix at the mean of the soak time)
+  st_fixed=rep(mean(st),length(st))
+  
+  ## Calculate the initial values for TMB estimation 
+  # Using the explicit equation to calculate the estimators (MEM1 with pt=0 from Etienne 2010)
+  soak=mean(st)
+  
+  
+  # lambda for target species
+  ldathat=(sum(nt)/(sum(nt+nnt+ne+nb)-sum(nb)))*(1/soak)*
+    log(sum(nt+nnt+ne+nb)/sum(nb))
+  ldathat
+  # lambda non-target species
+  ldanthat=((sum(nnt)+sum(ne))/(sum(nt+nnt+ne+nb)-sum(nb)))*
+    (1/soak)*log(sum(nt+nnt+ne+nb)/sum(nb))
+  ldanthat
+  # Escaping probability for target species
+  pthat=0
+  pthat
+  # Escaping probability for non-target species
+  pnthat=sum(ne)/(sum(ne)+sum(nnt))
+  pnthat
+  
+  # Logit function
+  logitp=function(p){log(p/(1-p))}
+  # Inverse logist function
+  logitpi=function(t){exp(t)/(1+exp(t))}
+  
+  
+  ## Use TMB to reproduce the results
+  # library(TMB) 
+  # Call TMB function value
+  compile("rep_code.cpp") 
+  
+  # Dynamically link the C++ code
+  dyn.load("c:/Users/DenHeyerC/Documents/Students/Jiaxin/MEM code/rep_code.dll")
+  
+  # data$empty = data$empty_unbaited+data$broken_hook
+  # Put the required data into a matrix
+  x = with(data, cbind(empty_baited, target_species, other_species, empty))
+  
+  # Soak time
+  stv = as.vector(st)
+  # st_fixedv = as.vector(st_fixed)  #fixed soak time
+  
+  # Data list
+  data = list(x=x,s=stv)
+  # datafixed = list(x=x,s=st_fixedv) #fixed soak time
+  
+  # Parameter list
+  param = list()
+  # paramfixed = list() #fixed soak time
+  # Initial values for lambda.t, lambda.nt and pnt
+  # Use the values calculated previously as the starting points
+  param$theta = c(log(ldathat),log(ldanthat),logitp(pnthat))
+  # paramfixed$theta = c(log(ldathat),log(ldanthat),logitp(pnthat)) #fixed soak time
+  
+  # Construct an R object (f) that represents our C++ function
+  # MakeADFun calls C++
+  f <- NULL
+  f = MakeADFun(data, param, DLL="rep_code")
+  # ffixed = MakeADFun(datafixed, paramfixed, DLL="rep_code") #fixed soak time
+  
+  # Call TMB function value
+  fit <- NULL
+  fit = nlminb(f$par,f$fn,f$gr)
+  # fitfixed = nlminb(ffixed$par,ffixed$fn,ffixed$gr) #fixed soak time
+  # Calculate standard deviations of all model parameters
+  sdr <- NULL
+  sdr = sdreport(f)
+  # Estimated results for model with actual soak time 
+  
+  # sdrfixed = sdreport(ffixed) #fixed soak time
+  # Estimated results for model with actual soak time 
+  # summary(sdrfixed)#fixed soak time
+  return(summary(sdr))
+
+  }
+
+
+```
+
+
+
+
+# run the startified MEM 2 model, which gives eeach strata equal weighting. NB the MEM fit set to set has apprpirate weighting, but does not take advantage of any increased preceision from the the stratification. In all years but 2019, the strata are wieghted by the number of sets.   In that year need to use area weighting or spaital model.
+```{r}
+SRMEM2017<-hoStratifiedModel2(year=2017)
+SRMEM2018<-hoStratifiedModel2(year=2018)
+SRMEM2019<-hoStratifiedModel2(year=2019)
+SRMEM2020<-hoStratifiedModel2(year=2020)
+
+head(SRMEM2017)
+head(SRMEM2018)
+head(SRMEM2019)
+head(SRMEM2020)
+```
+
+
+
+# The Profile Likelihood Approach to the index
+# now the other 700 hooks
+
+Subset the data
+```{r}
+dataSR = read.csv("data/HalibutSurveyHookData.csv", header = TRUE)
+summary(dataSR)
+dim(dataSR)
+
+# pairs plot for the 300 and 700 might be good; good correleation beetween 300 and 700
+# can do resampling analysis.
+# !!!! 4 sets were fewer taret were caughton whole set than in saubsampleed.  Deserves further investigation about data quality???
+plot(dataSR$target_species, dataSR$total_target_species)
+plot(dataSR$other_species, dataSR$total_other_species)
+plot(dataSR$other_species, dataSR$target_species)
+plot(dataSR$other_species, dataSR$empty_unbaited)
+plot(dataSR$other_species, dataSR$empty_baited)
+plot(dataSR$target_species, dataSR$empty_baited)
+
+# Drop Stations with total number of non-target fish # with greater than total number of hooks
+g_index = which(dataSR$NUM_HOOK_HAUL-dataSR$total_other_species-dataSR$total_target_species<0) 
+dataSR[c(g_index),]
+dataSR = dataSR[-g_index, ]
+which(dataSR$NUM_HOOK_HAUL-dataSR$total_other_species-dataSR$total_target_species<0)
+
+#  Drop  Stations  with total number of non-target species - number of non-target species from sampled hooks < 0
+g_index2 = which(dataSR$total_other_species-dataSR$other_species<0)
+dataSR[c(g_index2),]
+dataSR = dataSR[-c(g_index2),] 
+which(dataSR$total_other_species-dataSR$other_species<0)
+
+#  Drop  Stations  with (total number of target species - number of target species from sampled hooks < 0) 
+g_index3=which(dataSR$total_target_species-dataSR$target_species<0) 
+dataSR=dataSR[-c(g_index3),]
+which(dataSR$total_target_species-dataSR$target_species<0)
+
+#  Drop  Stations
+g_index4 = which(dataSR$NUM_HOOK_HAUL-dataSR$total_sampled-dataSR$total_target_species-dataSR$target_species-dataSR$total_other_species-dataSR$other_species<0) 
+dataSR = dataSR[-c(g_index4),]
+which(dataSR$NUM_HOOK_HAUL-dataSR$total_sampled-dataSR$total_target_species-dataSR$target_species-dataSR$total_other_species-dataSR$other_species<0)
+
+```
+```{r}
+
+year = 2017
+data <- dataSR[which(dataSR$YEAR==year), ]
+# here you want to subset by year
+
+# For 300 hooks
+## Data
+# st is the soak time
+# nb is the number of baited hooks at the end of the soak time # nt is the number of individuals of the target species caught
+# nnt  is  the  number  of  individuals  of  the  non-target  species  caught # ne is the number of empty hooks at the end of the soak time
+nb_300=data$empty_baited
+nt_300=data$target_species 
+nnt_300=data$other_species
+# Empty unbaited = Empty unbaited + missing hooks + broken hooks 
+ne_300=data$empty_unbaited+data$missing_hook+data$broken_hook 
+# Check
+data$total_sampled-nb_300-nt_300-nnt_300-ne_300
+
+```
+
+
+```{r}
+# For 700 hooks
+## Data
+nt_700 = data$total_target_species-data$target_species 
+nnt_700 = data$total_other_species-data$other_species 
+nbe_700 = data$NUM_HOOK_HAUL-data$total_sampled-nt_700-nnt_700
+```
+
+
+```{r}
+data_300=cbind(nb_300,nt_300,nnt_300,ne_300)
+data_700=cbind(nt_700,nnt_700,nbe_700)
+st_300=data$SOAKMINP3P1
+```
+
+
+
+```{r}
+# Logit function 
+logitp = function(p){log(p/(1-p))} 
+# Inverse logist function
+logitpi = function(t){exp(t)/(1+exp(t))}
+
+# For four components
+lglikd  =  function(theta,datamat,s){
+  # Transform the parameters back 
+  ldat = exp(theta[1])
+  ldant = exp(theta[2])
+  pnt = logitpi(theta[3])
+  # Print each iteration for theta 
+  # print(theta)
+  #  Probabilities
+  p  =  matrix(numeric(nrow(datamat)*ncol(datamat)),  nrow  =  nrow(datamat),  ncol  =  ncol(datamat))
+  for(i  in  1:nrow(datamat)){
+    p[i,1] = exp(-(ldat+ldant)*s[i])
+    p[i,2] = (1-exp(-(ldat+ldant)*s[i]))*(ldat/(ldat+ldant))
+    p[i,3] = (1-exp(-(ldat+ldant)*s[i]))*(ldant/(ldat+ldant))*(1-pnt)
+    p[i,4] = 1-p[i,1]-p[i,2]-p[i,3]
+    }
+ # Negative log-likelihood
+ nloglik=NULL
+ for  (i  in  1:nrow(datamat)){
+   loglik  =  dmultinom(x  =  datamat[i,],  prob  =  p[i,],  log  =  TRUE) 
+   nloglik = c(nloglik,-loglik)}
+   return(sum(nloglik))}
+
+# Log-parameters
+theta_300=c(log(1.751773e-05),log(0.001884848),logitp(0.8811727))
+#  Negative  Log-likelihood
+lglikd(theta=theta_300,  datamat=data_300,  s=st_300)
+
+```
+
+```{r}
+# Optimization  and  estimation
+# Use results calculated by the explicit equation as the starting points
+nlminout=nlminb(start=c(log(1.751773e-05),log(0.001884848),logitp(0.8811727)),objective=lglikd, datamat=data_300, s=st_300)
+# The estimated relative abundance index for the target species
+lambda.t=exp(nlminout$par[1])
+lambda.t
+
+```
+
+```{r}
+# The estimated relative abundance index for the non-target species
+lambda.nt=exp(nlminout$par[2]) 
+lambda.nt
+
+```
+
+```{r}
+# The estimated escaping rate for target specices
+prob.t=0
+prob.t
+
+# The estimated escaping rate for non-target species
+prob.nt=logitpi(nlminout$par[3]) 
+prob.nt
+
+```
+
+
+# Three components
+```{r}
+# Data matrix for model with three components
+data_3002=cbind(nt_300,nnt_300,ne_300+nb_300)
+
+lglikd2 = function(theta2,datamat2,s2){
+  # Transform the parameters back 
+  ldat2=exp(theta2[1])
+  ldant2=exp(theta2[2]) 
+  pnt2=logitpi(theta2[3])
+  # Print each iteration for theta # print(theta)
+  #  Probabilities
+  p2 = matrix(numeric(nrow(datamat2)*ncol(datamat2)), nrow = nrow(datamat2), ncol = ncol(datamat2))
+  for(i  in  1:nrow(datamat2)){
+    p2[i,1]=(1-exp(-(ldat2+ldant2)*s2[i]))*(ldat2/(ldat2+ldant2)) 
+    p2[i,2]=(1-exp(-(ldat2+ldant2)*s2[i]))*(ldant2/(ldat2+ldant2))*(1-pnt2) 
+    p2[i,3]=1-p2[i,1]-p2[i,2]
+  }
+  # Negative log-likelihood
+  nloglik2=NULL
+  for  (i  in  1:nrow(datamat2)){
+    loglik2  =  dmultinom(x  =  datamat2[i,],  prob  =  p2[i,],  log  =  TRUE) 
+    nloglik2 = c(nloglik2,-loglik2)}
+  return(sum(nloglik2))}
+
+# Log-parameters
+theta_300=c(log(1.751773e-05),log(0.001884848),logitp(0.8811727))
+#  Negative  Log-likelihood
+lglikd2(theta2=theta_300,  datamat2=data_3002,  s2=st_300)
+
+```
+```{r}
+# Optimization  and  estimation
+# Use resutls calculated by the explicit equation as the starting points
+nlminout2=nlminb(start=c(log(1.751773e-05),log(0.001884848),logitp(0.8811727)), objective=lglikd2, datamat2=data_3002, s2=st_300)
+# The estimated relative abundance index for the target species
+lambda.t2=exp(nlminout2$par[1]) 
+lambda.t2
+```
+```{r}
+# The estimated relative abundance index for the non-target species
+lambda.nt2=exp(nlminout2$par[2]) 
+lambda.nt2
+
+```
+```{r}
+# The estimated escaping rate for target speices
+prob.t2=0 
+prob.t2
+
+```
+
+```{r}
+# The estimated escaping rate for non-target species
+prob.nt2=logitpi(nlminout2$par[3]) 
+prob.nt2
+
+```
+
+
+# Product Likelihood
+```{r}
+lglikd3 = function(theta,datamat,datamat2,s){ 
+  # Transform the parameters back 
+  ldat=exp(theta[1])
+  ldant=exp(theta[2]) 
+  pnt=logitpi(theta[3])
+  # Print each iteration for theta # print(theta)
+  # Probabilities
+  p  =  matrix(numeric(nrow(datamat)*ncol(datamat)),  nrow  =  nrow(datamat),  ncol  =  ncol(datamat))
+  for(i  in  1:nrow(datamat)){
+    p[i,1] = exp(-(ldat+ldant)*s[i])
+    p[i,2]=(1-exp(-(ldat+ldant)*s[i]))*(ldat/(ldat+ldant))
+    p[i,3]=(1-exp(-(ldat+ldant)*s[i]))*(ldant/(ldat+ldant))*(1-pnt)
+    p[i,4]=1-p[i,1]-p[i,2]-p[i,3]
+    }
+  p2 = matrix(numeric(nrow(datamat2)*ncol(datamat2)), nrow = nrow(datamat2), ncol = ncol(datamat2))
+  for(i  in  1:nrow(datamat2)){
+    p2[i,1]=(1-exp(-(ldat+ldant)*s[i]))*(ldat/(ldat+ldant))
+    p2[i,2]=(1-exp(-(ldat+ldant)*s[i]))*(ldant/(ldat+ldant))*(1-pnt) 
+    p2[i,3]=1-p2[i,1]-p2[i,2]
+    }
+  # Negative log-likelihood
+  nloglik3=NULL
+  for  (i  in  1:nrow(datamat)){
+    loglik3  =  dmultinom(x  =  datamat[i,],  prob  =  p[i,],  log  =  TRUE) + dmultinom(x  =  datamat2[i,],  prob  =  p2[i,],  log  =  TRUE) 
+    nloglik3 = c(nloglik3,-loglik3)}
+  return(sum(nloglik3))}
+# Log-parameters
+theta_300=c(log(1.751773e-05),log(0.001884848),logitp(0.8811727))
+#  Negative  Log-likelihood
+lglikd3(theta=theta_300, datamat=data_300,  datamat2=data_700,  s=st_300)
+## [1] 13137.75  ##!!! first time the numbers don't match up
+```
+
+```{r}
+# Optimization  and  estimation
+# Use resutls calculated by the explicit equation as the starting points
+nlminout3=nlminb(start=c(log(1.751773e-05),log(0.001884848),logitp(0.8811727)), objective=lglikd3, datamat=data_300,datamat2=data_700,s=st_300)
+# The estimated relative abundance index for the target species
+lambda.t3=exp(nlminout3$par[1])
+lambda.t3
+```
+```{r}
+# The estimated relative abundance index for the non-target species
+lambda.nt3=exp(nlminout3$par[2]) 
+lambda.nt3
+
+```
+
+
+
+```{r}
+# The estimated escaping rate for target speices
+prob.t3=0 
+prob.t3
+```
+
+```{r}
+# The estimated escaping rate for non-target species
+prob.nt3=logitpi(nlminout3$par[3]) 
+prob.nt3
+```
+
+# Comparison
+```{r}
+# Negative log-likelihood for model with four components
+nlminout$objective
+
+# Negative log-likelihood for model with three components
+nlminout2$objective
+
+# Negative log-likelihood for production
+nlminout3$objective
+
+# Model with four components
+lambda.t
+
+# Model with three components
+lambda.t2
+
+# Model for product likelihood
+lambda.t3
+
+# Model with four components
+lambda.nt
+
+# Model with three components
+lambda.nt2
+
+# Model for product likelihood
+lambda.nt3
+
+# Model with four components
+prob.nt
+
+# Model with three components
+prob.nt2
+
+# Model for product likelihood
+prob.nt3
+
+```
+
+
+
