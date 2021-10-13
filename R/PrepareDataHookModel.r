@@ -34,7 +34,7 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
   self_filter('isdb',env=isdb)
 
   # calculate avg weight by species from longline survey (used later)
-  fish.avg.weight <- select(isdb$ISCATCHES,FISHSET_ID,CATCH_ID,SPECCD_ID,EST_NUM_CAUGHT,EST_COMBINED_WT) %>%
+  fish.avg.weight <- dplyr::dplyr::select(isdb$ISCATCHES,FISHSET_ID,CATCH_ID,SPECCD_ID,EST_NUM_CAUGHT,EST_COMBINED_WT) %>%
     mutate(AVG_WEIGHT = EST_COMBINED_WT/EST_NUM_CAUGHT ) %>%
     group_by(.,SPECCD_ID) %>%
     summarise(mean_AVG_WEIGHT=mean(AVG_WEIGHT,na.rm=T))
@@ -55,21 +55,21 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
 
 
   ## Trips
-  trips <- left_join(select(isdb$ISTRIPS,TRIP_ID,TRIPCD_ID,TRIP,VESS_ID), select(isdb$ISVESSELS,VESS_ID,VESSEL_NAME,CFV), by='VESS_ID')
+  trips <- left_join(dplyr::select(isdb$ISTRIPS,TRIP_ID,TRIPCD_ID,TRIP,VESS_ID), dplyr::select(isdb$ISVESSELS,VESS_ID,VESSEL_NAME,CFV), by='VESS_ID')
 
 
   ## Sets
   isdb$ISSETPROFILE_WIDE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE_WIDE$DATE_TIME3,  isdb$ISSETPROFILE_WIDE$DATE_TIME1, units='min')
-  isdb$ISSETPROFILE_WIDE$DEPTH <- rowMeans(select(isdb$ISSETPROFILE_WIDE,DEP1,DEP2,DEP3,DEP4),na.rm=T)
-  sets <- left_join(select(isdb$ISSETPROFILE_WIDE,FISHSET_ID,SET_NO,DATE_TIME3,SOAKMINP3P1,DEPTH,LATITUDE,LONGITUDE,YEAR), select(isdb$ISFISHSETS,FISHSET_ID,TRIP_ID,SET_NO,SETCD_ID,STATION,STRATUM_ID,NAFAREA_ID,NUM_HOOK_HAUL,GEAR_ID), by=c('FISHSET_ID','SET_NO'))
+  isdb$ISSETPROFILE_WIDE$DEPTH <- rowMeans(dplyr::select(isdb$ISSETPROFILE_WIDE,DEP1,DEP2,DEP3,DEP4),na.rm=T)
+  sets <- left_join(dplyr::select(isdb$ISSETPROFILE_WIDE,FISHSET_ID,SET_NO,DATE_TIME3,SOAKMINP3P1,DEPTH,LATITUDE,LONGITUDE,YEAR), dplyr::select(isdb$ISFISHSETS,FISHSET_ID,TRIP_ID,SET_NO,SETCD_ID,STATION,STRATUM_ID,NAFAREA_ID,NUM_HOOK_HAUL,GEAR_ID), by=c('FISHSET_ID','SET_NO'))
 
   # join gear if desired
   if(add.gear){
     ## Gear
-    gear <- left_join(select(isdb$ISGEARFEATURES,GEAR_ID,GEARFCD_ID,FEATURE_VALUE), select(isdb$ISGEARFEATURECODES,GEARFCD_ID,FEATURE)) %>%
-      select(.,GEAR_ID,FEATURE_VALUE,FEATURE) %>%
+    gear <- left_join(dplyr::select(isdb$ISGEARFEATURES,GEAR_ID,GEARFCD_ID,FEATURE_VALUE), dplyr::select(isdb$ISGEARFEATURECODES,GEARFCD_ID,FEATURE)) %>%
+      dplyr::select(.,GEAR_ID,FEATURE_VALUE,FEATURE) %>%
       pivot_wider(.,names_from = FEATURE,values_from = FEATURE_VALUE) %>%
-      left_join(.,select(isdb$ISGEARS,GEAR_ID,TRIP_ID,GEARCD_ID, HOOKCD_ID,HOOKSIZE))%>% data.frame()
+      left_join(.,dplyr::select(isdb$ISGEARS,GEAR_ID,TRIP_ID,GEARCD_ID, HOOKCD_ID,HOOKSIZE))%>% data.frame()
 
     # fix names
     names(gear)<-gsub(".M.", "M", names(gear), fixed = TRUE)
@@ -77,13 +77,13 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
     names(gear)<-gsub(".", "_", names(gear), fixed = TRUE)
 
 
-    sets <- left_join(sets,select(gear,!c(HERRING,MUSTAD)),by=c('GEAR_ID','TRIP_ID'))
+    sets <- left_join(sets,dplyr::select(gear,!c(HERRING,MUSTAD)),by=c('GEAR_ID','TRIP_ID'))
   }
 
   ## Fish
 
   # fill in NAs in NuM_CAUGHT with estimate from COMBINED_WT
-  fish <- left_join(select(isdb$ISCATCHES,FISHSET_ID,CATCH_ID,SPECCD_ID,EST_NUM_CAUGHT,EST_COMBINED_WT),fish.avg.weight) %>%
+  fish <- left_join(dplyr::select(isdb$ISCATCHES,FISHSET_ID,CATCH_ID,SPECCD_ID,EST_NUM_CAUGHT,EST_COMBINED_WT),fish.avg.weight) %>%
      mutate(EST_NUM_FROM_WEIGHT = round(EST_COMBINED_WT/mean_AVG_WEIGHT))
   #summary(lm(EST_NUM_FROM_WEIGHT~EST_NUM_CAUGHT-1,fish))
   fish$EST_NUM_CAUGHT[is.na(fish$EST_NUM_CAUGHT)]<-fish$EST_NUM_FROM_WEIGHT[is.na(fish$EST_NUM_CAUGHT)]

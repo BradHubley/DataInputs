@@ -63,7 +63,7 @@ bins=seq(0,260,5)
 FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS")
 FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=F, bins=bins, LF.from = "ISFISHLENGTHS")
 
-RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=T,hook.data=T)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=T)
 RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.LF=T,bins=bins,by.sex=F)
 RandomSurveyAudit<-RandomSurveyData(sp=30,datadir=datadir,add.LF=F,bins=bins,by.sex=F,add.gear = T)
 
