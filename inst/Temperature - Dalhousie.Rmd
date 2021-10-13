@@ -1,0 +1,79 @@
+---
+title: "Temperature - Dalhousie"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+library(geosphere)
+library(dplyr)
+library(marmap)
+library(rgdal)
+library(raster)
+library(PBSmapping)
+library(reshape2)
+library(SpatialHub)
+library(metR)
+library(tidyverse)
+library(viridis)
+```
+
+
+Get the NOAA Bathy data to plot the station locations
+```{r}
+# survey_area <- getNOAA.bathy(lon1 = -45, lon2 = -69, lat1 = 39.5, lat2 = 48.5, resolution = 1)
+```
+Load in the NAFO regions (From: https://www.nafo.int/Data/GIS)
+```{r}
+# NAFO <- readOGR("C:/Users/wringeb/Desktop/Halibut DFO/NAFO Divisions Shape File/Divisions.shp")
+```
+
+Crop to match the area of interest
+```{r}
+# NAFO_work <- crop(NAFO, y = c(-69, -48, 39.5, 48.5))
+```
+
+Make a pretty map
+
+```{r}
+tt <- autoplot(survey_area, geom=c("r", "c"), colour="grey", size=0.1) + scale_fill_etopo() + geom_contour(aes(z=z),
+      breaks=c(-100, -200, -500, -1000, -2000, -4000),
+      colour="grey90", size=0.01) +
+        xlab("Degrees Longitude") +
+        ylab("Degrees Latitude") + theme(legend.position = "none") +
+  geom_polygon(data = EEZ[EEZ$PID == 1, ], aes(x = X, y = Y), fill = NA, colour = "black", linetype = 2) + # Keyhole
+  geom_polygon(data = EEZ[EEZ$PID == 2, ], aes(x = X, y = Y), fill = NA, colour = "black", linetype = 2) + 
+  geom_polygon(data = NAFO_work, aes(x = long, y = lat, group = group), fill = NA, colour = "black") +
+  coord_cartesian(xlim = c(-69, -48), ylim = c(39.5, 48.5))
+tt
+```
+
+Read in the 2017 temperature data
+
+```{r}
+temperature_2017 <- read.csv("C:/Users/wringeb/Desktop/Halibut DFO/Work with collaborators/Charlotte Luo/Temperature Data/Temperature_hook_occupancy_2017.csv", header = TRUE, stringsAsFactors = FALSE)
+temperature_2018 <- read.csv("C:/Users/wringeb/Desktop/Halibut DFO/Work with collaborators/Charlotte Luo/Temperature Data/Temperature_hook_occupancy_2018.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+Look at how many stations for 2017 dop not have associated temperature data
+```{r}
+length(which(is.na(hook_temp_2017$MED_TEMP)))
+```
+
+Plot and have  look at temperatures
+```{r}
+tt + geom_point(data = temperature_2017, aes(x = P1LONG, y = P1LAT, colour = MED_TEMP, size = 2), show.legend = TRUE) + scale_colour_viridis(option = "A")
+```
+
+
+Check how many stations don't have temperature for
+```{r}
+length(which(is.na(hook_occupancy_STATION_2018_temperature$MED_TEMP)))
+```
+
+Plot and have  look at temperatures
+```{r}
+tt + geom_point(data = temperature_2018, aes(x = P1LONG, y = P1LAT, colour = MED_TEMP, size = 2), show.legend = TRUE) + scale_colour_viridis(option = "A")
+```
+
+

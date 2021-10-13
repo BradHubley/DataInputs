@@ -1,0 +1,1008 @@
+---
+title: "Product Likelihood with Spatial Random Field"
+author: "Jiaxin Luo"
+date: "2021/4/29"
+output: pdf_document
+---
+
+# For 2017
+
+
+
+```{r}
+# Clear memory
+rm(list=ls())
+
+library(TMB) 
+# Call TMB function value
+compile("prodlikd_spatial.cpp")
+# Dynamically link the C++ code
+dyn.load(dynlib("prodlikd_spatial"))
+
+# Survey Data
+surv_dat = read.csv("HalibutSurveyHookData.csv", header = T, stringsAsFactors = F)
+dim(surv_dat)
+
+# The halibut data for 2017
+data2017 = surv_dat[which(surv_dat$YEAR == 2017), ]
+dim(data2017)
+# Drop the stations (523 and 525) with hook = 30
+surv_not30 = which(data2017$total_sampled == 30)
+data2017=data2017[-c(surv_not30),]
+which(data2017$hooks_sampled == 30)
+dim(data2017)
+# Drop Stations with total number of non-target fish 
+# with greater than total number of hooks
+g_index=which(data2017$NUM_HOOK_HAUL-data2017$total_other_species-data2017$total_target_species<0)
+data2017=data2017[-g_index, ]
+which(data2017$NUM_HOOK_HAUL-data2017$total_other_species-data2017$total_target_species<0)
+dim(data2017)
+# Drop Stations with 
+# (total number of non-target species - number of non-target species from sampled hooks < 0)
+g_index2=which(data2017$total_other_species-data2017$other_species<0)
+data2017=data2017[-c(g_index2),]
+which(data2017$total_other_species-data2017$other_species<0)
+dim(data2017)
+# Drop Stations with 
+# (total number of target species - number of target species from sampled hooks < 0)
+g_index3=which(data2017$total_target_species-data2017$target_species<0)
+data2017=data2017[-c(g_index3),]
+which(data2017$total_target_species-data2017$target_species<0)
+dim(data2017)
+# Drop Stations
+g_index4=which(data2017$NUM_HOOK_HAUL-data2017$total_sampled-data2017$total_target_species-
+                 data2017$target_species-data2017$total_other_species-data2017$other_species<0)
+data2017=data2017[-c(g_index4),]
+which(data2017$NUM_HOOK_HAUL-data2017$total_sampled-data2017$total_target_species-
+        data2017$target_species-data2017$total_other_species-data2017$other_species<0)
+dim(data2017)
+
+# For 300 hooks
+# Empty unbaited = Empty unbaited + missing hooks + broken hooks 
+data2017$empty_unb=data2017$empty_unbaited+data2017$missing_hook+data2017$broken_hook
+# Check
+data2017$total_sampled-data2017$empty_baited-data2017$target_species-data2017$other_species-data2017$empty_unb
+st_17_300=data2017$SOAKMINP3P1
+
+# For 700 hooks
+data2017$target_species_700=data2017$total_target_species-data2017$target_species
+data2017$other_species_700=data2017$total_other_species-data2017$other_species
+data2017$nbe_700=data2017$NUM_HOOK_HAUL-data2017$total_sampled-data2017$target_species_700-data2017$other_species_700
+
+# Logit function
+logitp=function(p){log(p/(1-p))}
+# Inverse logist function
+logitpi=function(t){exp(t)/(1+exp(t))}
+
+```
+
+## Switch for lat-long and project
+
+```{r}
+library(sp)
+library(rgdal)
+#To switch for lat-long and project it on a flat surface since the earth is a global
+prj4s=CRS("+init=epsg:4326")
+utm.prj4s=CRS("+init=epsg:32619")
+loc_2017=cbind(data2017$LONGITUDE,data2017$LATITUDE)
+loc_17=cbind(data2017$LONGITUDE,data2017$LATITUDE)
+loc_17=SpatialPoints(loc_17,proj4string = prj4s)
+loc_17=spTransform(loc_17,utm.prj4s)
+
+data2017$LONGITUDE_proj=loc_17@coords[,1]
+data2017$LATITUDE_proj=loc_17@coords[,2]
+
+# Standardize coordinate for choosing a starting value for phi
+spool_17 = sqrt(((length(loc_2017[,1])-1)*var(loc_17@coords[,1])+
+        (length(loc_2017[,2])-1)*var(loc_17@coords[,2]))/
+        (length(loc_2017[,1])+length(loc_2017[,2])))
+data2017$loc1=(loc_17@coords[,1]-median(loc_17@coords[,1]))/spool_17
+data2017$loc2=(loc_17@coords[,2]-median(loc_17@coords[,2]))/spool_17
+dismat_17=cbind(data2017$loc1,data2017$loc2)
+
+# Distance matrix
+Dist_17= as.matrix(dist(dismat_17))
+
+```
+
+## 1000 hooks
+
+```{r}
+# Covariate matrix
+colone_17=rep(1,nrow(data2017))
+
+# Put the required data into a matrix (300 hooks)
+H_17_300 = cbind(data2017$empty_baited, data2017$target_species, data2017$other_species, data2017$empty_unb)
+# Put the required data into a matrix (700 hooks)
+A_17_700 = cbind(data2017$target_species_700, data2017$other_species_700, data2017$nbe_700)
+X_17=as.matrix(colone_17)
+# Soak time
+st_17_300 = as.vector(st_17_300)
+
+# Data list
+data_17_1000=list(H=H_17_300,A=A_17_700,s=st_17_300,X=X_17,D=Dist_17)
+
+# Parameter list
+param_17_1000 = list()
+
+# Initial values for lambda.t, lambda.nt and pnt
+# Use the estimated values as the starting points
+param_17_1000$betat = log(1.878483e-05)
+param_17_1000$betant = log(0.001941084)
+param_17_1000$theta = logitp(0.8795768)
+# Random field
+param_17_1000$omegat =  rep(0,nrow(H_17_300))
+param_17_1000$omegant =  rep(0,nrow(H_17_300))
+# Smoothness parameter 
+param_17_1000$lognut = 0
+param_17_1000$lognunt = 0
+# Range parameter 
+param_17_1000$logPhit = log(diff(range(dismat_17[,1]))*diff(range(dismat_17[,2])))
+param_17_1000$logPhint = log(diff(range(dismat_17[,1]))*diff(range(dismat_17[,2])))
+# Variance
+param_17_1000$logSigmat = 0
+param_17_1000$logSigmant = 0
+
+newlist_17_1000=list(lognut=factor(NA),lognunt=factor(NA))
+# Construct an R object (f) that represents our C++ function
+# use map and newlist debug
+# Fix lognu at 0
+f_17_1000 = MakeADFun(data_17_1000,param_17_1000,random=c("omegat","omegant"),
+                     DLL="prodlikd_spatial",map=newlist_17_1000,silent=TRUE)
+fit_17_1000 = nlminb(f_17_1000$par,f_17_1000$fn,f_17_1000$gr)
+# Calculate standard deviations of all model parameters
+sdr_17_1000 = sdreport(f_17_1000)
+# The estimated parameters and corresponding standard deviations
+sum_sdr17_1000 = summary(sdr_17_1000)
+
+# C++ file which defines the objective function (usually the negative log likelihood) 
+# R file which sets up data, calls the C++ function, and minimizes the objective function.
+# Minimized negative log likelihood
+fit_17_1000$objective
+
+## Estimated Lambdas 
+# 2017 without temperature
+# For target species
+head(sum_sdr17_1000[row.names(sum_sdr17_1000) %in% "ldat", ])
+dim(sum_sdr17_1000[row.names(sum_sdr17_1000) %in% "ldat", ])
+lamt_est_17_1000 = data.frame(sum_sdr17_1000[row.names(sum_sdr17_1000) %in% "ldat", ])
+head(lamt_est_17_1000)
+data2017$lamt_se_17_1000 = lamt_est_17_1000$Std..Error
+data2017$lamt_17_1000 = lamt_est_17_1000$Estimate
+# For non-target species
+head(sum_sdr17_1000[row.names(sum_sdr17_1000) %in% "ldant", ])
+dim(sum_sdr17_1000[row.names(sum_sdr17_1000) %in% "ldant", ])
+lamnt_est_17_1000 = data.frame(sum_sdr17_1000[row.names(sum_sdr17_1000) %in% "ldant", ])
+head(lamnt_est_17_1000)
+data2017$lamnt_se_17_1000 = lamnt_est_17_1000$Std..Error
+data2017$lamnt_17_1000 = lamnt_est_17_1000$Estimate
+
+saveRDS(data2017, file = "data2017_1000_prodsp.rds")
+
+
+```
+
+
+# For 2018
+
+```{r}
+# The halibut data for 2018
+data2018 = surv_dat[which(surv_dat$YEAR == 2018), ]
+dim(data2018)
+
+# Drop Stations with total number of non-target fish 
+# with greater than total number of hooks
+g_index_18=which(data2018$NUM_HOOK_HAUL-data2018$total_other_species-data2018$total_target_species<0)
+g_index_18
+# Drop Stations with 
+# (total number of non-target species - number of non-target species from sampled hooks < 0)
+g_index2_18=which(data2018$total_other_species-data2018$other_species<0)
+data2018=data2018[-c(g_index2_18),]
+which(data2018$total_other_species-data2018$other_species<0)
+dim(data2018)
+# Drop Stations with 
+# (total number of target species - number of target species from sampled hooks < 0)
+g_index3_18=which(data2018$total_target_species-data2018$target_species<0)
+g_index3_18
+# Drop Stations
+g_index4_18=which(data2018$NUM_HOOK_HAUL-data2018$total_sampled-data2018$total_target_species
+               -data2018$target_species-data2018$total_other_species-data2018$other_species<0)
+data2018=data2018[-c(g_index4_18),]
+which(data2018$NUM_HOOK_HAUL-data2018$total_sampled-data2018$total_target_species
+               -data2018$target_species-data2018$total_other_species
+               -data2018$other_species<0)
+dim(data2018)
+
+# For 300 hooks
+# Empty unbaited = Empty unbaited + missing hooks + broken hooks 
+data2018$empty_unb=data2018$empty_unbaited+data2018$missing_hook+data2018$broken_hook
+# Check
+data2018$total_sampled-data2018$empty_baited-data2018$target_species-data2018$target_species-data2018$empty_unb
+st_18_300=data2018$SOAKMINP3P1
+
+# For 700 hooks
+data2018$target_species_700=data2018$total_target_species-data2018$target_species
+data2018$other_species_700=data2018$total_other_species-data2018$other_species
+data2018$nbe_700=data2018$NUM_HOOK_HAUL-data2018$total_sampled-data2018$target_species_700-data2018$other_species_700
+
+
+```
+
+## Switch for lat-long and project
+
+```{r}
+loc_2018=cbind(data2018$LONGITUDE,data2018$LATITUDE)
+loc_18=cbind(data2018$LONGITUDE,data2018$LATITUDE)
+loc_18=SpatialPoints(loc_18,proj4string = prj4s)
+loc_18=spTransform(loc_18,utm.prj4s)
+
+data2018$LONGITUDE_proj=loc_18@coords[,1]
+data2018$LATITUDE_proj=loc_18@coords[,2]
+
+# Standardize loc for choosing a starting value for phi
+spool_18 = sqrt(((length(loc_2018[,1])-1)*var(loc_18@coords[,1])+
+        (length(loc_2018[,2])-1)*var(loc_18@coords[,2]))/
+        (length(loc_2018[,1])+length(loc_2018[,2])))
+data2018$loc1=(loc_18@coords[,1]-median(loc_18@coords[,1]))/spool_18
+data2018$loc2=(loc_18@coords[,2]-median(loc_18@coords[,2]))/spool_18
+dismat_18=cbind(data2018$loc1,data2018$loc2)
+
+# Distance matrix
+Dist_18 = as.matrix(dist(dismat_18))
+
+```
+
+## 1000 hooks
+
+```{r}
+# Covariate matrix 
+colone_18=rep(1,nrow(data2018))
+
+# Put the required data into a matrix (300 hooks)
+H_18_300 = cbind(data2018$empty_baited, data2018$target_species, data2018$other_species, data2018$empty_unb)
+# Put the required data into a matrix (700 hooks)
+A_18_700 = cbind(data2018$target_species_700, data2018$other_species_700, data2018$nbe_700)
+X_18=as.matrix(colone_18)
+# Soak time
+st_18_300 = as.vector(st_18_300)
+
+# Data list
+data_18_1000=list(H=H_18_300,A=A_18_700,s=st_18_300,X=X_18,D=Dist_18)
+
+# Parameter list
+param_18_1000 = list()
+
+# Initial values for lambda.t, lambda.nt and pnt
+# Use the estimated values as the starting points
+param_18_1000$betat = log(2.671813e-05)
+param_18_1000$betant = log(0.002076366)
+param_18_1000$theta = logitp(0.8908183)
+# Random field
+param_18_1000$omegat =  rep(0,nrow(H_18_300))
+param_18_1000$omegant =  rep(0,nrow(H_18_300))
+# Smoothness parameter 
+param_18_1000$lognut = 0
+param_18_1000$lognunt = 0
+# Range parameter 
+param_18_1000$logPhit = log(diff(range(dismat_18[,1]))*diff(range(dismat_18[,2])))
+param_18_1000$logPhint = log(diff(range(dismat_18[,1]))*diff(range(dismat_18[,2])))
+# Variance
+param_18_1000$logSigmat = 0
+param_18_1000$logSigmant = 0
+
+newlist_18_1000=list(lognut=factor(NA),lognunt=factor(NA))
+# Construct an R object (f) that represents our C++ function
+# use map and newlist debug
+# Fix lognu at 0
+f_18_1000 = MakeADFun(data_18_1000,param_18_1000,random=c("omegat","omegant"),
+                     DLL="prodlikd_spatial",map=newlist_18_1000,silent=TRUE)
+fit_18_1000 = nlminb(f_18_1000$par,f_18_1000$fn,f_18_1000$gr)
+# Calculate standard deviations of all model parameters
+sdr_18_1000 = sdreport(f_18_1000)
+# The estimated parameters and corresponding standard deviations
+sum_sdr18_1000 = summary(sdr_18_1000)
+
+# C++ file which defines the objective function (usually the negative log likelihood) 
+# R file which sets up data, calls the C++ function, and minimizes the objective function.
+# Minimized negative log likelihood
+fit_18_1000$objective
+
+## Estimated Lambdas 
+# 2018 without temperature
+# For target species
+head(sum_sdr18_1000[row.names(sum_sdr18_1000) %in% "ldat", ])
+dim(sum_sdr18_1000[row.names(sum_sdr18_1000) %in% "ldat", ])
+lamt_est_18_1000 = data.frame(sum_sdr18_1000[row.names(sum_sdr18_1000) %in% "ldat", ])
+head(lamt_est_18_1000)
+data2018$lamt_se_18_1000 = lamt_est_18_1000$Std..Error
+data2018$lamt_18_1000 = lamt_est_18_1000$Estimate
+# For non-target species
+head(sum_sdr18_1000[row.names(sum_sdr18_1000) %in% "ldant", ])
+dim(sum_sdr18_1000[row.names(sum_sdr18_1000) %in% "ldant", ])
+lamnt_est_18_1000 = data.frame(sum_sdr18_1000[row.names(sum_sdr18_1000) %in% "ldant", ])
+head(lamnt_est_18_1000)
+data2018$lamnt_se_18_1000 = lamnt_est_18_1000$Std..Error
+data2018$lamnt_18_1000 = lamnt_est_18_1000$Estimate
+
+saveRDS(data2018, file = "data2018_1000_prodsp.rds")
+
+```
+
+
+# For 2019
+
+```{r}
+# 2019
+data2019 = surv_dat[which(surv_dat$YEAR == 2019), ]
+dim(data2019)
+# Five stations are with non-integer label
+stat_error = sapply(data2019$STATION, function(i) i == as.integer(i))
+stat_error_index = which(stat_error == "FALSE")
+stat_error_index
+data2019[stat_error_index,]
+data2019[stat_error_index,]$STATION
+data2019[stat_error_index,]$STATION = as.integer(data2019[stat_error_index,]$STATION)
+
+# Drop Stations with total number of non-target fish 
+# with greater than total number of hooks
+g_index_19=which(data2019$NUM_HOOK_HAUL-data2019$total_other_species-data2019$total_target_species<0)
+data2019=data2019[-c(g_index_19),]
+which(data2019$NUM_HOOK_HAUL-data2019$total_other_species-data2019$total_target_species<0)
+dim(data2019)
+# Drop Stations with 
+# (total number of non-target species - number of non-target species from sampled hooks < 0)
+g_index2_19=which(data2019$total_other_species-data2019$other_species<0)
+data2019=data2019[-c(g_index2_19),]
+which(data2019$total_other_species-data2019$other_species<0)
+dim(data2019)
+# Drop Stations with 
+# (total number of target species - number of target species from sampled hooks < 0)
+g_index3_19=which(data2019$total_target_species-data2019$target_species<0)
+g_index3_19
+# Drop Stations
+g_index4_19=which(data2019$NUM_HOOK_HAUL-data2019$total_sampled-data2019$total_target_species-
+                    data2019$target_species-data2019$total_other_species-data2019$other_species<0)
+g_index4_19
+
+# For 300 hooks
+# Empty unbaited = Empty unbaited + missing hooks + broken hooks 
+data2019$empty_unb=data2019$empty_unbaited+data2019$missing_hook+data2019$broken_hook
+# Check
+data2019$total_sampled-data2019$empty_baited-data2019$target_species-data2019$other_species-data2019$empty_unb
+st_19_300=data2019$SOAKMINP3P1
+
+# For 700 hooks
+data2019$target_species_700=data2019$total_target_species-data2019$target_species
+data2019$other_species_700=data2019$total_other_species-data2019$other_species
+data2019$nbe_700=data2019$NUM_HOOK_HAUL-data2019$total_sampled-data2019$target_species_700-data2019$other_species_700
+
+```
+
+## Switch for lat-long and project
+
+```{r}
+loc_2019=cbind(data2019$LONGITUDE,data2019$LATITUDE)
+loc_19=cbind(data2019$LONGITUDE,data2019$LATITUDE)
+loc_19=SpatialPoints(loc_19,proj4string = prj4s)
+loc_19=spTransform(loc_19,utm.prj4s)
+head(loc_19)
+
+data2019$LONGITUDE_proj=loc_19@coords[,1]
+data2019$LATITUDE_proj=loc_19@coords[,2]
+
+# Standardize loc for choosing a starting value for phi
+spool_19 = sqrt(((length(loc_2019[,1])-1)*var(loc_19@coords[,1])+
+        (length(loc_2019[,2])-1)*var(loc_19@coords[,2]))/
+        (length(loc_2019[,1])+length(loc_2019[,2])))
+data2019$loc1=(loc_19@coords[,1]-median(loc_19@coords[,1]))/spool_19
+data2019$loc2=(loc_19@coords[,2]-median(loc_19@coords[,2]))/spool_19
+dismat_19=cbind(data2019$loc1,data2019$loc2)
+
+# Distance matrix
+Dist_19 = as.matrix(dist(dismat_19))
+
+```
+
+## 1000 hooks
+
+```{r}
+# Covariate matrix 
+colone_19=rep(1,nrow(data2019))
+
+# Put the required data into a matrix (300 hooks)
+H_19_300 = cbind(data2019$empty_baited, data2019$target_species, data2019$other_species, data2019$empty_unb)
+# Put the required data into a matrix (700 hooks)
+A_19_700 = cbind(data2019$target_species_700, data2019$other_species_700, data2019$nbe_700)
+X_19=as.matrix(colone_19)
+# Soak time
+st_19_300 = as.vector(st_19_300)
+
+# Data list
+data_19_1000=list(H=H_19_300,A=A_19_700,s=st_19_300,X=X_19,D=Dist_19)
+
+# Parameter list
+param_19_1000 = list()
+
+# Initial values for lambda.t, lambda.nt and pnt
+# Use the estimated values as the starting points
+param_19_1000$betat = log(2.347294e-05)
+param_19_1000$betant = log(2.236729e-03)
+param_19_1000$theta = logitp(8.959482e-01)
+# Random field
+param_19_1000$omegat =  rep(0,nrow(H_19_300))
+param_19_1000$omegant =  rep(0,nrow(H_19_300))
+# Smoothness parameter 
+param_19_1000$lognut = 0
+param_19_1000$lognunt = 0
+# Range parameter 
+param_19_1000$logPhit = log(diff(range(dismat_19[,1]))*diff(range(dismat_19[,2])))
+param_19_1000$logPhint = log(diff(range(dismat_19[,1]))*diff(range(dismat_19[,2])))
+# Variance
+param_19_1000$logSigmat = 0
+param_19_1000$logSigmant = 0
+
+newlist_19_1000=list(lognut=factor(NA),lognunt=factor(NA))
+# Construct an R object (f) that represents our C++ function
+# use map and newlist debug
+# Fix lognu at 0
+f_19_1000 = MakeADFun(data_19_1000,param_19_1000,random=c("omegat","omegant"),
+                     DLL="prodlikd_spatial",map=newlist_19_1000,silent=TRUE)
+fit_19_1000 = nlminb(f_19_1000$par,f_19_1000$fn,f_19_1000$gr)
+# Calculate standard deviations of all model parameters
+sdr_19_1000 = sdreport(f_19_1000)
+# The estimated parameters and corresponding standard deviations
+sum_sdr19_1000 = summary(sdr_19_1000)
+
+# C++ file which defines the objective function (usually the negative log likelihood) 
+# R file which sets up data, calls the C++ function, and minimizes the objective function.
+# Minimized negative log likelihood
+fit_19_1000$objective
+
+## Estimated Lambdas 
+# 2019 without temperature
+# For target species
+head(sum_sdr19_1000[row.names(sum_sdr19_1000) %in% "ldat", ])
+dim(sum_sdr19_1000[row.names(sum_sdr19_1000) %in% "ldat", ])
+lamt_est_19_1000 = data.frame(sum_sdr19_1000[row.names(sum_sdr19_1000) %in% "ldat", ])
+head(lamt_est_19_1000)
+data2019$lamt_se_19_1000 = lamt_est_19_1000$Std..Error
+data2019$lamt_19_1000 = lamt_est_19_1000$Estimate
+# For non-target species
+head(sum_sdr19_1000[row.names(sum_sdr19_1000) %in% "ldant", ])
+dim(sum_sdr19_1000[row.names(sum_sdr19_1000) %in% "ldant", ])
+lamnt_est_19_1000 = data.frame(sum_sdr19_1000[row.names(sum_sdr19_1000) %in% "ldant", ])
+head(lamnt_est_19_1000)
+data2019$lamnt_se_19_1000 = lamnt_est_19_1000$Std..Error
+data2019$lamnt_19_1000 = lamnt_est_19_1000$Estimate
+
+saveRDS(data2019, file = "data2019_1000_prodsp.rds")
+
+```
+
+# For 2020
+
+```{r}
+# 2020
+data2020 = surv_dat[which(surv_dat$YEAR == 2020), ]
+dim(data2020)
+# Five stations are with non-integer label
+stat_error = sapply(data2020$STATION, function(i) i == as.integer(i))
+stat_error_index = which(stat_error == "FALSE")
+stat_error_index
+data2020[stat_error_index,]
+data2020[stat_error_index,]$STATION
+data2020[stat_error_index,]$STATION = as.integer(data2020[stat_error_index,]$STATION)
+
+# Drop Stations with total number of non-target fish 
+# with greater than total number of hooks
+g_index_20=which(data2020$NUM_HOOK_HAUL-data2020$total_other_species-data2020$total_target_species<0)
+g_index_20
+# data2020=data2020[-c(g_index_20),]
+# which(data2020$NUM_HOOK_HAUL-data2020$total_other_species-data2020$total_target_species<0)
+dim(data2020)
+# Drop Stations with 
+# (total number of non-target species - number of non-target species from sampled hooks < 0)
+g_index2_20=which(data2020$total_other_species-data2020$other_species<0)
+data2020=data2020[-c(g_index2_20),]
+which(data2020$total_other_species-data2020$other_species<0)
+dim(data2020)
+# Drop Stations with 
+# (total number of target species - number of target species from sampled hooks < 0)
+g_index3_20=which(data2020$total_target_species-data2020$target_species<0)
+g_index3_20
+# Drop Stations
+g_index4_20=which(data2020$NUM_HOOK_HAUL-data2020$total_sampled-data2020$total_target_species-
+                    data2020$target_species-data2020$total_other_species-data2020$other_species<0)
+g_index4_20
+
+# For 300 hooks
+# Empty unbaited = Empty unbaited + missing hooks + broken hooks 
+data2020$empty_unb=data2020$empty_unbaited+data2020$missing_hook+data2020$broken_hook
+# Check
+data2020$total_sampled-data2020$empty_baited-data2020$target_species-data2020$other_species-data2020$empty_unb
+st_20_300=data2020$SOAKMINP3P1
+
+# For 700 hooks
+data2020$target_species_700=data2020$total_target_species-data2020$target_species
+data2020$other_species_700=data2020$total_other_species-data2020$other_species
+data2020$nbe_700=data2020$NUM_HOOK_HAUL-data2020$total_sampled-data2020$target_species_700-data2020$other_species_700
+
+```
+
+## Switch for lat-long and project
+
+```{r}
+loc_2020=cbind(data2020$LONGITUDE,data2020$LATITUDE)
+loc_20=cbind(data2020$LONGITUDE,data2020$LATITUDE)
+loc_20=SpatialPoints(loc_20,proj4string = prj4s)
+loc_20=spTransform(loc_20,utm.prj4s)
+head(loc_20)
+
+data2020$LONGITUDE_proj=loc_20@coords[,1]
+data2020$LATITUDE_proj=loc_20@coords[,2]
+
+# Standardize loc for choosing a starting value for phi
+spool_20 = sqrt(((length(loc_2020[,1])-1)*var(loc_20@coords[,1])+
+        (length(loc_2020[,2])-1)*var(loc_20@coords[,2]))/
+        (length(loc_2020[,1])+length(loc_2020[,2])))
+data2020$loc1=(loc_20@coords[,1]-median(loc_20@coords[,1]))/spool_20
+data2020$loc2=(loc_20@coords[,2]-median(loc_20@coords[,2]))/spool_20
+dismat_20=cbind(data2020$loc1,data2020$loc2)
+
+# Distance matrix
+Dist_20 = as.matrix(dist(dismat_20))
+
+```
+
+## 1000 hooks
+
+```{r}
+# Covariate matrix 
+colone_20=rep(1,nrow(data2020))
+
+# Put the required data into a matrix (300 hooks)
+H_20_300 = cbind(data2020$empty_baited, data2020$target_species, data2020$other_species, data2020$empty_unb)
+# Put the required data into a matrix (700 hooks)
+A_20_700 = cbind(data2020$target_species_700, data2020$other_species_700, data2020$nbe_700)
+X_20=as.matrix(colone_20)
+# Soak time
+st_20_300 = as.vector(st_20_300)
+
+# Data list
+data_20_1000=list(H=H_20_300,A=A_20_700,s=st_20_300,X=X_20,D=Dist_20)
+
+# Parameter list
+param_20_1000 = list()
+
+# Initial values for lambda.t, lambda.nt and pnt
+# Use the estimated values as the starting points
+param_20_1000$betat = log(2.347294e-05)
+param_20_1000$betant = log(2.236729e-03)
+param_20_1000$theta = logitp(8.959482e-01)
+# Random field
+param_20_1000$omegat =  rep(0,nrow(H_20_300))
+param_20_1000$omegant =  rep(0,nrow(H_20_300))
+# Smoothness parameter 
+param_20_1000$lognut = 0
+param_20_1000$lognunt = 0
+# Range parameter 
+param_20_1000$logPhit = log(diff(range(dismat_20[,1]))*diff(range(dismat_20[,2])))
+param_20_1000$logPhint = log(diff(range(dismat_20[,1]))*diff(range(dismat_20[,2])))
+# Variance
+param_20_1000$logSigmat = 0
+param_20_1000$logSigmant = 0
+
+newlist_20_1000=list(lognut=factor(NA),lognunt=factor(NA))
+# Construct an R object (f) that represents our C++ function
+# use map and newlist debug
+# Fix lognu at 0
+f_20_1000 = MakeADFun(data_20_1000,param_20_1000,random=c("omegat","omegant"),
+                     DLL="prodlikd_spatial",map=newlist_20_1000,silent=TRUE)
+fit_20_1000 = nlminb(f_20_1000$par,f_20_1000$fn,f_20_1000$gr)
+# Calculate standard deviations of all model parameters
+sdr_20_1000 = sdreport(f_20_1000)
+# The estimated parameters and corresponding standard deviations
+sum_sdr20_1000 = summary(sdr_20_1000)
+
+# C++ file which defines the objective function (usually the negative log likelihood) 
+# R file which sets up data, calls the C++ function, and minimizes the objective function.
+# Minimized negative log likelihood
+fit_20_1000$objective
+
+## Estimated Lambdas 
+# 2020 without temperature
+# For target species
+head(sum_sdr20_1000[row.names(sum_sdr20_1000) %in% "ldat", ])
+dim(sum_sdr20_1000[row.names(sum_sdr20_1000) %in% "ldat", ])
+lamt_est_20_1000 = data.frame(sum_sdr20_1000[row.names(sum_sdr20_1000) %in% "ldat", ])
+head(lamt_est_20_1000)
+data2020$lamt_se_20_1000 = lamt_est_20_1000$Std..Error
+data2020$lamt_20_1000 = lamt_est_20_1000$Estimate
+# For non-target species
+head(sum_sdr20_1000[row.names(sum_sdr20_1000) %in% "ldant", ])
+dim(sum_sdr20_1000[row.names(sum_sdr20_1000) %in% "ldant", ])
+lamnt_est_20_1000 = data.frame(sum_sdr20_1000[row.names(sum_sdr20_1000) %in% "ldant", ])
+head(lamnt_est_20_1000)
+data2020$lamnt_se_20_1000 = lamnt_est_20_1000$Std..Error
+data2020$lamnt_20_1000 = lamnt_est_20_1000$Estimate
+
+saveRDS(data2020, file = "data2020_1000_prodsp.rds")
+
+```
+
+
+
+
+
+## Dirichlet
+
+```{r}
+library(gissr)
+library(deldir)
+library(spatstat)
+library(alphahull)
+
+bid = read.csv("blockIDkey.csv", header = T)
+loc_id = cbind(bid$lon.DecDeg, bid$lat.DecDeg)
+# Plot Block ID
+plot(loc_id, xlab="Long", ylab="Lat", main="blockIDkey", pch=20)
+
+# With Alpha Hull
+# Find the boundary points using ashape
+# Alpha controls the detail of the boundary
+bound_a = ashape(loc_id, alpha = 0.084)
+bound_a_index = bound_a$alpha.extremes
+plot(loc_id, xlab="Long", ylab="Lat", main="blockIDkey and boundary", pch=20)
+points(loc_id[bound_a_index, ], col=2, pch=20)
+
+
+```
+### alpha = 0.084
+
+```{r}
+# Boundary points and survey stations
+bound_a_pos = loc_id[bound_a_index, ]
+plot(bound_a_pos, pch=20)
+
+# To find the corresponding index
+bound_a_pos = data.frame(long=bound_a_pos[,1], lat=bound_a_pos[,2])
+bound_a_pos$num = 1:length(bound_a_pos$long)
+
+# Fix the boundary 
+dim(bound_a_pos)
+bound_a_pos = bound_a_pos[-c(12,15:21,57,58,579,581,588,594,595,598,599,601,604,605,668,669,828,
+                          834,840,844,845,841,835,773,751,755,320,311:313,326,340,357,361,364,365,
+                          360,356,353,336,325,452,472,495,507,678,685,686,634,630,635,639,638,640,
+                          323,316,306),]
+dim(bound_a_pos)
+plot(bound_a_pos$long, bound_a_pos$lat, pch=20)
+
+# To switch for lat-long for block id
+# and project it on a flat surface since the earth is a global 
+tf_bound_a_pos = SpatialPoints(bound_a_pos,proj4string = prj4s)
+tf_bound_a_pos = spTransform(tf_bound_a_pos,utm.prj4s)
+tf_bound_a_pos = data.frame(long = tf_bound_a_pos@coords[,1], lat = tf_bound_a_pos@coords[,2])
+plot(tf_bound_a_pos)
+
+# List the boundary points in anit-clockwise order
+tf_bound_a_pos2 = sort_points(tf_bound_a_pos, "lat", "long", clockwise = FALSE)
+tf_bound_a_pos2 = data.frame(long = tf_bound_a_pos2$long, lat = tf_bound_a_pos2$lat, num=1:length(bound_a_pos$long))
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_17=ppp(data2017$LONGITUDE_proj, data2017$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos2$long, y=tf_bound_a_pos2$lat)))
+dpp_17 = dirichlet(pp_17)
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_18=ppp(data2018$LONGITUDE_proj, data2018$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos2$long, y=tf_bound_a_pos2$lat)))
+dpp_18 = dirichlet(pp_18)
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_19=ppp(data2019$LONGITUDE_proj, data2019$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos2$long, y=tf_bound_a_pos2$lat)))
+dpp_19 = dirichlet(pp_19)
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_20=ppp(data2020$LONGITUDE_proj, data2020$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos2$long, y=tf_bound_a_pos2$lat)))
+dpp_20 = dirichlet(pp_20)
+```
+
+## Dirichlet plot
+
+```{r}
+tf_bound_a_pos22 = tf_bound_a_pos2[926, ]
+tf_bound_a_pos22[1:64, ] =
+  tf_bound_a_pos2[c(918,921,925,929,932,936,935,934,933,931,930,927,926,924,923,922,920,919,
+                    928,937:953,955,954,956,958,960,957,959,40,48,55,61,59,66,67,76,84,87,94,
+                    95,91,97,99,101,102,105,106,110,124), ]
+tf_bound_a_pos22[65:160, ] =
+  tf_bound_a_pos2[c(127,117,120,123,113,116,118,122,125,115,129,134,138,142,148,144,140,136,
+                    131,111,119,128,141,146,150,152,156,158,162,163,166,167,170,176,179,181,
+                    185,186,189,190,194,195,191,196,199,201,202,205,215,214,213,212,207,211,
+                    210,209,206,204,198,192,187,182,177,174,171,164,161,154,151,145,135,133,
+                    130,112,108,107,104,96,92,90,89,83,80,77,75,70,68,64,62,60,57,54,52,46,
+                    43,37), ]
+tf_bound_a_pos22[161:250, ] =
+  tf_bound_a_pos2[c(36,27,29,28,23,17,14,12,10,13,15,19,22,20,18,6,5,2,963,961,962,1,3,4,
+                    7:9,11,16,21,24,25,26,33,35,32,30,31,34,38,39,42,45,49,41,44,47,50,51,53,
+                    56,58,63,65,69,73,81,86,78,71,72,74,79,82,85,88,93,98,100,103,109,114,121,
+                    126,132,137,139,143,147,149,153,155,157,159,160,165,168,169,172,173), ]
+tf_bound_a_pos22[251:371, ] =
+  tf_bound_a_pos2[c(175,178,180,183,184,188,193,197,200,203,208,216:235,250,260,265,272,280,
+                    283,294,295,292,290,286,285,288,287,281,278,277,276,274,271,270,269,266,
+                    261,254,247,245,240,236,241,237,242,238,243,248,244,239,246,251,255,252,
+                    256,253,249,257:259,262:264,267,268,273,275,279,282,284,289,291,293,
+                    296:306,309,307,308,310:321,323,328,332,331), ]
+tf_bound_a_pos22[372:444, ] =
+  tf_bound_a_pos2[c(327,325,322,324,330,326,329,333:349,352,351,350,353:398), ]
+tf_bound_a_pos22[445:545, ] =
+  tf_bound_a_pos2[c(401,400,399,402:405,426,447,460,469,486,491,512,517,522,530,523,531,524,
+                    519,516,526,535,540,549,557,559,555,563,571,576,577,574,560,562,570,572,
+                    567,564,566,569,558,551,548,543,545,542,544,541,538,537,532,527,533,528,
+                    525,521,518,508,514,510,506,511,507,504,499,505,501,496,502,497,503,498,
+                    493,487,483,480,484,482,479,477,476,474,473,470,466,461,458,457,463,459,
+                    455,453,445,444,449,446,451,450,441), ]
+tf_bound_a_pos22[546:615, ] =
+  tf_bound_a_pos2[c(439,437,443,440,438,436,427,409,406,407,413,431,435,434,424,420,428,425,
+                    422,418,415,411,408,417,414,410,421,416,412,423,419,432,430,429,433,442,
+                    448,452,454,456,462,464,465,467,468,471,472,475,478,481,485,488,489,490,
+                    492,494,495,500,509,513,515,520,539,534,536,539,546,547,550,552), ]
+tf_bound_a_pos22[616:688, ] =
+  tf_bound_a_pos2[c(553,554,556,561,565,568,573,575,578:612,620,619,618,617,616,615,614,613,
+                    627,626,625,624,623,622,621,633,632,631,630,629,628,639,638,637,636,635,
+                    634,645,644,643), ]
+tf_bound_a_pos22[689:785, ] =
+  tf_bound_a_pos2[c(642,641,640,650,649,648,647,646,656,655,654,653,652,651,657:739), ]
+tf_bound_a_pos22[786:874, ] =
+  tf_bound_a_pos2[c(750,756,764,769,780,777,776,773,770,779,766,765,761,754,752,749,746,744,
+                    751,757,760,768,778,775,772,767,763,759,758,747,745,742,741,740,743,753,
+                    748,755,762,774,771,781,783,782,784:786,790,803,815:818,811,810,806,808,
+                    798,800,802,792,794:796,799,804,805,807,797,791,787:789,793,801,809,812,
+                    819,822,824,825,823,814,813,821,820,826,828,827), ]
+tf_bound_a_pos22[875:963, ] = tf_bound_a_pos2[c(829:913,915,914,916:917), ]
+
+tf_bound_a_pos22 = data.frame(long = tf_bound_a_pos22$long, lat = tf_bound_a_pos22$lat,
+                              num=1:length(tf_bound_a_pos22$long))
+
+
+
+```
+
+
+```{r}
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_17=ppp(data2017$LONGITUDE_proj, data2017$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos22$long, y=tf_bound_a_pos22$lat)))
+dpp_17 = dirichlet(pp_17)
+plot(dpp_17,border="black",main="")
+plot(pp_17,add=TRUE,chars=20,col="red", main="Dirichlet Tiles Plot for 2017")
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_18=ppp(data2018$LONGITUDE_proj, data2018$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos22$long, y=tf_bound_a_pos22$lat)))
+dpp_18 = dirichlet(pp_18)
+plot(dpp_18,border="black",main="")
+plot(pp_18,add=TRUE,chars=20,col="red")
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_19=ppp(data2019$LONGITUDE_proj, data2019$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos22$long, y=tf_bound_a_pos22$lat)))
+dpp_19 = dirichlet(pp_19)
+plot(dpp_19,border="black",main="")
+plot(pp_19,add=TRUE,chars=20,col="red")
+
+# NUDGE!!!!
+# 4 very different locations... really need a little less precision  .. can push out the bounds or bring in the points
+# the lowest long (setNo 8) needs long nudge down; the highest long (setNo 4) need long nudge down; the lowest lat (setNo 7) need lat nudge up;  and the other one (setNo 1) need longitude nudge up
+data2020$LONGITUDE_proj[data2020$STATION==506]<-data2020$LONGITUDE_proj[data2020$STATION==506]*0.995
+data2020$LONGITUDE_proj[data2020$STATION==578]<-data2020$LONGITUDE_proj[data2020$STATION==578]*0.995
+data2020$LONGITUDE_proj[data2020$STATION==556]<-data2020$LONGITUDE_proj[data2020$STATION==556]*1.001
+data2020$LATITUDE_proj[data2020$STATION==552]<-data2020$LATITUDE_proj[data2020$STATION==552]*1.001
+
+# Creates an object of class "ppp" representing a point pattern dataset in the two-dimensional plane
+pp_20=ppp(data2020$LONGITUDE_proj, data2020$LATITUDE_proj, window=owin(poly=list(x=tf_bound_a_pos22$long, y=tf_bound_a_pos22$lat)))
+dpp_20 = dirichlet(pp_20)
+plot(dpp_20,border="black",main="")
+plot(pp_20,add=TRUE,chars=20,col="red")
+points(data2020$LONGITUDE_proj[data2020$STATION%in%c(506,552,578,556)], data2020$LATITUDE_proj[data2020$STATION%in%c(506,552,578,556)], pch=16, col="blue") # points that were nudged
+
+# rejects20<-data2020[(data2020$LONGITUDE_proj %in% pp_20$x)==FALSE,]
+# plot(tf_bound_a_pos22$long,tf_bound_a_pos22$lat, cex=0.5)
+# points(data2020$LONGITUDE_proj[(data2020$LONGITUDE_proj %in% pp_20$x)==FALSE], data2020$LATITUDE_proj[(data2020$LONGITUDE_proj %in% pp_20$x)==FALSE], pch=16, col="red", cex=0.5)
+# points(data2020$LONGITUDE_proj[data2020$STATION%in%c(506,552,578,556)], data2020$LATITUDE_proj[data2020$STATION%in%c(506,552,578,556)], pch=16, col="blue")
+
+
+
+```
+
+## Area
+
+```{r}
+# Area
+## 2017
+wts_17 = sapply(tiles(dpp_17),area.owin)
+cat("Sum of weights:\n")
+print(sum(wts_17)/1000000)
+
+# Target
+dweight_ave_17t = sum((data2017$lamt_17_1000)*wts_17)/sum(wts_17)
+dweight_ave_17t
+# Standard error calculation
+wts_17 = as.matrix(wts_17)
+# wi/sum(wi)
+wts_172 = wts_17/(sum(wts_17))
+# covariance matrix for estimated lambda t
+cov_17 = sdr_17_1000$cov
+cov_17t = cov_17[1:nrow(data2017), 1:nrow(data2017)]
+plot((data2017$lamt_se_17_1000)^2,diag(cov_17t))
+sum(((data2017$lamt_se_17_1000)^2-diag(cov_17t)))
+# Standard error for Dirichlet method 
+se2_dir_17t = t(wts_172)%*%cov_17t%*%wts_172
+sqrt(se2_dir_17t)
+
+# Non-target
+dweight_ave_17nt = sum((data2017$lamnt_17_1000)*wts_17)/sum(wts_17)
+dweight_ave_17nt
+# covariance matrix for estimated lambda t
+cov_17nt = cov_17[(nrow(data2017)+1):(nrow(data2017)*2), (nrow(data2017)+1):(nrow(data2017)*2)]
+plot((data2017$lamnt_se_17_1000)^2,diag(cov_17nt))
+sum(((data2017$lamnt_se_17_1000)^2-diag(cov_17nt)))
+# Standard error for Dirichlet method 
+se2_dir_17nt = t(wts_172)%*%cov_17nt%*%wts_172
+sqrt(se2_dir_17nt)
+
+```
+
+```{r}
+# Area
+## 2018
+wts_18 = sapply(tiles(dpp_18),area.owin)
+cat("Sum of weights:\n")
+print(sum(wts_18)/1000000)
+# Target
+dweight_ave_18t = sum((data2018$lamt_18_1000)*wts_18)/sum(wts_18)
+dweight_ave_18t
+# Standard error calculation
+wts_18 = as.matrix(wts_18)
+# wi/sum(wi)
+wts_182 = wts_18/(sum(wts_18))
+# covariance matrix for estimated lambda t
+cov_18 = sdr_18_1000$cov
+cov_18t = cov_18[1:nrow(data2018), 1:nrow(data2018)]
+plot((data2018$lamt_se_18_1000)^2,diag(cov_18t))
+sum(((data2018$lamt_se_18_1000)^2-diag(cov_18t)))
+# Standard error for Dirichlet method 
+se2_dir_18t = t(wts_182)%*%cov_18t%*%wts_182
+sqrt(se2_dir_18t)
+# Non-target
+dweight_ave_18nt = sum((data2018$lamnt_18_1000)*wts_18)/sum(wts_18)
+dweight_ave_18nt
+# covariance matrix for estimated lambda t
+cov_18nt = cov_18[(nrow(data2018)+1):(nrow(data2018)*2), (nrow(data2018)+1):(nrow(data2018)*2)]
+plot((data2018$lamnt_se_18_1000)^2,diag(cov_18nt))
+sum(((data2018$lamnt_se_18_1000)^2-diag(cov_18nt)))
+# Standard error for Dirichlet method 
+se2_dir_18nt = t(wts_182)%*%cov_18nt%*%wts_182
+sqrt(se2_dir_18nt)
+
+```
+
+```{r}
+# Area
+## 2019
+wts_19 = sapply(tiles(dpp_19),area.owin)
+cat("Sum of weights:\n")
+print(sum(wts_19)/1000000)
+# Target
+dweight_ave_19t = sum((data2019$lamt_19_1000)*wts_19)/sum(wts_19)
+dweight_ave_19t
+# Standard error calculation
+wts_19 = as.matrix(wts_19)
+# wi/sum(wi)
+wts_192 = wts_19/(sum(wts_19))
+# covariance matrix for estimated lambda t
+cov_19 = sdr_19_1000$cov
+cov_19t = cov_19[1:nrow(data2019), 1:nrow(data2019)]
+plot((data2019$lamt_se_19_1000)^2,diag(cov_19t))
+sum(((data2019$lamt_se_19_1000)^2-diag(cov_19t)))
+# Standard error for Dirichlet method 
+se2_dir_19t = t(wts_192)%*%cov_19t%*%wts_192
+sqrt(se2_dir_19t)
+# Non-target
+dweight_ave_19nt = sum((data2019$lamnt_19_1000)*wts_19)/sum(wts_19)
+dweight_ave_19nt
+# covariance matrix for estimated lambda t
+cov_19nt = cov_19[(nrow(data2019)+1):(nrow(data2019)*2), (nrow(data2019)+1):(nrow(data2019)*2)]
+plot((data2019$lamnt_se_19_1000)^2,diag(cov_19nt))
+sum(((data2019$lamnt_se_19_1000)^2-diag(cov_19nt)))
+# Standard error for Dirichlet method 
+se2_dir_19nt = t(wts_192)%*%cov_19nt%*%wts_192
+sqrt(se2_dir_19nt)
+
+```
+
+```{r}
+# Area
+## 2020
+wts_20 = sapply(tiles(dpp_20),area.owin)
+cat("Sum of weights:\n")
+print(sum(wts_20)/1000000)
+# Target
+dweight_ave_20t = sum((data2020$lamt_20_1000)*wts_20)/sum(wts_20)
+dweight_ave_20t
+# Standard error calculation
+wts_20 = as.matrix(wts_20)
+# wi/sum(wi)
+wts_202 = wts_20/(sum(wts_20))
+# covariance matrix for estimated lambda t
+cov_20 = sdr_20_1000$cov
+cov_20t = cov_20[1:nrow(data2020), 1:nrow(data2020)]
+plot((data2020$lamt_se_20_1000)^2,diag(cov_20t))
+sum(((data2020$lamt_se_20_1000)^2-diag(cov_20t)))
+# Standard error for Dirichlet method 
+se2_dir_20t = t(wts_202)%*%cov_20t%*%wts_202
+sqrt(se2_dir_20t)
+# Non-target
+dweight_ave_20nt = sum((data2020$lamnt_20_1000)*wts_20)/sum(wts_20)
+dweight_ave_20nt
+# covariance matrix for estimated lambda t
+cov_20nt = cov_20[(nrow(data2020)+1):(nrow(data2020)*2), (nrow(data2020)+1):(nrow(data2020)*2)]
+plot((data2020$lamnt_se_20_1000)^2,diag(cov_20nt))
+sum(((data2020$lamnt_se_20_1000)^2-diag(cov_20nt)))
+# Standard error for Dirichlet method 
+se2_dir_20nt = t(wts_202)%*%cov_20nt%*%wts_202
+sqrt(se2_dir_20nt)
+
+```
+
+
+# Product likelhood
+```{r}
+
+pl_1000<-c(dweight_ave_17t, dweight_ave_18t, dweight_ave_19t,dweight_ave_20t)
+year<-2017:2020
+plot(year, pl_1000)
+
+# product likelihood
+pl_1000_se<-c(sqrt(se2_dir_17t), sqrt(se2_dir_18t), sqrt(se2_dir_19t), sqrt(se2_dir_20t))
+2017:2020
+pl_1000
+pl_1000_se
+
+```
+
+# Plot 
+```{r}
+library(ggplot2)
+
+year = rep(c(2017:2019), times = 5)
+year = as.factor(year)
+# Explicit Method for 300 hooks
+m1_t = c(1.878506e-05, 2.407947e-05, 2.257128e-05)
+m1_t_se = c(1.193358e-06, 1.330257e-06, 1.448638e-06)
+# Ratio for 1000 hooks
+ratio_t = c(1.737108e-05, 2.255481e-05, 2.442574e-05)
+ratio_t_se = c(6.299517e-07, 7.034579e-07, 8.285305e-07)
+# Ratio with Spatial for 1000 hooks
+ratio_spatial_t = c(2.183565e-05, 3.250373e-05, 2.912338e-05)
+ratio_spatial_t_se = c(1.073611e-06, 1.245262e-06, 1.338435e-06)
+# Product Likelihood for 1000 hooks
+prodlik_t = c(1.735745e-05, 2.279703e-05, 2.483619e-05)
+prodlik_t_se = c(6.306081e-07, 7.126921e-07, 8.446048e-07)
+# Product Likelihood Spatial for 1000 hooks
+prodlik_spatial_t = c(2.204668e-05, 3.263343e-05, 3.004447e-05)
+prodlik_spatial_t_se = c(1.075617e-06, 1.291483e-06, 1.437159e-06)
+
+models = rep(c("Explicit Method_300", "Ratio Estimation_1000", "Ratio Estimation Spatial_1000", "Product Likelihood_1000", "Product Likelihood Spatial_1000"),each = 3)
+indices_t = c(m1_t, ratio_t, ratio_spatial_t, prodlik_t, prodlik_spatial_t)
+data_target = data.frame(year = year,
+                         models = models,
+                         indices_t = indices_t,
+                         se = c(m1_t_se, ratio_t_se, ratio_spatial_t_se, prodlik_t_se, prodlik_spatial_t_se))
+
+pd = position_dodge(0.4)
+target_plot = ggplot(data = data_target, mapping = aes(x = year, y = indices_t, group =
+              models)) + geom_line(aes(color=models), position = pd) +geom_point(aes(color=models),position = pd)+geom_errorbar(aes(ymin=indices_t-se, ymax=indices_t+se, colour=models), width=0.01,position = pd)
+
+target_plot + labs(x = "Year", y = "Target", 
+                   colour = "Models")
+
+
+```
+
+

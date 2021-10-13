@@ -34,7 +34,7 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
   self_filter('isdb',env=isdb)
 
   # calculate avg weight by species from longline survey (used later)
-  fish.avg.weight <- dplyr::dplyr::select(isdb$ISCATCHES,FISHSET_ID,CATCH_ID,SPECCD_ID,EST_NUM_CAUGHT,EST_COMBINED_WT) %>%
+  fish.avg.weight <- dplyr::select(isdb$ISCATCHES,FISHSET_ID,CATCH_ID,SPECCD_ID,EST_NUM_CAUGHT,EST_COMBINED_WT) %>%
     mutate(AVG_WEIGHT = EST_COMBINED_WT/EST_NUM_CAUGHT ) %>%
     group_by(.,SPECCD_ID) %>%
     summarise(mean_AVG_WEIGHT=mean(AVG_WEIGHT,na.rm=T))

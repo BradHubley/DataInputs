@@ -1,0 +1,220 @@
+---
+title: "HS 2017 and 2018 Temperature"
+output: word_document
+---
+
+```{r}
+library(ggplot2)
+library(geosphere)
+library(dplyr)
+library(marmap)
+library(rgdal)
+library(raster)
+library(PBSmapping)
+library(reshape2)
+# library(SpatialHub)
+library(rgeos)
+library(metR)
+library(tidyverse)
+library(viridis)
+library(scales)
+```
+
+
+Get the NOAA Bathy data to plot the station locations
+```{r}
+ survey_area <- getNOAA.bathy(lon1 = -45, lon2 = -69, lat1 = 39.5, lat2 = 48.5, resolution = 1)
+```
+Load in the NAFO regions (From: https://www.nafo.int/Data/GIS)
+```{r}
+ NAFO <- readOGR("C:/Users/denheyerc/Documents/Brendan/NAFO Divisions Shape File/Divisions.shp")
+```
+
+Crop to match the area of interest
+```{r}
+ NAFO_work <- crop(NAFO, y = c(-69, -48, 39.5, 48.5))
+```
+
+Make a pretty map
+
+```{r}
+tt <- autoplot(survey_area, geom=c("r", "c"), colour="grey", size=0.1) + scale_fill_etopo() + geom_contour(aes(z=z),
+      breaks=c(-100, -200, -500, -1000, -2000, -4000),
+      colour="grey90", size=0.01) +
+        xlab("Degrees Longitude") +
+        ylab("Degrees Latitude") + 
+#  theme(legend.position = "none") +
+#  geom_polygon(data = EEZ[EEZ$PID == 1, ], aes(x = X, y = Y), fill = NA, colour = "black", linetype = 2) + # Keyhole
+#  geom_polygon(data = EEZ[EEZ$PID == 2, ], aes(x = X, y = Y), fill = NA, colour = "black", linetype = 2) + 
+  geom_polygon(data = NAFO_work, aes(x = long, y = lat, group = group), fill = NA, colour = "black") +
+  coord_cartesian(xlim = c(-69, -48), ylim = c(39.5, 48.5))
+tt
+
+
+
+
+
+
+
+
+```
+
+Read in the 2017 temperature data
+
+```{r}
+temperature_2017 <- read.csv("C:/Users/denheyerc/Documents/Brendan/Work with collaborators/Charlotte Luo/Temperature Data/Temperature_hook_occupancy_2017.csv", header = TRUE, stringsAsFactors = FALSE)
+temperature_2018 <- read.csv("C:/Users//denheyerc/Documents/Brendan/Work with collaborators/Charlotte Luo/Temperature Data/Temperature_hook_occupancy_2018.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+Look at how many stations for 2017 dop not have associated temperature data
+```{r}
+length(which(is.na(temperature_2017$MED_TEMP)))
+```
+
+Plot and have  look at temperatures
+```{r}
+tt + geom_point(data = temperature_2017, aes(x = P1LONG, y = P1LAT, colour = MED_TEMP, size = 2), show.legend = TRUE) + scale_colour_viridis(option = "A")
+```
+
+
+Check how many stations don't have temperature for
+```{r}
+length(which(is.na(temperature_2018$MED_TEMP)))
+```
+
+Plot and have  look at temperatures
+```{r}
+tt + geom_point(data = temperature_2018, aes(x = P1LONG, y = P1LAT, colour = MED_TEMP, size = 2), show.legend = TRUE) + scale_colour_viridis(option = "A")
+```
+
+
+
+Get the set information for the survey stations
+```{r}
+require(RODBC)
+ch <- odbcConnect("Bank", uid = "denheyer", pwd = "plb479a")
+INF<-sqlQuery(ch,paste("SELECT YEAR, STATION, MIN(SDAYTIME) AS SDAYTIME FROM ISDB_HALIBUT.ISD_INF WHERE SETCD_ID IN (5) AND YEAR IN (2017,2018) GROUP BY YEAR, STATION")) # using group by to deal with split sets
+odbcClose(ch) # head(INF)
+INF$DATE<-substr(as.character(INF$SDAYTIME), 1,10)
+```
+
+Get the set information for the survey stations and write new file for Zeliang
+```{r}
+setwd('C://Users/denHeyerC/Documents/Students/Jiaxin/temperature')
+temp2017<-read.csv(file="Temperature_hook_occupancy_2017.csv", header=T)
+temp2018<-read.csv(file="Temperature_hook_occupancy_2018.csv", header=T)
+dat2017<-temp2017[,c(3, 6,7,16)]
+# head(dat2017)
+dat2017$YEAR<-2017
+dat2018<-temp2018[,c(3, 7,8,19)]
+head(dat2018)
+dat2018$YEAR<-2018
+dat<-NULL
+dat<-rbind(dat2017, dat2018)
+newdat<-NULL
+newdat<-merge(INF, dat, by = c('YEAR', 'STATION'))
+
+# Comment out the write command so not to overwrite the data
+#  write.csv(newdat, "HalSRTempData.csv")
+```
+
+
+Pull in the tempaerature data from the Zeliang
+```{r}
+modtemp<-read.table(file="data_obs_mod.csv", header=T)
+summary(modtemp)
+str(modtemp)
+```
+
+
+```{r}
+with(modtemp, (plot(MED_TEMP, MOD_TEMP, col=YEAR, xlab="Observed Temperature", ylab="Model Temperature")))
+modtemp$residtemp<-modtemp$MED_TEMP - modtemp$MOD_TEMP
+hist(modtemp$residtemp, xlab="Observed - Model", main = "")  # by year
+summary(modtemp$MED_TEMP)
+summary(modtemp$residtemp)
+```
+
+```{r}
+require(dichromat)
+dat<-modtemp
+dat$COLOR_VALUE<-dat$residtemp
+my.colors<-colorRampPalette(c("yellow2", "goldenrod", "darkred")) #creates a function my.colors which interpolates n colors 
+# my.colors<-colorRampPalette(c("green", "white", "red")) #creates a function my.colors which interpolates n colors between blue, white and red
+
+color.df<-data.frame(COLOR_VALUE=seq(-8,8,0.01), color.name=my.colors(1601)) #generates 2001 colors from the color ramp
+dat2<-merge(dat, color.df, by="COLOR_VALUE")
+```
+
+
+Plot and have  look at temperatures
+```{r}
+
+par(mfcol=c(2,1),mar=c(6,4,2,2))
+
+dat3<-dat2[dat2$YEAR==2017,]
+tt + geom_point(data = dat3, aes(x = P1LONG, y = P1LAT, colour = residtemp, size = 0.1), show.legend = TRUE)  +
+  ggtitle("2017 Halibut SR Survey Temperature Residuals") + scale_color_gradient2(low = muted("yellow"), mid = "white",
+  high = muted("red"), midpoint = 0, space = "Lab",
+  na.value = "grey50", guide = "colourbar", aesthetics = "colour")
+
+dat3<-dat2[dat2$YEAR==2018,]
+tt + geom_point(data = dat3, aes(x = P1LONG, y = P1LAT, colour = residtemp, size = 0.1), show.legend = TRUE)  +
+  ggtitle("2018 Halibut SR Survey Temperature Residuals") + scale_color_gradient2(low = muted("yellow"), mid = "white",
+  high = muted("red"), midpoint = 0, space = "Lab",
+  na.value = "grey50", guide = "colourbar", aesthetics = "colour")
+
+
+```
+
+# Pull in the temperature data from the Glory data from Zeliang.
+```{r}
+modtemp2<-read.table(file="data_obs_glorys.csv", header=T)
+summary(modtemp2)
+
+```
+
+
+
+```{r}
+with(modtemp2, (plot(MED_TEMP,GLORYS_TEMP, col=YEAR, xlab="Observed Temperature", ylab="Model Temperature")))
+modtemp2$residtemp<-modtemp2$MED_TEMP - modtemp2$GLORYS_TEMP
+hist(modtemp2$residtemp, xlab="Observed - Model", main = "")  # by year
+summary(modtemp2$MED_TEMP)
+summary(modtemp2$GLORYS_TEMP)
+summary(modtemp2$residtemp)
+```
+
+```{r}
+require(dichromat)
+dat<-modtemp2
+dat$COLOR_VALUE<-dat$residtemp
+my.colors<-colorRampPalette(c("yellow2", "goldenrod", "darkred")) #creates a function my.colors which interpolates n colors 
+# my.colors<-colorRampPalette(c("green", "white", "red")) #creates a function my.colors which interpolates n colors between blue, white and red
+
+color.df<-data.frame(COLOR_VALUE=seq(-8,8,0.01), color.name=my.colors(1601)) #generates 2001 colors from the color ramp
+dat2<-merge(dat, color.df, by="COLOR_VALUE")
+```
+
+
+Plot and have  look at temperature deviations.  Not there is some spatial pattern in the deviations.  Map the sets that do not have the temperature data for comparison.
+```{r}
+
+par(mfcol=c(2,1),mar=c(6,4,2,2))
+
+dat3<-dat2[dat2$YEAR==2017,]
+dat4<-dat[is.na(dat$MED_TEMP)&dat$YEAR==2017,]
+tt + geom_point(data = dat3, aes(x = P1LONG, y = P1LAT, colour = residtemp, size = 0.1), show.legend = TRUE)  +
+  ggtitle("2017 Halibut Survey Temperature Residuals") + scale_color_gradient2(low = muted("yellow"), mid = "white",
+  high = muted("red"), midpoint = 0, space = "Lab",
+  na.value = "grey50", guide = "colourbar", aesthetics = "colour")+ geom_point(data = dat4, aes(x = P1LONG, y = P1LAT))
+
+dat3<-dat2[dat2$YEAR==2018,]
+dat4<-dat[is.na(dat$MED_TEMP)&dat$YEAR==2018,]
+dat5<-dat[dat$STATION=='580'&dat$YEAR==2018,]
+tt + geom_point(data = dat3, aes(x = P1LONG, y = P1LAT, colour = residtemp, size = 0.1), show.legend = TRUE)  +
+  ggtitle("2018 Halibut Survey Temperature Residuals") + scale_color_gradient2(low = muted("yellow"), mid = "white",
+  high = muted("red"), midpoint = 0, space = "Lab",
+  na.value = "grey50", guide = "colourbar", aesthetics = "colour") + geom_point(data = dat4, aes(x = P1LONG, y = P1LAT)) + geom_point(data = dat5, colour="Red", aes(x = P1LONG, y = P1LAT))
+
+```
