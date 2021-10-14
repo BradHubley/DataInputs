@@ -71,22 +71,81 @@ obsNAFO3LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins
 obsNAFO4LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = Yrs)
 
 
-LLmalesNafo4<-getNAL(portNAFO4LL,sex=1)+getNAL(obsNAFO4LL,sex=1)
-LLfemalesNafo4<-getNAL(portNAFO4LL,sex=2)+getNAL(obsNAFO4LL,sex=2)
-LLcombinedNafo4<-getNAL(portNAFO4LL,sex='all')+getNAL(obsNAFO4LL,sex='all')
+LLNafo4_males<-getNAL(portNAFO4LL,sex=1)+getNAL(obsNAFO4LL,sex=1)
+LLNafo4_females<-getNAL(portNAFO4LL,sex=2)+getNAL(obsNAFO4LL,sex=2)
+LLNafo4_combined<-getNAL(portNAFO4LL,sex='all')+getNAL(obsNAFO4LL,sex='all')
+LLNafo4_unsexed<-getNAL(obsNAFO4LL,sex=0)
 
-LLmalesNafo3<-getNAL(portNAFO3LL,sex=1)+getNAL(obsNAFO3LL,sex=1)
-LLfemalesNafo3<-getNAL(portNAFO3LL,sex=2)+getNAL(obsNAFO3LL,sex=2)
-LLcombinedNafo3<-getNAL(portNAFO3LL,sex='all')+getNAL(obsNAFO3LL,sex='all')
+LLNafo3_males<-getNAL(portNAFO3LL,sex=1)+getNAL(obsNAFO3LL,sex=1)
+LLNafo3_females<-getNAL(portNAFO3LL,sex=2)+getNAL(obsNAFO3LL,sex=2)
+LLNafo3_combined<-getNAL(portNAFO3LL,sex='all')+getNAL(obsNAFO3LL,sex='all')
+LLNafo3_unsexed<-getNAL(obsNAFO3LL,sex=0)
 
-OTmalesNafo4<-getNAL(portNAFO4OT,sex=1)+getNAL(obsNAFO4OT,sex=1)
-OTfemalesNafo4<-getNAL(portNAFO4OT,sex=2)+getNAL(obsNAFO4OT,sex=2)
-OTcombinedNafo4<-getNAL(portNAFO4OT,sex='all')+getNAL(obsNAFO4OT,sex='all')
+OTNafo4_males<-getNAL(portNAFO4OT,sex=1)+getNAL(obsNAFO4OT,sex=1)
+OTNafo4_females<-getNAL(portNAFO4OT,sex=2)+getNAL(obsNAFO4OT,sex=2)
+OTNafo4_combined<-getNAL(portNAFO4OT,sex='all')+getNAL(obsNAFO4OT,sex='all')
+OTNafo4_unsexed<-getNAL(obsNAFO4OT,sex=0)
 
-OTmalesNafo3<-getNAL(portNAFO3OT,sex=1)+getNAL(obsNAFO3OT,sex=1)
-OTfemalesNafo3<-getNAL(portNAFO3OT,sex=2)+getNAL(obsNAFO3OT,sex=2)
-OTcombinedNafo3<-getNAL(portNAFO3OT,sex='all')+getNAL(obsNAFO3OT,sex='all')
+OTNafo3_males<-getNAL(portNAFO3OT,sex=1)+getNAL(obsNAFO3OT,sex=1)
+OTNafo3_females<-getNAL(portNAFO3OT,sex=2)+getNAL(obsNAFO3OT,sex=2)
+OTNafo3_combined<-getNAL(portNAFO3OT,sex='all')+getNAL(obsNAFO3OT,sex='all')
+OTNafo3_unsexed<-getNAL(obsNAFO3OT,sex=0)
 
+Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
+                      LLNafo4_females=LLNafo4_females,
+                      LLNafo4_combined=LLNafo4_combined,
+                      LLNafo4_unsexed=LLNafo4_unsexed, 
+                      LLNafo3_males=LLNafo3_males,
+                      LLNafo3_females=LLNafo3_females,
+                      LLNafo3_combined=LLNafo3_combined,
+                      LLNafo4_unsexed=LLNafo4_unsexed,  
+                      OTNafo4_males=OTNafo4_males,
+                      OTNafo4_females=OTNafo4_females,
+                      OTNafo4_combined=OTNafo4_combined, 
+                      OTNafo4_unsexed=OTNafo4_unsexed, 
+                      OTNafo3_males=OTNafo3_males,
+                      OTNafo3_females=OTNafo3_females,
+                      OTNafo3_combined=OTNafo3_combined, 
+                      OTNafo3_unsexed=OTNafo3_unsexed) 
+
+
+```
+
+
+
+# Plots
+```{r}
+
+BubblePlotLF(Fishery_Lengths,bins=bins,yrs=1978:2020,path=file.path(wd,'figures'),filen='Commercial',inches=0.3)
+
+    Yrs1=2006:2020
+    pdf(file.path(wd,"figures","CommercialLengthCompData.pdf"), width = 8, height = 11)
+      
+BarPlotLF( obsNAFO4LL[which(names( obsNAFO4LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO4LL")
+BarPlotLF(portNAFO4LL[which(names(portNAFO4LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO4LL")
+BarPlotLF( obsNAFO4OT[which(names( obsNAFO4OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO4OT")
+BarPlotLF(portNAFO4OT[which(names(portNAFO4OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO4OT")
+BarPlotLF( obsNAFO3LL[which(names( obsNAFO3LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO3LL")
+BarPlotLF(portNAFO3LL[which(names(portNAFO3LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO3LL")
+BarPlotLF( obsNAFO3OT[which(names( obsNAFO3OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO3OT")
+BarPlotLF(portNAFO3OT[which(names(portNAFO3OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO3OT")
+    
+    dev.off()
+
+
+    Yrs1=1991:2005
+    pdf(file.path(wd,"figures","CommercialLengthCompData2.pdf"), width = 8, height = 11)
+      
+BarPlotLF( obsNAFO4LL[which(names( obsNAFO4LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO4LL")
+BarPlotLF(portNAFO4LL[which(names(portNAFO4LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO4LL")
+BarPlotLF( obsNAFO4OT[which(names( obsNAFO4OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO4OT")
+BarPlotLF(portNAFO4OT[which(names(portNAFO4OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO4OT")
+BarPlotLF( obsNAFO3LL[which(names( obsNAFO3LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO3LL")
+BarPlotLF(portNAFO3LL[which(names(portNAFO3LL)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO3LL")
+BarPlotLF( obsNAFO3OT[which(names( obsNAFO3OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="obsNAFO3OT")
+BarPlotLF(portNAFO3OT[which(names(portNAFO3OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO3OT")
+    
+    dev.off()
 
 ```
 

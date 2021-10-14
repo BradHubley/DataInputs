@@ -1,5 +1,5 @@
 #' @export
-BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows=length(yrs),graphic='pdf',xl,rel=T,ylp=0.1,ymax,LS=81,sample.size=NULL,recline=NULL,wd=10,ht=12,bx=F,xlab="Length (cm)",ylab="Number of Halibut",...){
+BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows=length(yrs),graphic='pdf',xl,rel=T,ylp=0.1,ymax,LS=81,sample.size=NULL,recline=NULL,wd=8,ht=11,bx=F,xlab="Length (cm)",ylab="Number of Halibut",toplab=NULL,...){
 
     mids<-bins[-1]-diff(bins)/2
 
@@ -10,6 +10,7 @@ BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows
     if(graphic=='png') png(paste0(filen,".png"), width = wd, height = ht,units='in',pointsize=12, res=300,type='cairo')
     par(mfcol=c(rows,ceiling(length(yrs)/rows)), mar = c(0,2,0,0.5), omi = c(0.85, 0.75, 0.75, 0.5))
 
+    if(sample.size=='calculate')sample.size=lapply(LF,sum)
     for(i in 1:length(LF)){
     #browser()
 
@@ -18,7 +19,7 @@ BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows
 
         yl2<-ifelse(missing(ymax),max(colSums(LF[[i]]))*1.2,ymax[i])
 
-        barplot(LF[[i]],space=0,xlim=xlm,yaxt='n',xaxt='n',ylim=c(0,yl2))
+        barplot(LF[[i]],space=0,xlim=xlm,yaxt='n',xaxt='n',ylim=c(0,yl2),...)
 
         axis(1,1:length(bins),lab=F,tcl=-0.3)
         axis(1,lab=F,tcl=-0.6)
@@ -45,9 +46,10 @@ BarPlotLF<-function(LF,yrs=2010:2016,LFyrs=yrs,bins=seq(0,220,5),filen='LF',rows
     mtext(xlab, 1, 3, outer = T, cex = 1.5)
     if(rel==F)mtext(ylab, 2, 2, outer = T, cex = 1.5)
     if(rel==T)mtext("Relative frequency (%)", 2, 2, outer = T, cex = 1.25)
+    if(!is.null(toplab))mtext(toplab, 3, 2, outer = T, cex = 1.25)
     if(bx)box()
 
 
-    if(graphic!="R")dev.off()
+    if(graphic%in%c("pdf","png"))dev.off()
 }
 
