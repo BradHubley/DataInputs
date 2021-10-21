@@ -174,22 +174,22 @@ obsNAFO4LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins
 LLNafo4_males<-getNAL(portNAFO4LL,sex=1)+getNAL(obsNAFO4LL,sex=1)
 LLNafo4_females<-getNAL(portNAFO4LL,sex=2)+getNAL(obsNAFO4LL,sex=2)
 LLNafo4_combined<-getNAL(portNAFO4LL,sex='all')+getNAL(obsNAFO4LL,sex='all')
-LLNafo4_unsexed<-getNAL(obsNAFO4LL,sex=0)
+LLNafo4_unsexed<-getNAL(portNAFO4LL,sex=0)+getNAL(obsNAFO4LL,sex=0)
 
 LLNafo3_males<-getNAL(portNAFO3LL,sex=1)+getNAL(obsNAFO3LL,sex=1)
 LLNafo3_females<-getNAL(portNAFO3LL,sex=2)+getNAL(obsNAFO3LL,sex=2)
 LLNafo3_combined<-getNAL(portNAFO3LL,sex='all')+getNAL(obsNAFO3LL,sex='all')
-LLNafo3_unsexed<-getNAL(obsNAFO3LL,sex=0)
+LLNafo3_unsexed<-getNAL(portNAFO3LL,sex=0)+getNAL(obsNAFO3LL,sex=0)
 
 OTNafo4_males<-getNAL(portNAFO4OT,sex=1)+getNAL(obsNAFO4OT,sex=1)
 OTNafo4_females<-getNAL(portNAFO4OT,sex=2)+getNAL(obsNAFO4OT,sex=2)
 OTNafo4_combined<-getNAL(portNAFO4OT,sex='all')+getNAL(obsNAFO4OT,sex='all')
-OTNafo4_unsexed<-getNAL(obsNAFO4OT,sex=0)
+OTNafo4_unsexed<-getNAL(portNAFO4OT,sex=0)+getNAL(obsNAFO4OT,sex=0)
 
 OTNafo3_males<-getNAL(portNAFO3OT,sex=1)+getNAL(obsNAFO3OT,sex=1)
 OTNafo3_females<-getNAL(portNAFO3OT,sex=2)+getNAL(obsNAFO3OT,sex=2)
 OTNafo3_combined<-getNAL(portNAFO3OT,sex='all')+getNAL(obsNAFO3OT,sex='all')
-OTNafo3_unsexed<-getNAL(obsNAFO3OT,sex=0)
+OTNafo3_unsexed<-getNAL(portNAFO3OT,sex=0)+getNAL(obsNAFO3OT,sex=0)
 
 Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
                       LLNafo4_females=LLNafo4_females,

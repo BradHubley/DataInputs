@@ -12,6 +12,7 @@ library(devtools)
 #install_github("Maritimes/Mar.datawrangling")
  library(Mar.datawrangling)
  library(tidyverse)
+library(SpatialHub)
 
 #install_github("BradHubley/SpatialHub")
 source(file.path(getwd(), "directories.r"))
@@ -146,6 +147,53 @@ BarPlotLF( obsNAFO3OT[which(names( obsNAFO3OT)%in%Yrs1)], yrs=Yrs1, sample.size=
 BarPlotLF(portNAFO3OT[which(names(portNAFO3OT)%in%Yrs1)], yrs=Yrs1, sample.size='calculate', rel=F,graphic='off',toplab="portNAFO3OT")
     
     dev.off()
+
+
+```
+Lingbo's maturity project
+
+
+```{r}
+bins=seq(0,260,5)
+Yrs=2010:2020
+
+ nafo3NOP = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PS", "3U")
+ nafo4VW = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX")
+ 
+ nafo4X = c("4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS")
+
+
+PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
+
+portNAFO3NOP=constructLF(LFdata=subset(PortData,NAFO%in%nafo3NOP&GEAR=="LL"),bins=bins, Yrs = Yrs)
+portNAFO4VW=constructLF(LFdata=subset(PortData,NAFO%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = Yrs)
+portNAFO4X=constructLF(LFdata=subset(PortData,NAFO%in%nafo4X&GEAR=="LL"),bins=bins, Yrs = Yrs)
+
+BarPlotLF(portNAFO3NOP, yrs=Yrs, sample.size='calculate', rel=F, filen=file.path(wd,"figures","port3NOP"))
+BarPlotLF(portNAFO4VW, yrs=Yrs, sample.size='calculate', rel=F, filen=file.path(wd,"figures","port4VW"))
+BarPlotLF(portNAFO4X, yrs=Yrs, sample.size='calculate', rel=F, filen=file.path(wd,"figures","port4X"))
+
+ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
+
+obsNAFO3NOP=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3NOP&GEAR=="LL"),bins=bins, Yrs = Yrs)
+obsNAFO4VW=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = Yrs)
+obsNAFO4X=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4X&GEAR=="LL"),bins=bins, Yrs = Yrs)
+
+BarPlotLF(obsNAFO3NOP, yrs=Yrs, sample.size='calculate', rel=F, filen=file.path(wd,"figures","obs3NOP"))
+BarPlotLF(obsNAFO4VW, yrs=Yrs, sample.size='calculate', rel=F, filen=file.path(wd,"figures","obs4VW"))
+BarPlotLF(obsNAFO4X, yrs=Yrs, sample.size='calculate', rel=F, filen=file.path(wd,"figures","obs4X"))
+
+```
+
+# map of observer data
+```{r}
+bioMap()
+with(subset(ObserverData,YEAR%in%Yrs),points(LONGITUDE,LATITUDE,pch='.',col=rgb(1,0,0,0.1)))
+
+
+bioMap(xlim=c(-66,-65),ylim=c(42.5,43), isobaths = seq(10, 1000, 10))
+with(subset(ObserverData,YEAR%in%Yrs),points(LONGITUDE,LATITUDE,pch=16,cex=0.5,col=rgb(1,0,0,0.1)))
+
 
 ```
 
