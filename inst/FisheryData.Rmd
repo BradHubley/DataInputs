@@ -200,6 +200,51 @@ write.csv(marf.tab,"MarfisHalibutLandings_t.csv",row.names=F)
  
 ```
 
+## Other flatfish landings
+SPECIES_CODE SPECIES_NAME
+140          AMERICAN PLAICE
+141          YELLOWTAIL
+142          GREYSOLE/WITCH
+143          WINTER FLOUNDER
+144          GREENLAND HALIBUT/TURBOT
+149          FLOUNDER, UNSPECIFIED
+
+# get data
+```{r}
+
+MARFISdataFF<-getMARFISdata(datadir,sp=c(140,141,142,143,144,145,149))
+
+
+
+ tlff<-with(MARFISdataFF,tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+ tl140<-with(subset(MARFISdataFF,SPECIES_CODE==140),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+ tl141<-with(subset(MARFISdataFF,SPECIES_CODE==141),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+ tl142<-with(subset(MARFISdataFF,SPECIES_CODE==142),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+ tl143<-with(subset(MARFISdataFF,SPECIES_CODE==143),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+ tl144<-with(subset(MARFISdataFF,SPECIES_CODE==144),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+ tl145<-with(subset(MARFISdataFF,SPECIES_CODE==145),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+ tl149<-with(subset(MARFISdataFF,SPECIES_CODE==149),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+  
+
+```
+
+
+# plot
+```{r}
+plot(as.numeric(names(tlff)),tlff/1000,type='l',xlab='',ylab="Total Flatfish Landings (t)",ylim=c(0,5000))
+ lines(as.numeric(names(tl140)),tl140/1000,lty=2,col=2)
+ lines(as.numeric(names(tl141)),tl141/1000,lty=3,col=3)
+ lines(as.numeric(names(tl142)),tl142/1000,lty=4,col=4)
+ lines(as.numeric(names(tl143)),tl143/1000,lty=5,col=5)
+ lines(as.numeric(names(tl144)),tl144/1000,lty=6,col=6)
+ lines(as.numeric(names(tl145)),tl145/1000,lty=7,col=7)
+ lines(as.numeric(names(tl149)),tl149/1000,lty=8,col=8)
+ legend('topright',legend=c(140,141,142,143,144,145,149),lty=2:8,col=2:8)
+
+```
+
+
+
 ## Port sample data
 ```{r}
 bins=seq(0,260,5)

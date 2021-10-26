@@ -43,6 +43,13 @@ devtools::load_all(".")
 # get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 # get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+
+# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISGEARSUCCESS"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+
+
+#get_data_custom(schema="isdb",data.dir=datadir,tables=c("ISGEARSUCCESS"),usepkg="roracle",fn.oracle.dsn="PTRAN",fn.oracle.username=uid,fn.oracle.password=pwd)
+
+
 ```
 
 ### SUrvey ABundance Indices
@@ -269,4 +276,38 @@ dev.off()
 }
 
 ```
+
+## 4VN Sentinel Survey
+
+```{r}
+
+
+Sentinel4VN<-Sentinel4VNData(datadir=datadir,bins=bins,by.sex=F,add.LF = F)
+
+Sentinel4VN$KGPHH<-Sentinel4VN$EST_COMBINED_WT/Sentinel4VN$NUM_HOOK_HAUL
+SI<-with(Sentinel4VN,tapply(KGPHH,YEAR, mean, na.rm=T))
+plot(as.numeric(names(SI)),SI,xlab = '',ylim=c(0,max(SI)),type='b')
+
+totalWT<-with(Sentinel4VN,tapply(EST_COMBINED_WT,YEAR, sum, na.rm=T))
+plot(as.numeric(names(totalWT)),totalWT,xlab = '',ylim=c(0,max(totalWT)),type='b')
+
+totalN<-with(Sentinel4VN,tapply(EST_NUM_CAUGHT,YEAR, sum, na.rm=T))
+plot(as.numeric(names(totalN)),totalN,xlab = '',ylim=c(0,max(totalN)),type='b')
+
+
+totalH<-with(Sentinel4VN,tapply(NUM_HOOK_HAUL,YEAR, sum, na.rm=T))
+plot(as.numeric(names(totalH)),totalH,xlab = '',ylim=c(0,max(totalH)),type='b')
+plot(as.numeric(names(totalH)),totalWT/totalH*1000,xlab = '',ylim=c(0,max(totalWT/totalH*1000)),type='b')
+
+meanWT<-with(Sentinel4VN,tapply(EST_COMBINED_WT,YEAR, mean, na.rm=T))
+plot(as.numeric(names(meanWT)),meanWT,xlab = '',ylim=c(0,max(meanWT)),type='b')
+
+meanN<-with(Sentinel4VN,tapply(EST_NUM_CAUGHT,YEAR, mean, na.rm=T))
+plot(as.numeric(names(meanN)),meanN,xlab = '',ylim=c(0,max(meanN)),type='b')
+
+
+
+```
+
+
 

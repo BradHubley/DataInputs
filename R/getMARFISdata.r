@@ -1,4 +1,4 @@
-getMARFISdata <- function(datadir,sp=130,gear=1){
+getMARFISdata <- function(datadir,sp=130,gear){
 
   marfis <- new.env()
   get_data(db='marfis',data.dir=datadir,env=marfis)
@@ -17,13 +17,16 @@ getMARFISdata <- function(datadir,sp=130,gear=1){
   marfisNAFOs = c(nafo3N,nafo3O,nafo3PS,nafo4VN,nafo4VS,nafo4W,nafo4X,nafo5Y,nafo5Z)
 
 
-  marfis$SPECIES = marfis$SPECIES[marfis$SPECIES$SPECIES_CODE == sp,]
+  marfis$SPECIES = marfis$SPECIES[marfis$SPECIES$SPECIES_CODE %in% sp,]
   marfis$NAFO_UNIT_AREAS = marfis$NAFO_UNIT_AREAS[marfis$NAFO_UNIT_AREAS$NAFO_AREA%in%marfisNAFOs,]
   #VESSELS = VESSELS[VESSELS$LOA<45,]
-  marfis$GEARS = marfis$GEARS[marfis$GEARS$GEAR_TYPE_ID==gear,]
+  if(missing(gear))gear<-marfis$GEARS$GEAR_TYPE_ID
+  marfis$GEARS = marfis$GEARS[marfis$GEARS$GEAR_TYPE_ID%in%gear,]
   #PRO_SPC_INFO = PRO_SPC_INFO[PRO_SPC_INFO$VR_NUMBER_FISHING %in% VESSELS$VR_NUMBER | PRO_SPC_INFO$VR_NUMBER_LANDING %in% VESSELS$VR_NUMBER, ]
 
   self_filter('marfis',env=marfis)
+
+  print(marfis$SPECIES[c('SPECIES_CODE','SPECIES_NAME')])
 
   marfis$NAFO_UNIT_AREAS$NAFO = marfis$NAFO_UNIT_AREAS$NAFO_AREA
   marfis$NAFO_UNIT_AREAS$NAFO[marfis$NAFO_UNIT_AREAS$NAFO_AREA%in%nafo3N] = "3N"
@@ -35,10 +38,10 @@ getMARFISdata <- function(datadir,sp=130,gear=1){
   marfis$NAFO_UNIT_AREAS$NAFO[marfis$NAFO_UNIT_AREAS$NAFO_AREA%in%nafo5Y] = "5Y"
   marfis$NAFO_UNIT_AREAS$NAFO[marfis$NAFO_UNIT_AREAS$NAFO_AREA%in%nafo5Z] = "5Z"
 
-  colm.names<-c("YEAR","NAFO_UNIT_AREA_ID","RND_WEIGHT_KGS","LATITUDE","LONGITUDE","VR_NUMBER_FISHING","DATE_FISHED","TRIP_ID")
+  colm.names<-c("YEAR","NAFO_UNIT_AREA_ID","RND_WEIGHT_KGS","LATITUDE","LONGITUDE","VR_NUMBER_FISHING","DATE_FISHED","TRIP_ID","SPECIES_CODE")
 
   MarfisData = left_join(marfis$PRO_SPC_INFO[,colm.names],marfis$NAFO_UNIT_AREAS[,c("NAFO","AREA_ID")],by=c("NAFO_UNIT_AREA_ID"="AREA_ID")) %>%
-    left_join(.,VESSELS[,c("LOA","VR_NUMBER")],by=c("VR_NUMBER_FISHING"="VR_NUMBER"))
+    left_join(.,marfis$VESSELS[,c("LOA","VR_NUMBER")],by=c("VR_NUMBER_FISHING"="VR_NUMBER"))
 
   return(MarfisData)
 
