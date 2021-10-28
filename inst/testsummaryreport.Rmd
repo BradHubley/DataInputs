@@ -1,0 +1,330 @@
+---
+title: "HAST Summay"
+author: "den Heyer"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# List of packages required for this analysis
+pkg <- c("dplyr", "knitr", "devtools", "DT", "xtable")
+# Check if packages are not installed and assign the
+# names of the packages not installed to the variable new.pkg
+new.pkg <- pkg[!(pkg %in% installed.packages())]
+
+# If there are any packages in the list that aren't installed,
+# install them
+if (length(new.pkg)) {
+  install.packages(new.pkg, repos = "http://cran.rstudio.com")
+}
+
+# Load the packages into R
+library(dplyr)
+library(knitr)
+library(DT)
+library(xtable)
+require(ggplot2)
+library(ggplot2)
+
+
+```
+
+
+# Atlantic halibut all-sizes tagging (HAST) summary R Markdown
+
+## INTRODUCTION
+
+In 2006, Fisheries and Oceans Canada (DFO) and the Atlantic Halibut Council (AHC) began the Halibut All Sizes Tagging (HAST) program to estimate exploitation rate, describe the movement and distribution of halibut within the Scotian Shelf-southern Grand Banks management unit (NAFO Divs. 3NOPs4VWX5Zc), and estimate population size. Tagging programs generally rely heavily on support from the fishing industry. The HAST program is an example of industry support, in that the AHC has been involved in its design, implementation, and management. Without this cooperation as scientific partners, this project would not have been possible. 
+
+Between 2006 and 2019, Atlantic Halibut (Hippoglossus hippoglossus) were double tagged with t-bar anchor tags during the DFO-Industry Halibut Survey (May - July). Tagged halibut were released by onboard fisheries observers during the DFO-Industry Halibut Survey and the AHC compensated fishermen for releasing those halibut large enough to be retained and sold (≥81cm). For each tagged halibut recaptured, the AHC also provided a $100 cash reward and an entry into a quarterly $1000 lottery. 
+
+Here we provide a general overview of the program, and update a multiyear tagging model that incorporates tag loss and allows for incomplete mixing in the first year (den Heyer et al. 2011). Using this model we estimate natural and fishing mortality, and tag loss between 2006 and 2019. We also describe the growth and movement of halibut tagged on the Scotian Shelf and southern Grand Banks.
+
+
+## METHODS
+
+### DATA COLLECTION
+
+Tagging program 
+
+Between 2006 and 2019 (no tagging in 2009, 2011, 2013 and 2015), Atlantic Halibut were double tagged with uniquely coded pink t-bar anchor tags (Hallprint Pty Ltd., Australia) applied 15 cm apart at the widest point near the dorsal fin on the dark or top side (Fig. 1).  Tagged halibut were returned to the water immediately.
+
+Figure 1. Photograph of pink t-bar anchor tags applied 15 cm apart at the widest point near the dorsal fin of Atlantic Halibut.
+
+To achieve broad coverage of the entire Scotian Shelf and southern Grand Banks management area, the DFO-Industry Halibut Survey (Zwanenburg and Wilson, 2001; Trzcinski et al. 2011; den Heyer et al. 2014; Smith 2016; Cox et al. 2017) was used as the platform for tag deployment. There are three components to the halibut survey 1) Fixed station survey, 2) the commercial index fishing and 3) stratified random survey. The data collected from the survey is collected by s At-Sea Observer and data is double keypunched and loaded into DFO’s Industry Surveys Database (ISDB). While commercial index and commercial fishing methodology varies, the halibut fixed station survey has standardized fishing protocols and set locations. In 2017, a new stratified random survey introduced (Cox et al 2017). In this survey stations are chosen at random each year from 15 strata proportional to area.
+ 
+Observers were asked to tag only fish they felt had a high probability of survival (ISDB MORPH CODES); fish that were not active or less active than average were not tagged. Fish that were not suitable for tagging but were of commercial value (above the legal size limit, ≥ 81 cm) were retained for sale. Fishermen were compensated for the release of commercially valuable halibut by the AHC using a predetermined market value. The round weight (lbs) was estimated using a length/weight conversion developed from the lengths (cm) and weights (lbs) of halibut.  
+
+Observers recorded release information including date, location, tag numbers and tag positions (posterior or anterior), total length and morphology codes that described fish health (Table 2) and hook injuries (Table 3).  This data was entered into DFO’s Industry Surveys Database (ISDB, APPENDIX A).
+
+In 2006, a sample size of 700 was chosen to achieve estimates of exploitation rates with roughly a 10% coefficient of variation (CV) for the expected exploitation rate of 0.1 to 0.2. The average number of halibut caught on the halibut survey from 1998 to 2005 was 645 (SE=31). For this reason, all halibut caught on the survey were tagged and released until a sample size of 700 was reached. If this number was not reached during the survey, halibut continued to be tagged during the Halibut Commercial Index sets and the commercial fishery. The number of tags assigned to each NAFO division in the management area was proportional to halibut abundance estimated from a Delaunay triangulation of the survey catches from 1999-2005 was used to generate an approximation of the area fished (Table 1, den Heyer et al. 2012)). 
+
+Table 1. NAFO area and proportion of tagged halibut assigned to the area.
+
+```{r, echo=FALSE}
+nafos<-c('3N','3O','3Ps', '4V', '4W', '4X')
+propHal<-c(0.08, 0.1, 0.19, 0.24, 0.24, 0.14)
+propHal_byNAFO<-data.frame(cbind(nafos, propHal)) 
+names(propHal_byNAFO)<-c("NAFO", "Proportion of tagged halibut")
+kable(propHal_byNAFO)
+```
+
+In 2008, given accumulating pool of tagged fish in the water, the tagging was switched to alternate years.  In 2017, to increase the precision of F estimates, survey returned to annual tagging with a target of 500 fish per year, now deployed on the startified random survey, to ensure releases throughout the management unit.  In this survey there are 15 strata and stations are assigned proportional to strata area (Table 2, Fig 2). Notably in 2018, additional sets were added to smaller strata to esure that survey the strata would have a minumum of 2 completed sets per year.
+
+Figure 2. Map of the halibut survey strata.
+
+Table 2. Number of stations assigned and completed per strata by year.
+
+```{r, echo=FALSE}
+# HS_design<-read.cv("HS_design.csv")
+# kable(HS_design)
+```
+
+Tag recaptures
+
+Fishermen are provided 100$ cash reward for reporting the recapture of a tagged fish with 1 or more tags.  The pink tags indicate 100$ cash reward. Posters announcing the HAST program and the reward for returned tags were distributed throughout Atlantic Canada (Appendix B). Fishermen and fish processors were asked, where possible, to report the tag number(s), date, location, length and sex of tagged halibut caught during commercial fishing or industry surveys. Fishermen, observers, and processors were provided tag envelopes to encourage collection of information. In 2010, the tag envelope (Appendix C) was modified to encourage collection of additional information (e.g., gear used). For each tagged halibut reported, the person who reported the tag or tags was sent a letter and a map indicating the net movement and the tag release and recapture locations, the $100 reward and, for new participants, an AHC ball cap. In 2010, the automated report letter was edited to accommodate multiple returns from the same fishermen (Appendix D), prior to that, the letter was edited or several letters printed. In addition to these incentives, each returned tag was provided a ballot for a quarterly lottery for $1000. Entries into the quarterly draw do not expire until the name is drawn.  Any name that is drawn for a second time in a year or in a consecutive draw is returned to the ballot box, and another name is drawn.  Notably, lottery entries were provided to tag returnees from both the HAST program and the earlier juvenile tagging program. 
+
+Data editing
+
+Several queries were used to check the release data. At present, the ISDB and halibut_temp_tag database are not linked. In order to ensure data quality in both datasets, the auditing of the halibut survey data is completed in advance of linking the release data from ISDB to the halibut_temp_tag database.
+
+Tag reports are entered directly into the halibut_temp_tag database. The following data management rules have been established to deal with the most common problems:
+
+•	Tag reported from a fish that was already reported recaptured: data entered with notes. For analyis we use first recapture information.
+
+•	Missing date, prefix, color, or location information: if contact information is available, fishermen are contacted to see if more details are available.  When possible, the appropriate prefix can be identified by the tag number. Returns from the older tagging study (yellow tags) are recorded in a separate Excel data file. 
+
+•	Two tags reported from same fish, but according to the database these tags were deployed on different fish: check for notes on the deployment trip, use length at deployment and return to resolve fish if sufficient information is available, enter information and add note to comment field.  There are sets of tags that were deployed on particular trips fro this mismatch is recurrent problem, or where tagging release data was lost.  For these trips the release and recapture data have been been excluded from analysis.
+
+•	One tag reported and fish released with second tag: this is entered with appropriate event code. Only first recapture used in the following data summary.
+
+•	Tag lengths and weights are taken with and without the head and before and after dressing. At present the data are converted to round weight using the following conversions (weights multiplied by 1.2 for head off or 1.4 for head off, gutted; no conversion for lengths). 
+
+Several queries were used to check the tag reports. 
+
+•	Check position information:  degrees, minutes, and seconds do not exceed 60
+•	Confirm tag returns are from the same fish
+•	Confirm all fish reported with two tags have same recapture information, including date, sex, length, weight and location information
+•	Length and weight data:  plot length vs. weight to identify outliers
+
+
+Statistical analysis
+
+Basic statistical analyses such as maps, histograms and linear regressions were produced in R version 3.6.1 (R Development Core Team 2019). Unpaired t-tests were used to compare mean displacement distances and mean lengths. 
+
+M and F Estimates
+
+Natural (M) and fishing (F) mortality were estimated from a multiyear mark-recapture analysis that allows for incomplete mixing in the first year post release (Hoenig et al. 1998b). The model, which also estimates tag loss is described in detail in den Heyer et al. (2011, 2012). Here, we run the model for 2006 to 2019 using releases of all halibut excluding releases in 2019. The models are run for a range of reporting rates (0.6, 0.7, 0.8, and 0.9) and a range of initial tagging survival (0.8, 0.9, and 1.0). 
+
+Growth
+
+Annual growth (G, cm•year-1) of halibut between release and recapture was estimated using the difference in length between release (Lrel, cm) and recapture (Lrec, cm) divided by days at large (dal) multiplied by 365 days•year-1.  
+
+G = (Lrec - Lrel) / dal • 365		(3)
+
+Movement
+
+The diffusion null hypothesis is that the direction of movement is random. A Rayleigh test of the mean vector, ρ (eq. 3), was used to test for a random distribution of directions (Batschelet 1981) of displacement distance between capture and release sites with tags and release with tags and recapture. The Rayleigh test was completed using CircStats package (Lund 2001). 
+
+ρ = 1 • n-1 •  [ (∑ cos θ)2 + (∑ sin θ) 2  ) ] 1/2  	(4)
+
+
+# Results
+
+TAG RELEASES
+
+
+```{r, echo=FALSE}
+# Release iformation translated into date and location, NB PROGRAM_ID identifies HAST program release years 1,2,3,4, 7, 19, 22 and 23
+
+# new<-sqlQuery(ch,"select t.TRIP_NAME, t.CONTACT_ID, t.VESSEL_ID, f.ANIMAL_ID, e.YEAR as rel_year, e.MONTH as rel_month, e.DAY as rel_day, (e.YEAR*10000+e.MONTH*100+e.DAY) as rel_date, e.LAT_DEG, e.LAT_MIN, e.LAT_SEC, (e.LAT_DEG+(e.LAT_MIN+(e.LAT_SEC/60))/60) as rel_lat, 
+# (e.LON_DEG+(e.LON_MIN+(e.LON_SEC/60))/60) as rel_lon, e.LENGTH as rel_len,  n.NAFO_ABBREV, d.PROGRAM_ID, MIN(d.TAG_NO) as rel_tag1, MAX(d.TAG_NO) as rel_tag2
+# FROM isdb_halibut.TEMP_TAG_ANIMALS f, isdb_halibut.TEMP_TAG_EVENTS e, isdb_halibut.TEMP_TAG_TAGS d, isdb_halibut.TEMP_TAG_NAFOCODES n, isdb_halibut.TEMP_TAG_TRIPS t
+# WHERE e.TRIP_ID=t.TRIP_ID AND f.ANIMAL_ID=e.ANIMAL_ID AND e.TAG_ID = d.TAG_ID AND d.TAGPREFIX ='ST' AND e.EVENTTYPE_ID=1 AND e.NAFO_ID=n.NAFO_ID(+)
+# GROUP BY t.TRIP_NAME, t.CONTACT_ID, t.VESSEL_ID, f.ANIMAL_ID, e.EVENTTYPE_ID,  e.YEAR,  e.MONTH, e.DAY, e.LAT_DEG,  e.LAT_MIN,  e.LAT_SEC, 
+# e.LON_DEG,  e.LON_MIN,  e.LON_SEC, e.LENGTH, n.NAFO_ABBREV,  d.PROGRAM_ID")
+# dim(new)
+# write.csv(new, "release_data")
+
+new<-read.csv("release_data")
+programcodes_dat<-read.csv('programcodes.csv')
+HAST_programIDs<-programcodes_dat$PROGRAM_ID[programcodes_dat$PROGRAM_NAME=="Halibut All Sizes Tagging Project"] # could add a year to selction criteria
+new<-new[new$PROGRAM_ID%in%HAST_programIDs, ]  
+morphdat<-read.csv("morphdata.csv")
+```
+
+
+There were `r dim(new)[1]` halibut tagged and released between 2006 and `r max(new$REL_YEAR)`, on `r length(unique(new$TRIP_NAME))` trips that were completed on `r length(unique(new$VESSEL_ID))` different boats with `r length(unique(new$CONTACT_ID))` observers.  There were 2 trips for which the tagging data are missing date and location data.  These rleases are removed from the release data and recaptures of these fish are not used in further analysis.   
+```{r}
+x<-dim(new)[1]
+new<-new[new$TRIP_NAME!='J07-0354'&new$TRIP_NAME!='J10-0249A',]
+y<-dim(new)[1]
+excluded<-x-y
+```
+`r excluded` tagged fish were excluded.
+
+
+Table 2. Number of tagging trips, boats, and observers that participated in the HAST tagging, and the number of tagged halibut released in each year between 2006 and `r max(new$REL_YEAR)`, after having dropped two trips with incomplete tag release infromation.
+```{r, echo=FALSE}
+byyear<-group_by(new, REL_YEAR)
+relbyyear<-summarise(byyear, Trips = n_distinct(TRIP_NAME), Boats = n_distinct(VESSEL_ID), Observers = n_distinct(CONTACT_ID), Tagged_fish = n()) 
+relbyyear<-rename(relbyyear,  "Year" = REL_YEAR, "Tagged fish" = Tagged_fish)
+
+kable(relbyyear)
+```
+
+
+The morph codes indicating general health and hook removal for all tags deployed were accessed in ISDB. Morph Code 48 was not recorded for 7% of the tagged halibut. Of those assessed, 97% had no signs of injury (Table 8). For 87% of the halibut released the hook removal injury was recorded and for 95% of those assessed the injury was minor (Table 9). Notably 2 tagged fish were recorded as dead and another as moribund. 
+
+Table X. Summary of the fish condition (Morph Code 48)
+```{r}
+
+table(morphdat$MORPH48) 
+```
+
+Table X. Summary of the fish injury (Morph Code 81).
+```{r}
+table(morphdat$MORPH81)
+```
+
+Morph Code 81 in ISDB
+0	Unknown	Unknown or unrecorded	
+1	Minor	No apparent injury; Torn lip; small hole through cheek 	
+2	Moderate	Torn jaw; Cheek and jaw; Hook penetrates eye	
+3	Severe	Torn face; Split jaw; Torn snout	
+
+
+Table 3. The number of halibut tagged and released as part of the all-sizes tagging program by month between 2006 and `r max(new$REL_YEAR)`(n = `r dim(new)[1]`).
+```{r}
+relbymonth<-with(new, table(REL_MONTH, REL_YEAR))
+addmargins(relbymonth)
+# require(tidyr)
+# relbymonth<-new%>%
+#   group_by(REL_MONTH, REL_YEAR)%>%
+#   summarise(n=n())%>%
+#   spread(REL_MONTH, n)
+kable(addmargins(relbymonth))
+
+```
+
+Table 4. The number of halibut tagged and released as part of the all-sizes tagging program by NAFO between 2006 and `r max(new$REL_YEAR)`(n = `r dim(new)[1]`). Prior to 2018, the proportion of tags allocated was defined area proportion of abundance (Table 1).  In 2018 tagging program was swithced to the startified random sets.
+
+```{r}
+new$NAFO<-substr(new$NAFO_ABBREV,1, 2)
+relbynafo<-with(new, table(NAFO, REL_YEAR))
+addmargins(relbynafo)
+kable(addmargins(relbynafo))
+```
+
+# analysis of the length compositon
+```{r}
+nafo3_ln<-new$REL_LEN[!is.na(new$REL_LEN)&new$NAFO%in%c('3N','3O','3P')]
+nafo4_ln<-new$REL_LEN[!is.na(new$REL_LEN)&new$NAFO%in%c('4X','4V','4W')]
+ttest1<-t.test(nafo3_ln, nafo4_ln)
+ttest1
+stdErr <- function(x) {sd(x)/ sqrt(length(x))}
+```
+
+
+Tagged halibut were released throughout the management unit (Fig. 5). The halibut tagged and released in NAFO Subarea 3 (mean  `r round(mean(nafo3_ln),2)`, se=`r round(stdErr(nafo3_ln),2)`, n=`r length(nafo3_ln)` were larger than the halibut released in NAFO Subarea 4 (mean `r round(mean(nafo4_ln),2)`, se=`r round(stdErr(nafo4_ln),2)`, n=`r length(nafo4_ln)` (Fig. 6).
+
+Figure 5.  Map of location of tagged halibut released between 2006 and 2010.
+```{r}
+
+
+
+
+```
+
+ 
+Figure 6. Frequency histograms of length at time of release for halibut released by NAFO subarea. `r length(new$NAFO[new$NAFO=='5Z'])` fish from NAFO 5Z are not shown.
+```{r, echo=FALSE}
+
+
+newl<-new[!is.na(new$REL_LEN)&!is.na(new$NAFO_ABBREV)&new$NAFO!='5Z',]
+mu <- ddply(newl, "NAFO", summarise, grp.mean=mean(REL_LEN))
+head(mu)
+
+p<-ggplot(newl, aes(x=REL_LEN)) + 
+  geom_histogram(color="black", fill="white") +
+  geom_vline(data=mu, aes(xintercept=grp.mean),
+             linetype="dashed")+ facet_grid(NAFO ~ .) +
+  labs(title="Release length histograms by NAFO",x="Length (cm)", y = "Count")+
+  theme_classic()
+p
+
+```
+
+# Reported recaptures
+
+# description of TAG reporting from all HAST and the PAT project
+```{r}
+# new<-sqlQuery(ch,"select e.EVENTTYPE_ID, e.CONTACT_ID, e.ANIMAL_ID, d.TAGPREFIX, d.TAG_NO, e.YEAR, e.MONTH, e.DAY, e.COMMENTS
+# FROM  isdb_halibut.TEMP_TAG_EVENTS e, isdb_halibut.TEMP_TAG_TAGS d
+# WHERE  e.TAG_ID = d.TAG_ID  ")
+# write.csv(new, "report_data")
+
+new<-read.csv("report_data")
+with(new, table(EVENTTYPE_ID, TAGPREFIX))
+new<-new[new$TAGPREFIX=='ST'&new$EVENTTYPE_ID%in%c(2,3,4,5),]
+dim(new)
+```
+
+
+```{r, echo = FALSE}
+x<-table(new$CONTACT_ID)
+x<-sort(x)
+n<-x[round(length(unique(new$CONTACT_ID))*0.75)]
+```
+
+A total of `r length(unique(new$ANIMAL_ID))` tagged halibut with HAST tags were recaptured and reported. A total of  `r length(unique(new$TAG_NO))` tags were reported by  `r length(unique(new$CONTACT_ID))` people. Most of the tags were reported by fishermen. `r n` tags  were reported by 75% of the contacts. One person has reported `r max(x)` tags.
+
+
+#TO DO
+
+<!-- Estimate the tagloss rate as a function of time between release and recovery. Drop all the nonreported tags and reports without complete dates.  This analysis completed by Carl Schwarz and updated by Nell. Divide up the time at large into categories. -->
+
+<!-- ```{r} -->
+<!-- tagdata<-tagdat[!is.na(tagdat$dal),] -->
+<!-- tagdata$atlarge <- tagdata$dal -->
+<!-- tagdata$atlargeI <- cut(as.numeric(tagdata$atlarge), c(0,100,200,300, 400, 600, 800, 1200, 1600, 2000, 3000,4000,5000))  -->
+
+
+<!-- double.tags.recovered <- tagdata[ tagdata$rec_tags==11,] -->
+<!-- double.tags.recovered <- aggregate(double.tags.recovered$rec_tags, -->
+<!--     by=list(double.tags.recovered$atlargeI,double.tags.recovered$rel_tags, -->
+<!--             double.tags.recovered$rec_tags), length) -->
+<!-- double.tags.recovered -->
+
+<!-- single.tags.recovered <- tagdata[tagdata$rec_tags==10,] -->
+<!-- single.tags.recovered <- aggregate(single.tags.recovered$rec_tags, -->
+<!--     by=list(single.tags.recovered$atlargeI,single.tags.recovered$rel_tags, -->
+<!--             as.numeric(single.tags.recovered$rec_tags)), length) -->
+<!-- single.tags.recovered -->
+
+<!-- tag.loss <- merge( double.tags.recovered, single.tags.recovered, -->
+<!--     by=c("Group.1", "Group.2"), sort=TRUE) -->
+<!-- names.tag.loss <- colnames(tag.loss) -->
+<!-- names.tag.loss[names.tag.loss=="Group.3.x"] <- "dt" -->
+<!-- names.tag.loss[names.tag.loss=="x.x"      ] <- "n.dt" -->
+<!-- names.tag.loss[names.tag.loss=="Group.3.y"] <- "st" -->
+<!-- names.tag.loss[names.tag.loss=="x.y"      ] <- "n.st" -->
+<!-- colnames(tag.loss) <- names.tag.loss -->
+
+<!-- tag.loss$loss.rate <- 1- 2*tag.loss$n.dt/(2*tag.loss$n.dt+tag.loss$n.st) -->
+
+<!-- print(tag.loss) -->
+
+<!-- cat('Total fish with double and single tag retured over all times at large is ', -->
+<!--    sum(tag.loss$n.dt), ' and', sum(tag.loss$n.st), ' \n') -->
+
+<!-- png(file='estimate-tagloss.png') -->
+<!-- plot(tag.loss$Group.1, tag.loss$loss.rate,  -->
+<!--   main='Estimated loss rate by time at large', -->
+<!--   xlab='Time at large', ylab='Cumulative tagloss rate') -->
+<!-- dev.off() -->
+
+<!-- ``` -->
+
+
+
