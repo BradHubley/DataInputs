@@ -1,22 +1,43 @@
-FixedSurveyIndex<-function(datadir,yrs){
+FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F){
 
   FSindexData <- FixedSurveyData(datadir=datadir, add.LF=F,by.sex=F)
+
+  if(restrict100){
+    load(file.path(datadir,"Survey","HSFixed100Stations.rdata"))
+    FSindexData<- subset(FSindexData,STATION%in%stations100)
+  }
+  FSindexData<- subset(FSindexData,YEAR%in%yrs)
+
   FSindexData$EST_NUM_CAUGHT[is.na(FSindexData$EST_NUM_CAUGHT)]<-0
   FSindexData$EST_COMBINED_WT[is.na(FSindexData$EST_COMBINED_WT)]<-0
   FSindexData$NUM_HOOK_HAUL[is.na(FSindexData$NUM_HOOK_HAUL)]<-1000
-  load(file.path(datadir,"Survey","HSFixed100Stations.rdata"))
 
   FSindexData$NPKH <-  FSindexData$EST_NUM_CAUGHT/(FSindexData$NUM_HOOK_HAUL/1000)
   FSindexData$WPKH <-  FSindexData$EST_COMBINED_WT/(FSindexData$NUM_HOOK_HAUL/1000)
 
   Year<-sort(unique(FSindexData$YEAR))
-  NPKH<-with(subset(FSindexData,STATION%in%stations100),tapply(NPKH,YEAR,mean))
-  NPKHse<-with(subset(FSindexData,STATION%in%stations100),tapply(NPKH,YEAR,sd))
-  KgPKH<-with(subset(FSindexData,STATION%in%stations100),tapply(WPKH,YEAR,mean))
-  KgPKHse<-with(subset(FSindexData,STATION%in%stations100),tapply(WPKH,YEAR,sd))
+  KgPKH<-with(FSindexData,tapply(WPKH,YEAR,mean))
+  KgPKHse<-with(FSindexData,tapply(WPKH,YEAR,sd))
+  NPKH<-with(FSindexData,tapply(NPKH,YEAR,mean))
+  NPKHse<-with(FSindexData,tapply(NPKH,YEAR,sd))
 
-  out<-data.frame(Year=Year,NPKH=NPKH,NPKHse=NPKHse,KgPKH=KgPKH,KgPKHse=KgPKHse)
+  out<-data.frame(Year=Year,KgPKH=KgPKH,KgPKHse=KgPKHse,NPKH=NPKH,NPKHse=NPKHse)
+  out<-subset(out,Year%in%yrs)
 
-  return(subset(out,Year%in%yrs))
+  if(old.model){
+
+    out<-makeOldFSIndex(FSindexData,do.plot=F)$index
+  }
+
+  mean3_biomass <- NULL
+  for(i in 3:nrow(out)){
+    hold_mean <- mean(out[i:(i-2),2])
+    mean3_biomass <- c(mean3_biomass, hold_mean)
+  }
+
+  out$mean3_biomass <- c(rep(NA, 2), mean3_biomass)
+
+
+  return(out)
 
 }

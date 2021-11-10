@@ -1,0 +1,686 @@
+---
+title: "Halibut Tagging Data Cleaning"
+author: "den Heyer"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd('C://Users/denHeyerC/Documents/Halibut/HAST Tagging Program/Data cleaning')
+
+# List of packages required for this analysis
+pkg <- c("dplyr", "knitr", "devtools", "DT", "xtable", "dplyr", "tidyr", "maps", "mapdata", "mapproj", "skimr")
+# Check if packages are not installed and assign the
+# names of the packages not installed to the variable new.pkg
+new.pkg <- pkg[!(pkg %in% installed.packages())]
+
+# If there are any packages in the list that aren't installed,
+# install them
+if (length(new.pkg)) {
+  install.packages(new.pkg, repos = "http://cran.rstudio.com")
+}
+
+# Load the packages into R
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(DT)
+library(xtable)
+library(dplyr)
+library(maps)
+library(mapdata)
+library(mapproj)
+
+thedate<-"Oct2021"
+
+```
+
+
+# Halibut all-sizes tagging data cleaning
+
+Here I have pulled the data from the halibut temp tags to do data audit and assemble the tag and release data.  Halibut temp tag was database was created in 2012 as draft generalized database for tagging.  The halibut conventional tagging and PSAT tagging provides opportunity to develop robust database. Notably the project was never completed and hence not expanded to include tagging data sets other that halibut, or even other halibut tagging data sets such as those described by Fowler and Stobo (2014) and the yellow and green industry run tagging programs.
+
+
+Step 1. Pull temp tag tables
+```{r, echo=FALSE}
+
+# created data table on Oct 21, 2021
+# 
+# roracleCxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), "denheyer", "plb479a", "PTRAN") 
+# test2= ROracle::dbGetQuery(roracleCxn, "select * FROM isdb_halibut.TEMP_TAG_PROGRAMCODES") 
+# 
+# # this is Mike McMahon alternative to the line by line code below
+# Mar.utils::get_data_tables(schema = "ISDB_HALIBUT", data.dir = "c:/LocalDataDump", 
+#                             usepkg="roracle", 
+#                             fn.oracle.username="denheyer", fn.oracle.dsn="PTRAN", 
+#                             fn.oracle.password="plb479a", 
+#                             tables = c("TEMP_TAG_TRIPS", "TEMP_TAG_TAGS"))
+# 
+# # # # programcodes_dat<-sqlQuery(ch,"select * FROM
+# programcodes_dat<-ROracle::dbGetQuery(roracleCxn,"select * FROM isdb_halibut.TEMP_TAG_PROGRAMCODES") 
+# animals_dat<-ROracle::dbGetQuery(roracleCxn,"select * FROM isdb_halibut.TEMP_TAG_ANIMALS") 
+# events_dat<-ROracle::dbGetQuery(roracleCxn,"select * FROM isdb_halibut.TEMP_TAG_EVENTS") 
+# tags_dat<-ROracle::dbGetQuery(roracleCxn,"select * FROM isdb_halibut.TEMP_TAG_TAGS") 
+# nafocodes_dat<-ROracle::dbGetQuery(roracleCxn,"select * FROM isdb_halibut.TEMP_TAG_NAFOCODES") 
+# trips_dat<-ROracle::dbGetQuery(roracleCxn,"select * FROM isdb_halibut.TEMP_TAG_TRIPS")
+# 
+#  # # these should only be calculated when the data is reasonably complete #
+#  if(!is.null(events_dat$LAT_MIN)) #
+#  {events_dat$lat<-events_dat$LAT_DEG+(events_dat$LAT_MIN+(events_dat$LAT_SEC/60))/60}
+#  if(!is.null(events_dat$LON_MIN)) #
+#  {events_dat$lon<-events_dat$LON_DEG+(events_dat$LON_MIN+(events_dat$LON_SEC/60))/60}
+#  events_dat$edate<-(events_dat$YEAR*10000+events_dat$MONTH*100+events_dat$DAY)
+#  
+# write.csv(programcodes_dat, "programcodes.csv", row.names = FALSE) 
+# write.csv(animals_dat, "animals.csv", row.names = FALSE) 
+# write.csv(events_dat, "events.csv", row.names = FALSE) 
+# write.csv(tags_dat, "tags.csv", row.names=FALSE) 
+# write.csv(nafocodes_dat, "nafocodes.csv", row.names = FALSE) #
+# write.csv(trips_dat, "trips.csv", row.names = FALSE)
+
+# require(RODBC) #!!! no longer working using. Use the ROracle above.
+# ch <- odbcConnect("Bank", uid = "denheyer", pwd = "plb479a") #
+# sqlTables(ch, schema = "ISDB_HALIBUT")
+# 
+# programcodes_dat<-sqlQuery(ch,"select * FROM isdb_halibut.TEMP_TAG_PROGRAMCODES") 
+# animals_dat<-sqlQuery(ch,"select * FROM isdb_halibut.TEMP_TAG_ANIMALS") 
+# events_dat<-sqlQuery(ch,"select * FROM isdb_halibut.TEMP_TAG_EVENTS") 
+# tags_dat<-sqlQuery(ch,"select * FROM isdb_halibut.TEMP_TAG_TAGS") 
+# nafocodes_dat<-sqlQuery(ch,"select * FROM isdb_halibut.TEMP_TAG_NAFOCODES") 
+# trips_dat<-sqlQuery(ch,"select * FROM isdb_halibut.TEMP_TAG_TRIPS")
+# 
+
+# # these should only be calculated when the data is reasonably complete
+# if(!is.null(events_dat$LAT_MIN))
+# {events_dat$lat<-events_dat$LAT_DEG+(events_dat$LAT_MIN+(events_dat$LAT_SEC/60))/60}
+# if(!is.null(events_dat$LON_MIN))
+# {events_dat$lon<-events_dat$LON_DEG+(events_dat$LON_MIN+(events_dat$LON_SEC/60))/60}
+# events_dat$edate<-(events_dat$YEAR*10000+events_dat$MONTH*100+events_dat$DAY)
+# 
+# write.csv(programcodes_dat, "programcodes.csv", row.names = FALSE)
+# write.csv(animals_dat, "animals.csv", row.names = FALSE) write.csv(events_dat,
+# "events.csv", row.names = FALSE) write.csv(tags_dat, "tags.csv", row.names =
+# FALSE) write.csv(nafocodes_dat, "nafocodes.csv", row.names = FALSE)
+# write.csv(trips_dat, "trips.csv", row.names = FALSE)
+
+
+#Step 2. Get morph data directly from ISDB.  Notably at this time it has not been linked to the animal id in temp_tags.
+
+# morphdata<-ROracle::dbGetQuery(roracleCxn,"select  t.trip, s.set_no, c.speccd_id, f.fish_no,
+#  sum(decode(m.mrphcd_id,20,nvl(quant_value,-9))) morph20,
+#  sum(decode(m.mrphcd_id,49,nvl(quant_value,-9))) morph49,
+#  sum(decode(m.mrphcd_id,48,nvl(mrphvcd_id,-9))) morph48,
+#  sum(decode(m.mrphcd_id,81,nvl(mrphvcd_id,-9))) morph81,
+#  sum(decode(m.mrphcd_id,100,nvl(mrphvcd_id,-9))) morph100,
+#  sum(decode(m.mrphcd_id,101,nvl(mrphvcd_id,-9))) morph101 from observer.istrips
+#  t, observer.isfishsets s, observer.iscatches c, observer.isfish f,
+#  observer.isfishmorphs m where t.trip_id = s.trip_id and s.fishset_id =
+#  c.fishset_id and c.catch_id = f.catch_id and f.fish_id = m.fish_id and
+#  mrphcd_id in (20,49,48,81,100,101) and c.speccd_id = 30 group by t.trip,
+#  s.set_no, c.speccd_id, f.fish_no order by t.trip, s.set_no, c.speccd_id,
+#  f.fish_no")
+# 
+# summary(morphdata) 
+# write.csv(morphdata, "morphdata.csv", row.names = FALSE)
+
+```
+
+
+One of the challenges faced by halibut tagging data processing is that data is being pulled from ISDB Halibut and then audited in temp tags, so the data editing has to be completed in both databases.  A second challenge is that the data entry for the reported tags is being done by tag instead of by fish. As a result the event data is not shared across all the tag reports from the same fish. This causes problems when assembling the data by fish. Notably, there are occasions where tags from the same fish are reported separately. This may occur because of errors in tag reporting,  misplaced tags, fishermen that are motivated to report separately to share rewards, lack of communication between crew, or errors in the release data.  There were two trips for which the tagged fish were particularly problematic so we have removed these trips and associated fish from release and report data.  
+```{r, echo=FALSE}
+trips_dat<-read.csv('trips.csv')
+programcodes_dat<-read.csv('programcodes.csv')
+tags_dat<-read.csv('tags.csv')
+events_dat<-read.csv('events.csv')
+nafocodes_dat<-read.csv('nafocodes.csv')
+
+tr<-trips_dat
+drop_trips<-tr$TRIP_ID[tr$TRIP_NAME%in%c('J07-0354', 'J10-0249A')]
+drop_fish<-unique(events_dat$ANIMAL_ID[events_dat$TRIP_ID%in%drop_trips]) # drops fish from bad trips
+drop_events<-events_dat$EVENT_ID[events_dat$EVENTTYPE_ID==1&is.na(events_dat$TRIP_ID)]  # Fish not released from survey trip
+
+```
+
+A first step in the data audit is to confirm that all the HAST programs have ST tags associated with them.  Each year the list of HAST Program IDs has to be updated. Notably some of ST tags are deployed on fish during other projects, which the AHC has agreed to support through offering reward of the tag reports. 
+```{r}
+HAST_programs<-programcodes_dat$PROGRAM_ID[programcodes_dat$PROGRAM_NAME=='Halibut All Sizes Tagging Project']
+t<-tags_dat[tags_dat$PROGRAM_ID%in%HAST_programs, ]
+table(t$TAGPREFIX)
+```
+
+There are a few data queries to check the data before trying to merge the data sets.  First confirm that no ST tags that have same tag number in isdb_halibut.TEMP_TAG_TAGS.
+```{r, echo=FALSE}
+tags_dat<-read.csv('tags.csv')
+skimr::skim(tags_dat)
+t<-tags_dat[tags_dat$TAGPREFIX=='ST'&!is.na(tags_dat$TAGPREFIX),]
+dup_tagno<-t$TAG_ID[duplicated(t$TAG_NO)==TRUE]
+dup_tagno
+if(anyDuplicated(t$TAG_NO)==0) {print("No duplicated tags")} else {
+  write.csv(dup_tagno, "chTagNo.csv", row.names = FALSE)
+  print("Check ST tag  numbers")}
+```
+
+
+Check position data for all events.  The release data should be audited in ISDB, but the reported recaptures have not been audited.  The two problematic trips are excluded from the position data audit.  
+
+```{r, echo=FALSE}
+# before data audit drop the trips we know are trouble from release data 
+events_dat<-read.csv('events.csv')
+e<-events_dat[!events_dat$TRIP_ID%in%drop_trips,]
+e$TIME[e$EVENT_ID==8677] <- 1529  # audit April 15, 2020
+
+# with(e, table(EVENTTYPE_ID, LAT_DEG))
+# with(e, table(EVENTTYPE_ID, LON_DEG))
+
+# Longitude is entered in negatve for some releases,  or release long has extra digit 
+fix_position <- e$EVENT_ID[e$LON_DEG<0|e$LON_DEG>180]
+fix_position_dat <- e[e$EVENT_ID%in%fix_position,]
+head(fix_position_dat)
+
+if(length(fix_position_dat$EVENT_ID)==0){print("Position data is clean")} else 
+  {print("Check position data in checkpositions.csv")
+  write.csv(fix_position_dat, 'checkpositions.csv', row.names = FALSE)}
+
+# recode zero to missing values and the negative longitude to positives and drop location that is not possible 
+e$LAT_DEG[e$LAT_DEG==0|e$LON_DEG>180]<-NA
+e$LON_DEG[e$LON_DEG==0|e$LON_DEG>180]<-NA
+e$LON_DEG<-abs(e$LON_DEG)
+
+# where LAT and LON second are NA fill in the lat and lon
+# recode zero to missing values and the negative longitude to positives and drop location that is not possible 
+e$lat[is.na(e$LAT_SEC)==TRUE]<-e$LAT_DEG[is.na(e$LAT_SEC)==TRUE]+e$LAT_MIN[is.na(e$LAT_SEC)==TRUE]/60
+e$lon[is.na(e$LON_SEC)==TRUE]<-e$LON_DEG[is.na(e$LON_SEC)==TRUE]+e$LON_MIN[is.na(e$LON_SEC)==TRUE]/60
+
+fix.lat.lon.sec.NA<-e[is.na(e$LAT_SEC)==TRUE|is.na(e$LON_SEC)==TRUE,]
+
+# with(e, table(EVENTTYPE_ID, LAT_DEG))
+# with(e, table(EVENTTYPE_ID, LON_DEG))
+
+names(e)
+e$ANIMAL_EVENT<-paste(e$ANIMAL_ID, e$EVENTTYPE_ID)
+
+e_only <- e[,c(-1,-2,-6,-7,-11,-15,-22,-23,-25,-27,-29,-30,-31,-32,-32)]  # note location very badly entered need to be exactly the same for the checking to work: problem is data entry needs to revisited.  There is no reason that the comments are being double entered.
+names(e_only)
+test<-dplyr::distinct(e_only)
+with(test, table(EVENTTYPE_ID))
+dup_animalevents<-test[duplicated(test$ANIMAL_EVENT)==TRUE,]
+
+checkdups<-test[test$EVENTTYPE_ID==2&test$ANIMAL_EVENT%in%dup_animalevents$ANIMAL_EVENT,]  
+
+n<-length(unique(checkdups$ANIMAL_ID))
+
+if(length(checkdups$ANIMAL_ID)==0){print("Event data has no duplicates")} else 
+  {print(paste("Check event data in checkdups.csv. There are ", n, "animals with split duplicate events"))
+  write.csv(checkdups, 'checkdups.csv', row.names = FALSE)}
+
+# drop the second report from an animal with duplicate reports
+dump<-e[e$ANIMAL_EVENT%in%dup_animalevents$ANIMAL_EVENT&e$EVENTTYPE_ID==2,]
+dump2<-dump %>% group_by((ANIMAL_EVENT)) %>% summarise(max(EVENT_ID) )
+drop_events<-c(drop_events, dump2$'max(EVENT_ID)')
+
+```
+
+Here we apply all edits identified in data audit of April 2020.  Notably some position data is excluded or overwritten for obvious issues like negative in longitude.  The reporting data will get cleaned up and should always be reported with the date of the data pull acknowledged. 
+```{r}
+# open data again and remove split reports, bad trips, audit data, and drop bad postions
+events_dat<-read.csv('events.csv')
+e<-events_dat[!events_dat$TRIP_ID%in%drop_trips,]
+e<-e[!e$ANIMAL_ID%in%drop_fish,]
+e<-e[!e$EVENT_ID%in%drop_events,]
+e$YEAR[e$YEAR==0]<-NA
+
+e<-e[!(e$ANIMAL_ID==3453&e$EVENTTYPE_ID==2&e$MONTH==6),] #  reported recaptured twice and neither report sufficient or conistent data
+e$TIME[e$EVENT_ID==8677] <- 1529  # data entry error
+e$LAT_MIN[e$SET_NO==14&e$TRIP_ID==69&!is.na(e$SET_NO)&!is.na(e$TRIP_ID)] <- 56  # data entry error in ISDB
+e$CONTACT_ID[e$TRIP_ID==69] <- 1322 # for some reason set 14 had 2 contacts, possibly associated with PSAT tagging
+
+# recode zero to missing values and the negative longitude to positives and drop location that is not possible 
+e$LAT_DEG[e$LAT_DEG==0|e$LON_DEG>180]<-NA
+e$LON_DEG[e$LON_DEG==0|e$LON_DEG>180]<-NA
+e$LON_DEG<-abs(e$LON_DEG)
+
+with(e, table(EVENTTYPE_ID, LAT_DEG))
+with(e, table(EVENTTYPE_ID, LON_DEG))
+
+e$ANIMAL_EVENT<-paste(e$ANIMAL_ID, e$EVENTTYPE_ID)
+e$lat <- (e$LAT_DEG + (e$LAT_MIN + (e$LAT_SEC/60))/60) 
+e$lon <- (e$LON_DEG + (e$LON_MIN + (e$LON_SEC/60))/60)
+
+e$edate<-NULL
+e$edate[!is.na(e$DAY)&!is.na(e$MONTH)&!is.na(e$YEAR)]<-as.Date(paste(e$DAY[!is.na(e$DAY)&!is.na(e$MONTH)&!is.na(e$YEAR)],'/',e$MONTH[!is.na(e$DAY)&!is.na(e$MONTH)&!is.na(e$YEAR)], '/', e$YEAR[!is.na(e$DAY)&!is.na(e$MONTH)&!is.na(e$YEAR)], sep=''), "%d/%m/%Y", origin = "1900-01-01")
+
+```
+
+# Merge data
+```{r, echo=FALSE}
+# new<-sqlQuery(ch,"select t.TRIP_NAME, t.CONTACT_ID, t.VESSEL_ID, f.ANIMAL_ID, e.YEAR as rel_year, e.MONTH as rel_month, e.DAY as rel_day, (e.YEAR*10000+e.MONTH*100+e.DAY) as rel_date, e.LAT_DEG, e.LAT_MIN, e.LAT_SEC, (e.LAT_DEG+(e.LAT_MIN+(e.LAT_SEC/60))/60) as rel_lat, 
+# (e.LON_DEG+(e.LON_MIN+(e.LON_SEC/60))/60) as rel_lon, e.LENGTH as rel_len,  n.NAFO_ABBREV, d.PROGRAM_ID, MIN(d.TAG_NO) as rel_tag1, MAX(d.TAG_NO) as rel_tag2
+# FROM isdb_halibut.TEMP_TAG_ANIMALS f, isdb_halibut.TEMP_TAG_EVENTS e, isdb_halibut.TEMP_TAG_TAGS d, isdb_halibut.TEMP_TAG_NAFOCODES n, isdb_halibut.TEMP_TAG_TRIPS t
+# WHERE e.TRIP_ID=t.TRIP_ID AND f.ANIMAL_ID=e.ANIMAL_ID AND e.TAG_ID = d.TAG_ID AND d.TAGPREFIX ='ST' AND e.EVENTTYPE_ID=1 AND e.NAFO_ID=n.NAFO_ID(+)
+# GROUP BY t.TRIP_NAME, t.CONTACT_ID, t.VESSEL_ID, f.ANIMAL_ID, e.EVENTTYPE_ID,  e.YEAR,  e.MONTH, e.DAY, e.LAT_DEG,  e.LAT_MIN,  e.LAT_SEC, 
+# e.LON_DEG,  e.LON_MIN,  e.LON_SEC, e.LENGTH, n.NAFO_ABBREV,  d.PROGRAM_ID")
+
+# dim(new)
+# write.csv(new, "release_data")
+# new<-read.csv("release_data")
+# new<-new[!new$TRIP_NAME%in%c('J07-0354','J10-0249A'),]
+# with(new, table(LAT_DEG))
+# with(new, table(LON_DEG))
+
+st_tags<-t[,c("TAG_ID", "TAG_NO", "TAGTYPE_ID", "PROGRAM_ID")]  # HAST TAGS ONLY
+st_tags$TAG_NO<-as.numeric(as.character(st_tags$TAG_NO))
+
+events_nafo_dat<-merge(e, nafocodes_dat, all.x=TRUE, by="NAFO_ID")
+dim(events_nafo_dat)
+
+events<-merge(events_nafo_dat[,c("EVENTTYPE_ID", "ANIMAL_ID", "TAG_ID", "CONTACT_ID", "TRIP_ID", "SET_NO", "YEAR", "MONTH", "DAY", "LAT_DEG", "LAT_MIN", "LAT_SEC", "LON_DEG", "LON_MIN", "LON_SEC", "NAFO_ABBREV", "LENGTH", "SEX_ID", "lat", "lon", "edate", "ANIMAL_EVENT"),], trips_dat[c("TRIP_ID", "TRIP_NAME", "VESSEL_ID")], by=('TRIP_ID'), all.x=TRUE)
+dim(events)
+with(events, table(EVENTTYPE_ID))
+
+events2<-merge(events, st_tags, by='TAG_ID')  # loss of evettype_ID 6 when limited to ST tags, also dropped, returns (event 2, n=20) and releases (even 1, n=77)
+dim(events2)  
+with(events2, table(EVENTTYPE_ID))
+
+# here want to mutate the data o that there --this strictly isn't necessaryc because we have animal ids to track fish ... just want to know how many tags not necesssaily what the code on tag was
+tags<- events2 %>% group_by(ANIMAL_EVENT) %>% summarise(tag1 = min(TAG_NO), tag2=max(TAG_NO)) # if there is only one tag, then delete the max
+tags$tag2[tags$tag2==tags$tag1] <- NA
+
+
+events2 %>% group_by(ANIMAL_EVENT) %>% summarise(tag1 = min(TAG_NO), tag2=max(TAG_NO))
+
+```
+
+
+```{r, echo=FALSE}
+st_events<-merge(events, tags, by="ANIMAL_EVENT")  
+dim(st_events)  
+with(st_events, table(EVENTTYPE_ID))
+
+names(st_events)
+test<-st_events[,c(-5)]
+new<-dplyr::distinct(test)  # where tag1, really need tp merge by 
+with(new, table(EVENTTYPE_ID))     
+
+reldat<-new[new$EVENTTYPE_ID==1,]
+st_fish<-unique(reldat$ANIMAL_ID) # only fish in HAST to be included in reports
+retdat<-new[new$EVENTTYPE_ID%in%c(2, 4,22)&new$ANIMAL_ID%in%st_fish,]  
+rrdat<-new[new$EVENTTYPE_ID%in%c(3,5),]  # re-released
+
+names(reldat)
+names(reldat)<-c('ANIMAL_EVENT', 'TRIP_ID', 'EVENTTYPE_ID', 'ANIMAL_ID', 'tagger_ID','SET_NO',       'rel_year', 'rel_month', 'rel_day', 'rel_lat_deg', 'rel_lat_min', 'rel_lat_sec',   'rel_lon_deg',      'rel_lon_min', 'rel_lon_sec', 'rel_NAFO_ABBREV',  'rel_length',  'rel_sex', 'rel_lat',          'rel_lon', 'rel_date', 'TRIP_NAME', 'VESSEL_ID', 'rel_tag1', 'rel_tag2')
+
+dim(retdat)
+names(retdat)<-c('ANIMAL_EVENT', 'TRIP_ID', 'EVENTTYPE_ID', 'ANIMAL_ID', 'reporter_ID','SET_NO', 'rec_year', 'rec_month', 'rec_day', 'rec_lat_deg', 'rec_lat_min', 'rec_lat_sec', 'rec_lon_deg',      'rec_lon_min', 'rec_lon_sec', 'rec_NAFO_ABBREV', 'rec_length',  'rec_sex', 'rec_lat',          'rec_lon', 'rec_date', 'TRIP_NAME', 'VESSEL_ID', 'rec_tag1', 'rec_tag2')
+
+tagdat<-merge(reldat[,c(-1,-3, -18, -23)], retdat[,c(-1, -2,-3, -6, -22)], by='ANIMAL_ID')
+dim(tagdat) 
+
+
+# write.csv(reldat, "reldat.csv", row.names = FALSE)
+# write.csv(retdat, "retdat.csv", row.names = FALSE)
+# write.csv(tagdat, "tagdat.csv", row.names = FALSE)
+
+#new<-sqldf("select t.TRIP_NAME, t.CONTACT_ID, t.VESSEL_ID, f.ANIMAL_ID, e.YEAR as rel_year, e.MONTH as rel_month, e.DAY as rel_day, (e.YEAR*10000+e.MONTH*100+e.DAY) as rel_date, e.LAT_DEG, e.LAT_MIN, e.LAT_SEC, (e.LAT_DEG+(e.LAT_MIN+(e.LAT_SEC/60))/60) as rel_lat, 
+# (e.LON_DEG+(e.LON_MIN+(e.LON_SEC/60))/60) as rel_lon, e.LENGTH as rel_len, d.PROGRAM_ID, MIN(d.TAG_NO) as rel_tag1, MAX(d.TAG_NO) as rel_tag2 FROM isdb_halibut.TEMP_TAG_ANIMALS f, isdb_halibut.TEMP_TAG_EVENTS e, isdb_halibut.TEMP_TAG_TAGS d, isdb_halibut.TEMP_TAG_NAFOCODES n, isdb_halibut.TEMP_TAG_TRIPS t
+# WHERE e.TRIP_ID=t.TRIP_ID AND f.ANIMAL_ID=e.ANIMAL_ID AND e.TAG_ID = d.TAG_ID AND d.TAGPREFIX ='ST' AND e.EVENTTYPE_ID=1 
+# GROUP BY t.TRIP_NAME, t.CONTACT_ID, t.VESSEL_ID, f.ANIMAL_ID, e.EVENTTYPE_ID,  e.YEAR,  e.MONTH, e.DAY, e.LAT_DEG,  e.LAT_MIN,  e.LAT_SEC, 
+# e.LON_DEG,  e.LON_MIN,  e.LON_SEC, e.LENGTH,  d.PROGRAM_ID")
+
+
+```
+
+Here, we identify halibut for which recapture was reported more than once.  Write a csv (check1tag.csv) file to allow for data auditing. The deployment trips with the odd fish are listed because error could come from deployment information or the mis-reported recoveries.
+```{r}
+# check again releases 
+dups<-reldat$ANIMAL_ID[duplicated(reldat$ANIMAL_ID)]
+reldat[reldat$ANIMAL_ID%in%dups,]
+
+# check again returns 
+dups<-retdat$ANIMAL_ID[duplicated(retdat$ANIMAL_ID)]
+retdat[retdat$ANIMAL_ID%in%dups,]
+length(dups)   # only one of the same event type, the rest are same animal recorder as 2 eventypes
+
+# check again returns 
+dups<-retdat$ANIMAL_ID[duplicated(retdat$ANIMAL_ID)]
+retdat[retdat$ANIMAL_ID%in%dups,]
+length(dups)   # only one of the same event type, the rest are same animal recorder as 2 eventypes
+
+# check again returns 
+dups<-tagdat$ANIMAL_ID[duplicated(tagdat$ANIMAL_ID)]
+tagdat[tagdat$ANIMAL_ID%in%dups,]
+length(dups)   # only one of the same event type, the rest are same animal recorder as 2 eventypes
+```
+
+```{r, echo=FALSE}
+n<-sum(is.na(reldat$rel_tag2))
+checkreldat<-reldat[is.na(reldat$rel_tag2)==TRUE,]
+write.csv(checkreldat, "checkreltags.csv", row.names = FALSE)
+
+onetagrel<-reldat$ANIMAL_ID[is.na(reldat$rel_tag2)==TRUE]
+retdat[retdat$ANIMAL_ID%in%onetagrel,]  # to date none have been recaught
+```
+
+There are `r n` fish which appear to have been released with only one tag. It would be worth checking the data entry for these fish could be so these are written to checkreltags.csv.
+
+```{r, echo=FALSE}
+n<-length(reldat$rel_length[is.na(reldat$rel_length)])
+releases<-reldat[!is.na(reldat$rel_length),]
+```
+
+Notably, we use the length at time of release for many analysis and this was not always recorded.
+Other tagged fish were dropped from future analysis because the length at time of release was not recorded (n=`r n`).  
+
+There have been `r length(unique(releases$ANIMAL_ID))` halibut tagged and released as part of the HAST program between `r min(releases$rel_year)` and `r max(releases$rel_year)`.  
+
+
+Quick summary summary of reldat.
+```{r}
+summary(reldat)
+with(reldat[reldat$rel_NAFO_ABBREV%in%c('4Vs', '4VB', '4VC'),], hist(rel_length, breaks=12))
+with(reldat[reldat$rel_NAFO_ABBREV%in%c('4Vs', '4VB', '4VC' ),], length(unique(TRIP_NAME)))
+with(reldat[reldat$rel_NAFO_ABBREV%in%c('4Vs', '4VB', '4VC' ),], plot(-rel_lon, rel_lat))
+```
+
+
+# Reporting Data
+
+Reporting data is hard. There is variability in the quality and etent of data reported when a tag is recaptured.  The gaps in data will undermine some analysis, but dropping reports for incomplete data could be costly in terms of sample size for other analysis. For example, length data and sex at recovery and even aspects of location of recovery date and location can be problematic. There are tags reported on land -- those can be checked and dropped --- do you drop the whole record or just date and location.
+
+Could generate quality codes for tags.  First start with description of number of tags reported and the tag loss.
+```{r, echo=FALSE}
+returns<-retdat
+nfish<-length(unique(returns$ANIMAL_ID))
+ntags <- length(unique(c(returns$rec_tag1, returns$rec_tag2)))
+ndouble <- ntags-nfish
+pdouble<-ndouble/nfish
+```
+
+A total of `r nfish` tagged halibut reported with HAST tags with a total of 
+`r ntags` tags. `r ndouble` (`r round(pdouble*100,0)` %) of the halibut were recaptured with two tags.
+
+
+
+```{r}
+tagdat$dal<-tagdat$rec_date-tagdat$rel_date
+drop_retdate<-tagdat$ANIMAL_ID[tagdat$dal<=0&!is.na(tagdat$dal)]  # dal is negaitve
+tagdat$dal[tagdat$ANIMAL_ID%in%drop_retdate]<-NA
+
+```
+
+Estimate the tagloss rate as a function of time between release and recovery. Drop all the nonreported tags and reports without complete dates.  This analysis completed by Carl Schwarz and updated by Nell. Divide up the time at large into categories.
+
+```{r}
+tagdata <-tagdat[!is.na(tagdat$dal),]
+tagdata$rel_tags<-11
+tagdata$atlarge <- tagdata$dal
+tagdata$atlargeI <- cut(as.numeric(tagdata$atlarge), c(0,100,200,300, 400, 600, 800, 1200, 1600, 2000, 3000,4000,5000, 6000)) 
+tagdata$rec_tags<-11
+tagdata$rec_tags[is.na(tagdata$rec_tag2)==TRUE]<-10
+tagdata<- data.frame(tagdata %>% select(rel_tags, atlarge, atlargeI, rec_tags))
+
+double.tags.recovered <- tagdata[tagdata$rec_tags==11,]
+double.tags.recovered <- aggregate(double.tags.recovered$rec_tags,
+    by=list(double.tags.recovered$atlargeI,double.tags.recovered$rel_tags,
+            double.tags.recovered$rec_tags), length)
+double.tags.recovered
+
+single.tags.recovered <- tagdata[tagdata$rec_tags==10,]
+single.tags.recovered <- aggregate(single.tags.recovered$rec_tags,
+    by=list(single.tags.recovered$atlargeI,single.tags.recovered$rel_tags,
+            as.numeric(single.tags.recovered$rec_tags)), length)
+single.tags.recovered
+
+tag.loss <- merge( double.tags.recovered, single.tags.recovered,
+    by=c("Group.1", "Group.2"), sort=TRUE)
+names.tag.loss <- colnames(tag.loss)
+names.tag.loss[names.tag.loss=="Group.3.x"] <- "dt"
+names.tag.loss[names.tag.loss=="x.x"      ] <- "n.dt"
+names.tag.loss[names.tag.loss=="Group.3.y"] <- "st"
+names.tag.loss[names.tag.loss=="x.y"      ] <- "n.st"
+colnames(tag.loss) <- names.tag.loss
+
+tag.loss$loss.rate <- 1- 2*tag.loss$n.dt/(2*tag.loss$n.dt+tag.loss$n.st)
+```
+
+Total fish with double and single tag returned over all times at large is `r sum(tag.loss$n.dt)`  and `r r sum(tag.loss$n.st)`. The tag loss rate is reasonably constant and even after many years at large only 40% loss.
+
+```{r}
+print(tag.loss)
+
+#png(file='estimate-tagloss.png')
+plot(tag.loss$Group.1, tag.loss$loss.rate,
+  main='Estimated loss rate by time at large',
+  xlab='Time at large', ylab='Cumulative tagloss rate')
+#dev.off()
+
+```
+
+
+Below is my 2012 script that just described number of reports available with each set of data. Here, tt is just the flatfile with all release and recovery information FOR TAGS RECOVERD
+
+```{r}
+tt<-tagdat
+```
+
+
+
+
+
+# Number of returns with year:
+```{r}
+length(tt$rec_year[!is.na(tt$rec_year)])
+yal<-tt$rec_year[!is.na(tt$rec_year)]-tt$rel_year[!is.na(tt$rec_year)]
+summary(yal)
+
+```
+
+
+Number of returns with complete date: 
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_date)&!is.na(tt$rec_tag1)])
+```
+
+Number of returns with (complete date and) 2 tags:
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_date)&!is.na(tt$rec_tag2)])
+```
+
+Number of returns with (complete date and) recapture NAFO area: 
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_date)&!is.na(tt$rec_nafo)]) # there are a number of returns that need to be assigned a NAFO area
+```
+
+Number of returns with (complete date and) recapture position: 
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_date)&!is.na(tt$rec_lat)&!is.na(tt$rec_lon)])
+```
+
+# Summary of length data
+number of reports with recapture length
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_length)])
+x<-tt$rec_length[!is.na(tt$rec_length)]
+```
+
+number of reports where capture is greater than release
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_length)&!is.na(tt$rec_length)&((tt$rec_length-tt$rel_length)>0)])
+y<-tt$rec_length[!is.na(tt$rec_length)&!is.na(tt$rec_length)&((tt$rec_length-tt$rel_length)>0)]
+```
+
+
+Table #. The number of halibut released and recovered per trip and the proportion reported. 
+```{r}
+y<-table(tt$TRIP_ID[!is.na(tt$rel_tag1)])
+x<-as.character(unique(tt$TRIP_ID))
+rel<-rep(0,length(x))
+rec<-rep(0,length(x))
+for (i in 1:length(x)){
+ rel[i]<-length(tt$ANIMAL_ID[as.character(tt$TRIP_ID)==x[i]])
+ rec[i]<-length(tt$ANIMAL_ID[!is.na(tt$rec_tag1)&as.character(tt$TRIP_ID)==x[i]])
+ }
+prop<-round(rec/rel, 2)
+z<-cbind(x, rel,rec, prop)
+z
+```
+
+
+There was one tagging trip, for which 
+```{r}
+x[prop==max(prop)]  #!!!!!could use this trip name to dentify how many released and recaptured
+max(prop)
+```
+of the halibut released were recaptured.
+
+
+Number of halibut reported:
+```{r}
+length(tt$ANIMAL_ID[!is.na(tt$rec_tag1)])
+```
+
+Number of halibut with both tags:
+```{r}
+length(tt$ANIMAL_ID[!is.na(tt$rec_tag2)])
+```
+
+Number of halibut with one tag
+```{r}
+onetag<-tt$rec_tag1[is.na(tt$rec_tag2)&!is.na(tt$rec_tag1)]
+length(onetag)
+```
+
+Number of halibut with both tags:
+```{r}
+length(tt$ANIMAL_ID[!is.na(tt$rec_tag2)])
+```
+
+Number of halibut where first tag reported
+```{r}
+length(tt$ANIMAL_ID[!is.na(tt$rec_tag1)&is.na(tt$rec_tag2)&(tt$rec_tag1==tt$rel_tag1)])
+```
+
+Number of halibut where second tag reported
+```{r}
+length(tt$ANIMAL_ID[!is.na(tt$rec_tag1)&(tt$rec_tag1==tt$rel_tag2)])
+```
+
+Number of returns with (complete date and) sex at time of recapture:
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_date)&tt$rec_sex!=0])
+table(tt$rec_sex[!is.na(tt$rec_date)]) 
+```
+
+Mean length at time of release for males: 
+```{r}
+m<-tt$rel_len[!is.na(tt$rec_date)&tt$rec_sex==1]
+mean(m)
+```
+
+Range length at time of release for males:
+```{r}
+range(m)
+```
+
+Mean length at time of release for females: 
+```{r}
+f<-tt$rel_len[!is.na(tt$rec_date)&tt$rec_sex==2]
+mean(f)
+```
+
+Range length at time of release for femmales:
+```{r}
+range(f)
+```
+
+t.test of length and time of release males and females: 
+```{r}
+t.test(m,f)
+```
+
+Number of animals for which growth can be estimated: 
+```{r}
+g<-tt$rec_len-tt$rel_len
+g1<-g[g>0&!is.na(g)]
+length(g1)
+```
+
+
+Number of returns with year.
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_year)&tt$rec_year!=0])
+```
+
+Number of returns with year and month.
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_year)&tt$rec_year!=0&tt$rec_month!=0&!is.na(tt$rec_month)])
+```
+
+# create date data for recoveries
+```{r}
+tt$rel_date<-paste(tt$rel_day, '/', tt$rel_month, '/', tt$rel_year, sep='')
+tt$rec_date<-paste(tt$rec_day, '/', tt$rec_month, '/', tt$rec_year, sep='')
+tt$rec_date[is.na(tt$rec_day)|is.na(tt$rec_month)|is.na(tt$rec_year)]<-NA
+```
+
+
+Number  and proportion of returns with a complete date. 
+```{r}
+length(tt$rec_tag1[!is.na(tt$rec_date)])
+length(tt$rec_tag1[!is.na(tt$rec_date)])/length(tt$rec_tag1)
+
+
+```
+
+# CREATE datafile for M and F anlysis  :: here need all tags not just those recovered.
+```{r}
+recaptured<-unique(tt$ANIMAL_ID)
+dim(reldat)
+reldat.only<-data.frame(reldat %>% filter(!ANIMAL_ID%in%recaptured))
+reldat.only1 <- reldat.only[,names(tt)[1:19]]
+
+halibutMF <- merge(tt, reldat.only1, all.x=TRUE, all.y=TRUE)
+filename<-paste("halibuttags",thedate,".csv", sep="")
+write.csv(halibutMF, file=filename)
+```
+ 
+
+
+# CREATE datafile for movement analysis
+```{r}
+halibutmoves <- tt[!is.na(tt$rec_date)&!is.na(tt$rec_lat)&!is.na(tt$rec_lon),]
+filename<-paste("halibutmoves",thedate,".csv", sep="")
+write.csv(halibutmoves, file=filename)
+```
+
+# Proportion recaptured by NAFO. There are a number of returns that need to be assigned a NAFO area.
+
+Table #. Number of recaptures by NAFO area in each year.
+```{r}
+tt$rec_nafo_ab<-substr(tt$rec_NAFO_ABBREV, 1,2)
+with(tt, table(rec_nafo_ab[!is.na(tt$rec_date)], rec_year[!is.na(tt$rec_date)]))
+``` 
+
+# Proportion recaptured by month. 
+Table #. Number of recaptures by month in each year
+```{r}
+with(tt, cbind(table(rec_month[!is.na(tt$rec_date)], rec_year[!is.na(tt$rec_date)]), rowSums(table(rec_month[!is.na(tt$rec_date)], rec_year[!is.na(tt$rec_date)]))))
+
+retbymonth<-with(tt, cbind(table(rec_month[!is.na(tt$rec_date)], rec_year[!is.na(tt$rec_date)]), rowSums(table(rec_month[!is.na(tt$rec_date)], rec_year[!is.na(tt$rec_date)]))))
+filename<-paste("retbymonth",thedate,".csv", sep="")
+write.csv(retbymonth, file=filename)
+```
+
+Table #. Number of recaptures by release and recapture NAFO area \n")
+```{r}
+tt$rel_nafo_ab<-substr(tt$rel_NAFO_ABBREV, 1,2)
+tt$rec_nafo_ab<-substr(tt$rec_NAFO_ABBREV, 1,2)
+with(tt, table(rel_nafo_ab[!is.na(tt$rec_date)], rec_nafo_ab[!is.na(tt$rec_date)]))
+```
+
+
+Map returns
+```{r}
+recmapdat<-cbind(halibutmoves$ANIMAL_ID, -halibutmoves$rec_lon, halibutmoves$rec_lat)
+filename<-paste("recmapdat",thedate,".csv", sep="")
+write.csv(recmapdat, file=filename)
+```
