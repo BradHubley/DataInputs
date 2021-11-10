@@ -499,3 +499,15 @@ sr_strata_yr <- sets_sr %>%
 sr_strata_yr <- spread(sr_strata_yr, STRATUM_ID, n_station)
 ```
 
+trimming the CI data (to remove erroneous data) using same code as Nell from previous assessment
+```{r}
+sets_ci_trim <- sets_ci %>% 
+  filter(SOAKMINP3P1 >= 1, SOAKMINP3P1 <= (60*5*24)) #this appears to remove crazy soak times and hook numbers
+
+mean(sets_ci_trim$SOAKMINP3P1)
+median(sets_ci_trim$SOAKMINP3P1)
+
+mean(sets_ci_trim$NUM_HOOK_HAUL, na.rm=TRUE)
+median(sets_ci_trim$NUM_HOOK_HAUL, na.rm = TRUE)
+```
+
