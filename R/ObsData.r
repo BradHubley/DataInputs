@@ -1,4 +1,4 @@
-ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.sex=T,bins=seq(0,260,5),lwA=0.006803616,lwB=3.119924,min.length=0){
+ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.sex=T,bins=seq(0,260,5),lwA=0.006803616,lwB=3.119924,min.length=0,add.bait=F){
 
 
   # calculate bin weights
@@ -40,6 +40,13 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   sets$GEAR[sets$GEARCD_ID%in%50:51]<-"LL"
   sets$GEAR[sets$GEARCD_ID%in%c(1:4,10:12)]<-"OT"
   names(sets)[which(names(sets)=="NAFAREA_ID")]<-"NAFO"
+
+  # add bait if desired (doesn't work yet)
+  if(add.bait){
+    baitcodes<-isdb$ISGEARFEATURECODES$GEARFCD_ID[isdb$ISGEARFEATURECODES$GEARFCL_ID=="BAIT TYPES"]
+    bait<-left_join(subset(isdb$ISGEARFEATURES,GEARFCD_ID%in%baitcodes),isdb$ISGEARS[,c("GEAR_ID","TRIP_ID")])
+  }
+
 
   ## Fish
   totalfish <- isdb$ISCATCHES[,c("FISHSET_ID","CATCH_ID","EST_NUM_CAUGHT","EST_COMBINED_WT")]

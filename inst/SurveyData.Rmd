@@ -42,7 +42,7 @@ devtools::load_all(".")
 
 # get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
-# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 # get_data_custom(schema="observer", data.dir = datadir, tables = c("ISGEARSUCCESS"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
@@ -115,7 +115,7 @@ dev.off()
 
 ## Construct LF for plots
 ```{r}
-  Yrs1 = 2009:2020        
+  Yrs1 = 2000:2020        
   Yrs2 = 2017:2020        
   
   #subset by nafo
@@ -127,10 +127,23 @@ dev.off()
   #FixedSurvey$N_MEASURED <- rowSums(FixedSurvey[,bins])
   #x$scaler = x$NUM_HOOK_HAUL/1000 
 
+
+  FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS")
+  
   # Construct CLF
   fixedLF=constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs1)
   fixedLF2=constructLF(LFdata=FixedSurvey2,bins=bins, Yrs = Yrs1)
+  
+  RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins, LF.from = "ISFISHLENGTHS",by.sex=T)
+  
   RandomLF=constructLF(LFdata=RandomSurvey,bins=bins, Yrs = Yrs2)
+  
+  
+    BarPlotLF(fixedLF,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","fixedLF1"),graphic='png')
+    BarPlotLF(RandomLF,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","randomLF1"),graphic='png',ht=6)
+    
+ matplot(t(SRfromLF(fixedLF)),pch=1,ylab="Proportion Female")   
+   
 ```
 
 
@@ -150,7 +163,7 @@ dev.off()
     BarPlotLF(fixedLF2,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","fixedLF2"))
     BarPlotLF(fixedLF,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","fixedLF"),ymax=320)
   
-    BarPlotLF(RandomLF,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","randomLF1"))
+    BarPlotLF(RandomLF,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","randomLF1"))
     BarPlotLF(RandomLF,yrs=Yrs2,rel=F,filen=file.path(wd,"figures","randomLF2"),ymax=150)
     
     BarPlotLF(ComIndexLF,yrs=Yrs1,rel=T,filen=file.path(wd,"figures","comindexLF1"))
@@ -201,19 +214,21 @@ RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=F,bins=bi
 # plot
 ```{r}
 
-ComIndex$KGPHH<-ComIndex$EST_COMBINED_WT/ComIndex$NUM_HOOK_HAUL
-CI<-with(ComIndex,tapply(KGPHH,YEAR, mean, na.rm=T))
-plot(as.numeric(names(CI)),CI,xlab = '',ylim=c(0,0.5),type='b')
-
-FixedSurvey$KGPHH<-FixedSurvey$EST_COMBINED_WT/FixedSurvey$NUM_HOOK_HAUL
-FS<-with(FixedSurvey,tapply(KGPHH,YEAR, mean, na.rm=T))
-lines(as.numeric(names(FS)),FS,type='b',col=2)
-
-RandomSurvey$KGPHH<-RandomSurvey$EST_COMBINED_WT/RandomSurvey$NUM_HOOK_HAUL
-RS<-with(RandomSurvey,tapply(KGPHH,YEAR, mean, na.rm=T))
-lines(as.numeric(names(RS)),RS,type='b',col=3)
+png(file.path(wd,'figures',"CI.png"), width =6, height = 4,units='in',pointsize=9, res=300,type='cairo')
+   # par(mfcol=c(rows,ceiling(length(yrs)/rows)), mar = c(0,2,0,0.5), omi = c(0.85, 0.75, 0.75, 0.5))
 
 
+
+ComIndex$KgPKH<-ComIndex$EST_COMBINED_WT/ComIndex$NUM_HOOK_HAUL*1000
+CI<-with(ComIndex,tapply(KgPKH,YEAR, mean, na.rm=T))
+plot(as.numeric(names(CI)),CI,xlab = '',ylab = 'KgPKH',ylim=c(0,500),type='b',pch=16)
+
+FixedSurvey$KgPKH<-FixedSurvey$EST_COMBINED_WT/FixedSurvey$NUM_HOOK_HAUL*1000
+FS<-with(FixedSurvey,tapply(KgPKH,YEAR, mean, na.rm=T))
+lines(as.numeric(names(FS)),FS,col='grey',lty=2)
+
+
+dev.off()
 
 ```
 ```{r}
@@ -242,6 +257,38 @@ BarPlotLF(rvLF,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF2"),ymax=50)
 
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
 RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020)
+
+```
+## plot RVindex
+```{r}
+#RVinputs$Index
+png(file.path(wd,'figures',"NSRVindex.png"), width =6, height = 8,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(3,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+
+plot(N/10^6~year,RVinputs$Index, ylab="Numbers (millions)", xlab = '', ylim=c(0,max(N/10^6)*1.2), type='b',pch=16)
+points(2018,RVinputs$Index$N[RVinputs$Index$year==2018]/10^6,col='red',cex=2)
+plot(B/10^6~year,RVinputs$Index, ylab="Biomass (kt)", xlab = '', ylim=c(0,max(B/10^6)*1.2), type='b',pch=16)
+points(2018,RVinputs$Index$B[RVinputs$Index$year==2018]/10^6,col='red',cex=2)
+plot(NPT~year,RVinputs$Index, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT)*1.2), type='b',pch=16)
+points(2018,RVinputs$Index$NPT[RVinputs$Index$year==2018],col='red',cex=2)
+
+
+dev.off()
+
+
+```
+# plot RV LF
+```{r}
+Yrs1 = 1970:1995        
+Yrs2 = 1996:2020        
+
+rvLF<-rearrangeLFlist(RVinputs[2:4])
+
+BarPlotLF(rvLF[1:26],yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF1"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6)
+
+BarPlotLF(rvLF[27:51],yrs=Yrs2,rel=F,filen=file.path(wd,"figures","RVLF2"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6)
+
 
 ```
 
@@ -282,7 +329,7 @@ dev.off()
 ```{r}
 
 
-Sentinel4VN<-Sentinel4VNData(datadir=datadir,bins=bins,by.sex=F,add.LF = F)
+#Sentinel4VN<-Sentinel4VNData(datadir=datadir,bins=bins,by.sex=F,add.LF = F)
 
 Sentinel4VN$KGPHH<-Sentinel4VN$EST_COMBINED_WT/Sentinel4VN$NUM_HOOK_HAUL
 SI<-with(Sentinel4VN,tapply(KGPHH,YEAR, mean, na.rm=T))
@@ -305,9 +352,65 @@ plot(as.numeric(names(meanWT)),meanWT,xlab = '',ylim=c(0,max(meanWT)),type='b')
 meanN<-with(Sentinel4VN,tapply(EST_NUM_CAUGHT,YEAR, mean, na.rm=T))
 plot(as.numeric(names(meanN)),meanN,xlab = '',ylim=c(0,max(meanN)),type='b')
 
+bioMap(xlim=c(-60.5,-58.5),ylim=c(45,48))
+points(LATITUDE~LONGITUDE,  Sentinel4VN         )
+
+
+```
+
+# plot for document
+```{r}
+
+png(file.path(wd,'figures',"Sentinal.png"), width =6, height = 6,units='in',pointsize=9, res=300,type='cairo')
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+plot(as.numeric(names(totalH)),totalWT/totalH*1000, ylab="KgPKH", xlab = '', ylim=c(0,max(totalWT/totalH*1000)*1.2), type='b',pch=16)
+
+plot(as.numeric(names(totalH)),totalN/totalH*1000, ylab="NPKH", xlab = '', ylim=c(0,max(totalN/totalH*1000)*1.2), type='b',pch=16)
+
+dev.off()
+
+```
+
+
+# FS INDEX PLOT for Update
+
+```{r}
+
+HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=2000:2021)
+
+plot(KgPKH~Year,HSFixed_Index,type='b',pch=16)
+lines(mean3_biomass~Year,HSFixed_Index,col='red')
+
+
+HSFixed_Index_old<-FixedSurveyIndex(datadir=datadir,yrs=2000:2021,old.model=T)
+
+plot(predicted~year,HSFixed_Index_old,type='b',pch=16)
+lines(mean3_biomass~year,HSFixed_Index_old,col='red')
+
+plot(predicted~year,HSFixed_Index_old,type='l',lwd=2,ylim=c(0,250))
+for(i in 1:7){
+  temp<-FixedSurveyIndex(datadir=datadir,yrs=2000:(2021-i),old.model=T)
+  lines(predicted~year,temp,col=i+1)
+}
 
 
 ```
 
 
+
+
+
+
+```{r}
+
+#ggplot() + 
+#  geom_line(data = HSFixed_Index, aes(x = Year, y = KgPKH   ), size = 1) + 
+#  geom_line(data = HSFixed_Index, aes(x = Year, y = KgPKH - KgPKHse  ), linetype = 2, size = 1) + 
+#  geom_line(data = HSFixed_Index, aes(x = Year, y = KgPKH + KgPKHse), linetype = 2, size = 1) +
+#  geom_line(aes(x = HSFixed_Index$Year, y = mean3_biomass), size = 1, colour = "red") +  xlim(1998, AY+1) +
+#  theme(panel.background = element_rect(fill = "white", colour = "black"), panel.grid = element_blank()) + 
+#  ylab("Kg per 1000 hooks") + xlab("Year")
+
+```
 

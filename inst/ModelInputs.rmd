@@ -13,6 +13,8 @@ source(file.path(wd, "passwords.r"))
 
 scaldir<-file.path(datadir,"scal")
 #scaldir<-"R:/Science/Population Ecology Division/Shared/Atlantic Halibut/Assessments & Updates/2021 Framework/Data/Model Inputs"
+#scaldir<-"C:/Users/hubleyb/Documents/Halibut/git/siscal-ah/Data/AtlHal"
+
 ds_all <- Mar.datawrangling::load_datasources()
 
 devtools::load_all(".")
@@ -34,7 +36,7 @@ bins=seq(0,260,5)
 # Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
-# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd,force.extract=T)
 
 #get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 

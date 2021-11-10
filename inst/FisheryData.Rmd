@@ -59,8 +59,8 @@ table1<-table1[c("NAFO","LL35", "LL35-45", "LL45-65", "LL65", "OT")]
 table2<- MARFISdata %>% filter(!is.na(CLASS)&YEAR%in%yrs2&!is.na(NAFO)) %>% group_by(NAFO,CLASS) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = CLASS,values_from = Landings) %>% tibble()
 table2<-table2[c("NAFO","LL35", "LL35-45", "LL45-65", "LL65", "OT")]
 
-write.csv(table6,file.path(datadir,"MARFIStable1.csv"),row.names=F)
-write.csv(table7,file.path(datadir,"MARFIStable2.csv"),row.names=F)
+write.csv(table1,file.path(datadir,"MARFIStable1.csv"),row.names=F)
+write.csv(table2,file.path(datadir,"MARFIStable2.csv"),row.names=F)
 
 
 ```
@@ -75,14 +75,15 @@ lvls=seq(0,7000,1000)
 xl=c(-69,-47)
 yl=c(40,48)
 
-  tmp<-subset(MARFISdata,YEAR==2020)
-  catch.data <- data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  )
+  tmp<-subset(MARFISdata,YEAR>2015)
+  catch.data <- na.omit(data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  ))
 
 
-catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
+catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=10,border=NA)
+png(file.path(wd,'figures','marfisCatch2016-2020.png'),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
 SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
-SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=.7)
-
+SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="t",cex=.7)
+dev.off()
 ```
 
 ### Loop for annual
@@ -119,6 +120,10 @@ for(y in yrs){
 ```{r}
 q=1:4
 yrblocks <- list(2001:2005,2006:2010,2011:2015,2016:2020)
+
+lvls=seq(0,7000,1000)
+xl=c(-69,-47)
+yl=c(40,48)
   
 for(i in q){
   for(j in 1:length(yrblocks)){
@@ -126,14 +131,14 @@ for(i in q){
     #catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
     #print(summary(catch.grids))
   tmp<-subset(MARFISdata,quarter(DATE_FISHED)==i&YEAR%in%yrblocks[[j]])
-  catch.data <- data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  )
+  catch.data <- na.omit(data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  ))
   catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
     
     #pdf(file.path(wd,'figures',paste0('marfisCatch','Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]]),'.pdf')),width=10,height=7)
     png(file.path(wd,'figures',paste0('marfisCatch','Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]]),'.png')),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
     
     SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids,title = paste('Q',i,min(yrblocks[[j]]),'-',max(yrblocks[[j]])))
-    SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
+    SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="t",cex=0.8)
     dev.off()
   }
 }
@@ -287,13 +292,50 @@ PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
 ```
 
 
+## Port sample data plots for document
+```{r}
+bins=seq(0,260,5)
+PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
+PortData$FISHERY<-PortData$GEAR
+PortData$FISHERY[!is.na(PortData$TRIP)]<-"CI"
+PortSampleTable<-PortData %>% 
+  group_by(FISHERY,YEAR)%>% 
+  distinct(SAMPLE)%>%
+  count()%>%
+  pivot_wider(names_from = FISHERY,values_from = n)%>%
+  arrange(YEAR)
+
+PortSampleTable[is.na(PortSampleTable)]<-0
+
+write.csv(PortSampleTable,"PortSampleTable.csv",row.names=F)
+
+
+YrsPort=1989:2020
+
+ #dput(sort(unique(ObserverData$NAFAREA_ID)))
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
+ 
+
+
+  portNAFO4OT1=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = YrsPort)
+  BarPlotLF(portNAFO4OT1,yrs=YrsPort,rel=F,filen=file.path(wd,"figures","portNAFO4OT"),rows=16,graphic='png',ax=c(rep(2,16),rep(4,16)))
+
+  portNAFO4LL1=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = YrsPort)
+  BarPlotLF(portNAFO4LL1,yrs=YrsPort,rel=F,filen=file.path(wd,"figures","portNAFO4LL"),rows=16,graphic='png',ax=c(rep(2,16),rep(4,16)))
+
+
+ 
+
+```
+
 ## Observer Data
 ```{r}
 bins=seq(0,260,5)
 
 ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
 
- Yrs1 = 1991:2005 
+ Yrs1 = 1991:2020 
  Yrs2 = 2006:2020 
  #dput(sort(unique(ObserverData$NAFO)))
  nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
@@ -341,8 +383,57 @@ ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
   obsNAFO4VWLL2=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = Yrs2)
   BarPlotLF(obsNAFO4VWLL2,yrs=Yrs2,rel=T,filen=file.path(wd,"figures","obsNAFO4VWLL2"))
 
+  ### WTF lots of baby halibut????3
+  look<-subset(ObserverData,NAFO%in%nafo4&GEAR=="OT"&YEAR==2020&L30>0) # estimated # caught is 2
+  Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
+  subset(ISSAMPLES,CATCH_ID==101925022)
+  subset(ISFISHLENGTHS,SMPL_ID==100452896) # there's the length frequency
+  Mar.datawrangling::get_data(db='isdb',data.dir=datadir)
+  subset(ISCATCHES,CATCH_ID==101925022) # nothing
+  subset(ISFISHSETS,FISHSET_ID==100336369)
+  subset(ISTRIPS,TRIP_ID==100057153)
 
 ```
+
+# observer data plots for document
+```{r}
+bins=seq(0,260,5)
+ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins)
+ 
+ObserverDataTable<-filter(ObserverData,!is.na(NUM_MEASURED)) %>% 
+  group_by(TRIPCD_ID,YEAR)%>% 
+  distinct(FISHSET_ID)%>%
+  count()%>%
+  pivot_wider(names_from = TRIPCD_ID,values_from = n)%>%
+  arrange(YEAR)
+
+ObserverDataTable[is.na(ObserverDataTable)]<-0
+
+write.csv(ObserverDataTable,"ObserverDataTable.csv",row.names=F)
+
+
+
+
+ YrsObs = 1991:2020 
+ #dput(sort(unique(ObserverData$NAFO)))
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
+ 
+
+  obsNAFO3OT1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = YrsObs)
+  BarPlotLF(obsNAFO3OT1,yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+  obsNAFO3LL1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = YrsObs)
+  BarPlotLF(obsNAFO3LL1,yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+  obsNAFO4OT1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = YrsObs)
+  BarPlotLF(obsNAFO4OT1,yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO4OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+  obsNAFO4LL1=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = YrsObs)
+  BarPlotLF(obsNAFO4LL1,yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO4LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+```
+
 
 # map location of data
 ```{r}
