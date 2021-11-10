@@ -12,7 +12,7 @@ library(devtools)
 # install_github("Maritimes/Mar.fleets")
 
  library(Mar.datawrangling)
- library(Mar.fleets)
+ #library(Mar.fleets)
  library(tidyverse)
  library(SpatialHub)
 
@@ -42,7 +42,7 @@ devtools::load_all(".")
 
 # get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
-# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 # get_data_custom(schema="observer", data.dir = datadir, tables = c("ISGEARSUCCESS"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
@@ -70,7 +70,8 @@ bins=seq(0,260,5)
 FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=T, bins=bins, LF.from = "ISFISHLENGTHS")
 FixedSurvey2<-FixedSurveyData(datadir=datadir,by.sex=F, bins=bins, LF.from = "ISFISHLENGTHS")
 
-RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=T)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=F, LF.from = "ISFISH")
+RandomSurvey_FL<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=F, LF.from = "ISFISHLENGTHS")
 RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.LF=T,bins=bins,by.sex=F)
 RandomSurveyAudit<-RandomSurveyData(sp=30,datadir=datadir,add.LF=F,bins=bins,by.sex=F,add.gear = T)
 

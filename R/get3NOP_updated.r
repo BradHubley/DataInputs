@@ -53,15 +53,15 @@ get.3NOP.rv.dat.2021<-function(start.year, end.year){
   rv.datNL$smean.se[rv.datNL$year>1995]<-sqrt(rv.datNL$smean.var[rv.datNL$year>1995])*stdsetarea[2]
 
   #for previous assessment data
-  lower<-rv.datNL$smean-rv.datNL$smean.se*2
-  upper<-rv.datNL$smean+rv.datNL$smean.se*2
-  years<-1971:1995
+  # lower<-rv.datNL$smean-rv.datNL$smean.se*2
+  # upper<-rv.datNL$smean+rv.datNL$smean.se*2
+  # years<-1971:1995
   ylim1<-c(0,0.4)
-
-  #for new data to 2019
-  new_lower <- NLstrat_abundance_summary$mean.lcl
-  new_upper <- NLstrat_abundance_summary$mean.ucl
-  new_years <- 1996:2019
+  #
+  # #for new data to 2019
+  # new_lower <- NLstrat_abundance_summary$mean.lcl
+  # new_upper <- NLstrat_abundance_summary$mean.ucl
+  # new_years <- 1996:2019
 
   #with updated data to 2019
   png("NL_survey.png", width = 9.5, height = 6,units='in',pointsize=12, res=300,type='cairo')
@@ -70,8 +70,8 @@ get.3NOP.rv.dat.2021<-function(start.year, end.year){
   lines(1983:1995,rv.datNL[length(1971:1983):length(1971:1995),2],lwd=3)
   lines(1996:2019, NLnew[1:length(1996:2019), 7], lwd=3)
 
-  arrows(years,upper,years,lower,length=0.05,angle=90,code=3)  # change length to 0.05 if want horizontal lines on error bar and code=3
-  arrows(new_years, new_upper, new_years, new_lower, length = 0.05, angle = 90, code = 3)
+  #arrows(years,upper,years,lower,length=0.05,angle=90,code=3)  # change length to 0.05 if want horizontal lines on error bar and code=3
+  #arrows(new_years, new_upper, new_years, new_lower, length = 0.05, angle = 90, code = 3)
   mtext("Mean numbers per tow",side=2,line=2.5,cex=1.1,las=0)
   mtext("3NOPs Spring RV survey",side=3,line=.5,cex=1.2,las=0,adj=0)
   segments(1971, mean(rv.datNL[1:length(1971:1982),2]), 1982, mean(rv.datNL[1:length(1971:1982),2]), col="gray60", lwd=2)
