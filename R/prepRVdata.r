@@ -10,7 +10,9 @@ prepRVdata<-function(RVdata,years, bins, pal=F,raw=F){
 
   N<-c()
   B<-c()
-  N
+  Nse<-c()
+  Bse<-c()
+
   survF.lst<-list()
   stratF.lst<-list()
   F.lst<-list()
@@ -28,11 +30,17 @@ prepRVdata<-function(RVdata,years, bins, pal=F,raw=F){
   for (i in 1:length(years)){
 
     # Index of abundance
+    n<-with(subset(RVdata[[2]],year==years[i]),tapply(TUNITS,STRAT,length))
+    print(n)
     Wh<-with(subset(RVdata[[2]],year==years[i]),tapply(TUNITS,STRAT,unique))
     Nh<-with(subset(RVdata[[2]],year==years[i]),tapply(TOTNO,STRAT,mean))
+    NVh<-with(subset(RVdata[[2]],year==years[i]),tapply(TOTNO,STRAT,var))
     Bh<-with(subset(RVdata[[2]],year==years[i]),tapply(TOTWGT,STRAT,mean))
+    BVh<-with(subset(RVdata[[2]],year==years[i]),tapply(TOTWGT,STRAT,var))
     N[i]<-sum(Nh*Wh)
+    Nse[i]<-sqrt(sum(NVh/n*Wh^2))
     B[i]<-sum(Bh*Wh)
+    Bse[i]<-sqrt(sum(BVh/n*Wh^2))
     print(paste(years[i],length(Wh),round(N[i]/1000),round(B[i]/1000)))
 
     survF.lst[[i]]<-subset(RVdata[[2]],year==years[i])
@@ -93,7 +101,7 @@ prepRVdata<-function(RVdata,years, bins, pal=F,raw=F){
   row.names(RVcatlenM)<-years
   row.names(RVcatlenC)<-years
 
-  Index<-data.frame(year=years,N=N,B=B)
+  Index<-data.frame(year=years,N=N,Nse=Nse,B=B,Bse=Bse)
 
   tunits<-group_by(RVdata[[2]],year,STRAT)%>%summarise(mean=mean(TUNITS))%>%group_by(year)%>%summarise(tunits=sum(mean))
   Index<-merge(Index,tunits)

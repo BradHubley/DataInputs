@@ -142,7 +142,8 @@ NLRV_Index<-rowSums(NLRV_Lengths)
                              Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
                              se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
   
-  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1970:2020)
+  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2020)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2020)
 
 
 ```

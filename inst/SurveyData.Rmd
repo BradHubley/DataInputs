@@ -401,6 +401,24 @@ for(i in 1:7){
 
 
 
+# RS INDEX PLOT for Update
+
+```{r}
+
+#HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2020)
+
+#HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=2000:2021)
+
+plot(KgPKH~Year,HSFixed_Index,type='l',col='grey',ylim=c(0,250))
+
+lines(KgPKH~Year,HSRandom_Index,type='b',pch=16)
+lines(KgPKH+KgPKHse*1.96~Year,HSRandom_Index,lty=2)
+lines(KgPKH-KgPKHse*1.96~Year,HSRandom_Index,lty=2)
+
+
+
+```
+
 
 ```{r}
 
