@@ -1,0 +1,513 @@
+---
+title: "SurveyMetrics"
+author: "Danni Harper"
+date: "11/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
+ library(Mar.datawrangling)
+ library(tidyverse)
+ library(stringr)
+
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+#source(file.path(wd, "passwords.r"))
+```
+
+Pulling the ISDB to access the survey data
+```{r}
+get_data("isdb", data.dir = datadir)
+```
+Separating out just halibut survey data (from fixed, stratified random, commercial index)
+```{r}
+haltrips <- ISTRIPS %>%
+  filter(TRIPCD_ID %in% c(7057, 7058))
+
+halsets <- ISFISHSETS %>%
+  filter(SETCD_ID %in% c(4,5,10), SPECSCD_ID == 30)
+
+halsets <- halsets %>%
+  left_join(ISSETPROFILE_WIDE, by = "FISHSET_ID")
+
+halsets <- halsets %>%
+  left_join(haltrips, by = "TRIP_ID")
+
+halsets <- halsets %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+
+halsets <- halsets %>%
+  left_join(ISGEARS, by = "GEAR_ID")
+
+####SHOULD BE USING SOAKTIME 3-1???
+halsets$SOAKMINP3P1 <- difftime(halsets$DATE_TIME3,  halsets$DATE_TIME1, units='min')
+
+#only until 2020
+halsets <- halsets %>% filter(YEAR < 2021)
+```
+
+separating the 3 different survey types
+```{r}
+sets_fs1 <- halsets %>%
+  filter(SETCD_ID == 4)
+
+sets_fs1 %>% filter(YEAR %in% c(1998, 1999))
+
+sets_sr1 <- halsets %>%
+  filter(SETCD_ID == 5)
+
+sets_ci1 <- halsets %>%
+  filter(SETCD_ID == 10)
+```
+
+Pulling the data
+```{r}
+sets_sr <- RandomSurveyData(sp=30, datadir, add.gear=T, add.LF=F, by.sex=F, hook.data=F)
+sets_sr <- sets_sr %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+sets_sr <- sets_sr %>% filter(YEAR < 2021)
+
+sets_fs <- FixedSurveyData(sp=30, datadir, add.gear=T, add.LF=F, by.sex=F,correct.splitsets=T)
+sets_fs <- sets_fs %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+sets_fs <- sets_fs %>% filter(YEAR < 2021) %>% filter(YEAR > 2000)
+
+sets_ci <- CommercialIndexData(sp=30, datadir, add.gear=T, add.LF=F,by.sex=T, add.portsampling=F)
+sets_ci <- sets_ci %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+sets_ci <- sets_ci %>% filter(YEAR < 2021)
+```
+
+Checking difference in pulls
+```{r}
+library(sqldf)
+
+#difference between my pull and Brad's for Fixed
+sr1 <- sets_sr1 %>% select("FISHSET_ID", "TRIP_ID.x", "SETCD_ID", "TRIPCD_ID", "STATION", "NAFAREA_ID", "HAULCCD_ID", "YEAR", "TRIP") %>%
+  rename(TRIP_ID = TRIP_ID.x)
+sr <- sets_sr %>% select("FISHSET_ID", "TRIP_ID","SETCD_ID", "TRIPCD_ID","STATION", "NAFAREA_ID", "HAULCCD_ID", "YEAR", "TRIP")
+sr1NotInsr <- sqldf('SELECT * FROM sr1 EXCEPT SELECT * FROM sr')
+
+#difference between my pull and Brad's for Stratified Random
+fs1 <- sets_fs1 %>% select("FISHSET_ID", "TRIP_ID.x", "NUM_HOOK_HAUL", "SETCD_ID", "TRIPCD_ID", "STATION", "NAFAREA_ID", "HAULCCD_ID", "YEAR", "TRIP") %>%
+  rename(TRIP_ID = TRIP_ID.x)
+fs <- sets_fs %>% select("FISHSET_ID", "TRIP_ID","NUM_HOOK_HAUL", "SETCD_ID", "TRIPCD_ID","STATION", "NAFAREA_ID", "HAULCCD_ID", "YEAR", "TRIP")
+fs1NotInfs <- sqldf('SELECT * FROM fs1 EXCEPT SELECT * FROM fs')
+
+#difference between my pull and Brad's for Commercial Index
+ci1 <- sets_ci1 %>% select("FISHSET_ID", "TRIP_ID.x", "SETCD_ID", "TRIPCD_ID", "STATION", "NAFAREA_ID", "YEAR", "TRIP") %>%
+  rename(TRIP_ID = TRIP_ID.x)
+ci <- sets_ci %>% select("FISHSET_ID", "TRIP_ID","SETCD_ID", "TRIPCD_ID","STATION", "NAFAREA_ID", "YEAR", "TRIP")
+ci1NotInci <- sqldf('SELECT * FROM ci1 EXCEPT SELECT * FROM ci')#16 differences and don't know why, all from single trip
+ciNotInci1 <- sqldf('SELECT * FROM ci EXCEPT SELECT * FROM ci1')#1 different and don't know why, maybe b/c no year?
+```
+
+
+Checking correct species (30)
+```{r}
+halsets %>% count(SPECSCD_ID)
+```
+
+Checking for port sampled (7058) vs sampled at sea (7057)
+```{r}
+sets_fs %>% count(TRIPCD_ID)
+sets_sr %>% count(TRIPCD_ID)
+sets_ci %>% count(TRIPCD_ID)
+
+#SR station with trip code 30
+sets_sr1 %>% filter(TRIPCD_ID == 30)
+#from 2002...looks like wrong SETCD_ID (should be 10 or 1?)
+```
+
+Checking that all set codes are right by checking the year...?
+```{r}
+sets_fs %>% count(YEAR)
+#2009 entry station 274 has no set info...what to do with that point? (trip:100015694, set:100061377) NOT in ISSETPROFILE_WIDE...why??
+sets_sr %>% count(YEAR)
+#station coming from 2002 appears to be a mistake. This is the only set from trip 100014065. Should is even be a halibut trip? (Trip: J02-0208)
+sets_ci %>% count(YEAR)
+#2011 entry has no set info...(set:100160079, trip:100028073) not in ISSETPROFILE_WIDE...why?
+```
+NAFO
+```{r}
+halsets %>% count(NAFO)
+#10 stations come up with no NAFO
+#1 station comes up in 4R (2018, trip: 100051912, it's commercial index and the rest of the sets are in 3N)
+#14 stations come up in 4T (2013: station 316...the rest are commercial index over range of time 2007-2021)
+##assume I remove all of these?
+
+halsets %>% filter(NAFO == "4T")
+```
+adding soaktime
+```{r}
+#sets_ci$SOAKMINP3P1 <- difftime(sets_ci$DATE_TIME3,  sets_ci$DATE_TIME1, units='min')
+```
+
+
+Stations fished by year and NAFO
+```{r}
+nafotab_fs <- sets_fs %>%
+  dplyr::select("YEAR", "NAFO") %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n=n())
+nafotab_fs <- spread(nafotab_fs, NAFO, n)
+
+nafotab_fs1 <- sets_fs1 %>%
+  dplyr::select("YEAR", "NAFO") %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n=n())
+nafotab_fs1 <- spread(nafotab_fs1, NAFO, n)
+
+nafotab_sr <- sets_sr %>%
+  dplyr::select("YEAR", "NAFO") %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n=n())
+nafotab_sr <- spread(nafotab_sr, NAFO, n)
+
+nafotab_ci <- sets_ci %>%
+  dplyr::select("YEAR", "NAFO") %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n=n())
+nafotab_ci <- spread(nafotab_ci, NAFO, n)
+
+nafotab <- halsets %>%
+  dplyr::select("YEAR", "NAFO") %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n=n())
+nafotab <- spread(nafotab, NAFO, n)
+```
+Stations fished by hooksize by NAFO
+```{r}
+hooknafotab_fs <- sets_fs %>%
+  dplyr::select("NAFO", "HOOKSIZE") %>%
+  group_by(NAFO, HOOKSIZE) %>%
+  summarize(n=n())
+hooknafotab_fs <- spread(hooknafotab_fs, HOOKSIZE, n)
+
+sets_fs1_early_hooks <- sets_fs1_early%>% 
+  dplyr::select("NAFO", "HOOKSIZE") %>%
+  group_by(NAFO, HOOKSIZE) %>%
+  summarize(n=n())
+sets_fs1_early_hooks <- spread(sets_fs1_early_hooks, HOOKSIZE, n)
+
+  
+hooknafotab_sr <- sets_sr %>%
+  dplyr::select("NAFO", "HOOKSIZE") %>%
+  group_by(NAFO, HOOKSIZE) %>%
+  summarize(n=n())
+hooknafotab_sr <- spread(hooknafotab_sr, HOOKSIZE, n)
+
+hooknafotab_ci <- sets_ci %>%
+  dplyr::select("NAFO", "HOOKSIZE") %>%
+  group_by(NAFO, HOOKSIZE) %>%
+  summarize(n=n())
+hooknafotab_ci <- spread(hooknafotab_ci, HOOKSIZE, n)
+
+hooknafotab <- halsets %>%
+  dplyr::select("NAFO", "HOOKSIZE") %>%
+  group_by(NAFO, HOOKSIZE) %>%
+  summarize(n=n())
+hooknafotab <- spread(hooknafotab, HOOKSIZE, n)
+```
+Stations fished by hooksize by YEAR
+```{r}
+hookyeartab_fs <- sets_fs %>%
+  dplyr::select("YEAR", "HOOKSIZE") %>%
+  group_by(YEAR, HOOKSIZE) %>%
+  summarize(n=n())
+hookyeartab_fs <- spread(hookyeartab_fs, HOOKSIZE, n)
+
+hookyeartab_sr <- sets_sr %>%
+  dplyr::select("YEAR", "HOOKSIZE") %>%
+  group_by(YEAR, HOOKSIZE) %>%
+  summarize(n=n())
+hookyeartab_sr <- spread(hookyeartab_sr, HOOKSIZE, n)
+
+hookyeartab_ci <- sets_ci %>%
+  dplyr::select("YEAR", "HOOKSIZE") %>%
+  group_by(YEAR, HOOKSIZE) %>%
+  summarize(n=n())
+hookyeartab_ci <- spread(hookyeartab_ci, HOOKSIZE, n)
+
+hookyeartab <- halsets %>%
+  dplyr::select("YEAR", "HOOKSIZE") %>%
+  group_by(YEAR, HOOKSIZE) %>%
+  summarize(n=n())
+hookyeartab <- spread(hookyeartab, HOOKSIZE, n)
+```
+
+looking at sea observer or at sea observed by year
+```{r}
+observedyear_fs <- sets_fs %>%
+  dplyr::select("YEAR", "TRIPCD_ID") %>%
+  group_by(YEAR, TRIPCD_ID) %>%
+  summarize(n=n())
+observedyear_fs <- spread(observedyear_fs, TRIPCD_ID, n)
+#all fixed stations are observed at sea(trip code 7057)
+
+observedyear_sr <- sets_sr %>%
+  dplyr::select("YEAR", "TRIPCD_ID") %>%
+  group_by(YEAR, TRIPCD_ID) %>%
+  summarize(n=n())
+observedyear_sr <- spread(observedyear_sr, TRIPCD_ID, n)
+#all but 1 stratified random stations are observed at sea. Other is trip cd 30...likely from setcd_id (shouldn't be 5)
+
+observedyear_ci <- sets_ci %>%
+  dplyr::select("YEAR", "TRIPCD_ID") %>%
+  group_by(YEAR, TRIPCD_ID) %>%
+  summarize(n=n())
+observedyear_ci <- spread(observedyear_ci, TRIPCD_ID, n)
+
+observedyear_ci <- observedyear_ci %>% rename(ASO = "7057", PSO = "7058")
+observedyear_ci <- observedyear_ci %>% mutate(percent_ASO = ((ASO/PSO)*100))
+mean(observedyear_ci$percent_ASO, na.rm=TRUE)
+```
+
+looking at shore observed or at sea observed by NAFO (all fixed and stratified random station are observed at sea so only looking at the commercial index stations)
+```{r}
+observednafo_ci <- sets_ci %>%
+  dplyr::select("NAFO", "TRIPCD_ID") %>%
+  group_by(NAFO, TRIPCD_ID) %>%
+  summarize(n=n())
+observednafo_ci <- spread(observednafo_ci, TRIPCD_ID, n)
+#8 stations in 3N in 2018 with no at sea observer
+
+observedboth_ci <- sets_ci %>%
+  dplyr::select("NAFO", "YEAR", "TRIPCD_ID") %>%
+  group_by(NAFO, YEAR, TRIPCD_ID) %>%
+  summarize(n=n())
+observedboth_ci <- spread(observedboth_ci, TRIPCD_ID, n)
+
+##for table 22
+observed <- sets_ci %>%
+  dplyr::select("NAFO", "YEAR", "TRIPCD_ID") %>%
+  group_by(NAFO, YEAR, TRIPCD_ID) %>% 
+  summarize(n=n())
+observed <- spread(observed, NAFO, n)
+```
+
+how often have stations been fished over the time series
+```{r}
+stations_over_time <- halsets %>%
+  dplyr::select("STATION") %>%
+  group_by(STATION) %>%
+  summarize(n=n())
+
+stations_over_time$STATION <- as.numeric(stations_over_time$STATION)
+
+#station fished more than 5 times...?
+halsets %>% filter(STATION == 512.0) #fished twice in 2018, one coded commercial index (check J18-0203, set 7(CI), check J18-0213 set 1)
+
+```
+
+histograms of soak time for the different survey types
+```{r}
+#FIXED STATION
+ggplot(sets_fs, aes(DUR_41, stat = "count")) +
+  geom_histogram(position = "identity", alpha = 0.2) +
+  theme_classic()
+#some durations below 0...meaning times were input wrong. Remove these?
+
+sets_fs %>% filter(DUR_41 < 0) #looks like all are a case of the end time (DATE_TIME4) happening at or after midnight and using the same date as the set time (not the next day like it should be) 
+
+sets_fs_dur <- sets_fs %>%
+  filter(DUR_41 > 0)
+
+sets_fs_dur %>% filter(DUR_41 < 320) #lots of these have low hook numbers (some below 100)
+
+#STRATIFIED RANDOM
+ggplot(sets_sr, aes(DUR_41, stat = "count")) +
+  geom_histogram(position = "identity", alpha = 0.2) +
+  theme_classic() 
+
+##one station very low. Looking into it
+sets_sr %>% filter(DUR_41 <320) %>% select(DATE_TIME4) #again a case of where the set ended after midnight but use the same date
+
+#COMMERCIAL INDEX (most don't have a date time for 4)
+ggplot(ci_dur_zr, aes(DUR_32, stat = "count")) +
+  geom_histogram(position = "identity", alpha = 0.2) +
+  theme_classic()
+
+####SHOULD BE USING SOAKTIME 3-1???
+ggplot(sets_fs, aes(SOAKMINP3P1, stat = "count")) +
+  geom_histogram(position = "identity", alpha = 0.2) +
+  theme_classic()
+
+#just some kind of estimate...
+soaktime_ci <- sets_ci %>% 
+  filter(DATE_TIME3 <= as.Date("9998-01-01"), SOAKMINP3P1 > 0)
+mean(soaktime_ci$SOAKMINP3P1)
+median(soaktime_ci$SOAKMINP3P1)
+```
+Graphing histograms of hooks
+```{r}
+ggplot(sets_fs, aes(NUM_HOOK_HAUL, stat = "count")) +
+  geom_histogram(position = "identity", alpha = 0.2) +
+  theme_classic()
+
+ggplot(sets_sr, aes(NUM_HOOK_HAUL, stat = "count")) +
+  geom_histogram(position = "identity", alpha = 0.2) +
+  theme_classic()
+#looking at stations with less than 975
+sets_sr %>% filter(NUM_HOOK_HAUL < 975)
+#the one that's likely the wrong set code has 910 hooks
+#most concerning is set with 450 hooks (2017, trip S17-0701, set 5, station 604)
+
+ggplot(sets_ci, aes(NUM_HOOK_HAUL, stat = "count")) +
+  geom_histogram(position = "identity", alpha = 0.2) +
+  theme_classic()
+
+mean(sets_ci$NUM_HOOK_HAUL, na.rm = TRUE)
+median(sets_ci$NUM_HOOK_HAUL, na.rm = TRUE)
+
+#1 station with 0 hooks hauled, 1 with 4 hook, 11 with less than 100 hooks
+#hook counts in the 6000s are for whole fishing days (recorded as a single set)
+```
+
+split sets
+```{r}
+sets_fs_ss <- FixedSurveyData(sp=30, datadir, add.gear=T, add.LF=F, by.sex=F,correct.splitsets=F)
+sets_fs_ss <- sets_fs_ss %>% filter(YEAR < 2021) %>% filter(YEAR > 2000)
+
+sets_fs_ss_new <- sets_fs_ss %>% filter(YEAR > 2013)
+```
+
+Number of fixed stations overall
+```{r}
+sets_fs_fix <- sets_fs %>% filter(YEAR > 2000)
+
+sets_fs1_early <- sets_fs1 %>% filter(YEAR %in% c(1998, 1999, 2000))
+
+3831+566
+```
+
+Pulling halibut catch from all 3 surveys
+```{r}
+#fixed station
+vessels_fs <- sets_fs %>%
+  group_by(YEAR) %>%
+  summarise(n_vessels = n_distinct(VESS_ID))
+
+stations_fs <- sets_fs %>%
+  group_by(YEAR) %>%
+  summarise(n_station = n_distinct(STATION))
+
+catch_fs <- sets_fs %>%
+  group_by(YEAR) %>%
+  summarise(catch = sum(EST_COMBINED_WT, na.rm = TRUE)) %>%
+  mutate(catch = catch/1000)
+
+fs_stats <- vessels_fs %>%
+  left_join(stations_fs, by = "YEAR")
+#fixed station summary
+fs_stats <- fs_stats %>%
+  left_join(catch_fs, by = "YEAR")
+
+#stratified random
+vessels_sr <- sets_sr %>%
+  group_by(YEAR) %>%
+  summarise(n_vessels = n_distinct(VESS_ID))
+
+stations_sr <- sets_sr %>%
+  group_by(YEAR) %>%
+  summarise(n_station = n_distinct(STATION))
+
+catch_sr <- sets_sr %>%
+  group_by(YEAR) %>%
+  summarise(catch = sum(EST_COMBINED_WT, na.rm = TRUE)) %>%
+  mutate(catch = catch/1000)
+
+sr_stats <- vessels_sr %>%
+  left_join(stations_sr, by = "YEAR")
+#statified Random summary
+sr_stats <- sr_stats %>%
+  left_join(catch_sr, by = "YEAR")
+
+#commercial index
+vessels_ci <- sets_ci %>%
+  group_by(YEAR) %>%
+  summarise(n_vessels = n_distinct(VESS_ID))
+
+stations_ci <- sets_ci %>%
+  group_by(YEAR) %>%
+  summarise(n_station = n())
+
+catch_ci <- sets_ci %>%
+  group_by(YEAR) %>%
+  summarise(catch = sum(EST_COMBINED_WT, na.rm = TRUE)) %>%
+  mutate(catch = catch/1000)
+
+ci_stats <- vessels_ci %>%
+  left_join(stations_ci, by = "YEAR")
+#commercial index summary
+ci_stats <- ci_stats %>%
+  left_join(catch_ci, by = "YEAR")
+```
+
+monthly distribution of stations
+```{r}
+sets_fs <- sets_fs %>%
+  mutate(MONTH = substr(DATE_TIME3, 6,7))
+sets_sr <- sets_sr %>%
+  mutate(MONTH = substr(DATE_TIME3, 6,7))
+sets_ci <- sets_ci %>%
+  mutate(MONTH = substr(DATE_TIME3, 6,7))
+
+fs_monthly <- sets_fs %>%
+  group_by(YEAR, MONTH) %>%
+  summarise(n=n())
+fs_monthly <- spread(fs_monthly, MONTH, n)
+
+sr_monthly <- sets_sr %>%
+  group_by(YEAR, MONTH) %>%
+  summarise(n=n())
+sr_monthly <- spread(sr_monthly, MONTH, n)
+
+ci_monthly <- sets_ci %>%
+  group_by(YEAR, MONTH) %>%
+  summarise(n=n())
+ci_monthly <- spread(ci_monthly, MONTH, n)
+##coming up in december...because bad data (basically (9998-12-31) when no data available I assume...)
+```
+
+observed by NAFO
+```{r}
+#commercial index separating at-sea observed vs. port-sample observed
+aso_ci <- sets_ci %>%
+  filter(TRIPCD_ID == 7057)
+pso_ci <- sets_ci %>%
+  filter(TRIPCD_ID == 7058)
+
+aso_nafo_year <- aso_ci %>%
+  group_by(YEAR, NAFO) %>%
+  summarise(n_station = n())
+aso_nafo_year <- spread(aso_nafo_year, NAFO, n_station)
+
+pso_nafo_year <- pso_ci %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n_station = n())
+pso_nafo_year <- spread(pso_nafo_year, NAFO, n_station)
+```
+
+Stratified Random sets by strata by year
+```{r}
+sr_strata_yr <- sets_sr %>%
+  group_by(YEAR, STRATUM_ID) %>%
+  summarize(n_station = n())
+sr_strata_yr <- spread(sr_strata_yr, STRATUM_ID, n_station)
+```
+
+trimming the CI data (to remove erroneous data) using same code as Nell from previous assessment
+```{r}
+sets_ci_trim <- sets_ci %>% 
+  filter(SOAKMINP3P1 >= 1, SOAKMINP3P1 <= (60*5*24)) #this appears to remove crazy soak times and hook numbers
+
+mean(sets_ci_trim$SOAKMINP3P1)
+median(sets_ci_trim$SOAKMINP3P1)
+
+mean(sets_ci_trim$NUM_HOOK_HAUL, na.rm=TRUE)
+median(sets_ci_trim$NUM_HOOK_HAUL, na.rm = TRUE)
+```
+

@@ -133,7 +133,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
 
 
 
-write.csv(HALIBUTSURVEY,file.path(datadir,"RandomHalibutSurveyData.csv"),row.names = F)
+write.csv(HALIBUTSURVEY,file.path(datadir,"RandomHalibutSurveyData_LF.csv"),row.names = F)
 return(HALIBUTSURVEY)
 
 }
