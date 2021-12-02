@@ -17,7 +17,7 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
   isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == 4,]
 
   # filter out bad sets
-  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
+  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3,NA),]
 
 
   # filter for halibut

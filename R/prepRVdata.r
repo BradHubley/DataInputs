@@ -31,7 +31,7 @@ prepRVdata<-function(RVdata,years, bins, pal=F,raw=F){
 
     # Index of abundance
     n<-with(subset(RVdata[[2]],year==years[i]),tapply(TUNITS,STRAT,length))
-    print(n)
+   # print(n)
     Wh<-with(subset(RVdata[[2]],year==years[i]),tapply(TUNITS,STRAT,unique))
     Nh<-with(subset(RVdata[[2]],year==years[i]),tapply(TOTNO,STRAT,mean))
     NVh<-with(subset(RVdata[[2]],year==years[i]),tapply(TOTNO,STRAT,var))

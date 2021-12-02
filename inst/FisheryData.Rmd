@@ -75,20 +75,21 @@ write.csv(table2,file.path(datadir,"MARFIStable2.csv"),row.names=F)
 
 # plot annual
 ```{r}
-
+yrs<-2001:2005
 lvls=seq(0,7000,1000)
 xl=c(-69,-47)
 yl=c(40,48)
 
-  tmp<-subset(MARFISdata,YEAR>2015)
+  tmp<-subset(MARFISdata,YEAR%in%yrs)
   catch.data <- na.omit(data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  ))
 
 
 catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=10,border=NA)
-png(file.path(wd,'figures','marfisCatch2016-2020.png'),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
+png(file.path(wd,'figures',paste0('marfisCatch',min(yrs),'-',max(yrs),'.png')),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
 SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
 SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="t",cex=.7)
 dev.off()
+
 ```
 
 ### Loop for annual
