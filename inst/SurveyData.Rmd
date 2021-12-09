@@ -68,6 +68,9 @@ devtools::load_all(".")
 RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=T,bins=bins,hook.data=T)
 
 FixedSurveyRaph<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, bins=bins,hook.data=T)
+RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=T)
+
+FixedSurveyRaph<-FixedSurveyData(datadir=datadir,by.sex=F,add.LF=F, bins=bins)
 
 
 ```
@@ -89,6 +92,24 @@ subset(RandomSurvey2,abs(diff_count)>1&YEAR==2021)
 subset(RandomSurvey1,diff_count==0&diff_weight>100)
 
 ```
+# data checking fixed survey
+```{r}
+FixedSurvey1<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
+FixedSurvey2<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISH")
+
+FixedSurvey1$diff_count<-with(FixedSurvey1,EST_NUM_CAUGHT -NUM_MEASURED )
+FixedSurvey1$diff_weight<-abs(with(FixedSurvey1,EST_COMBINED_WT -calc_weight ))
+
+FixedSurvey2$diff_count<-abs(with(FixedSurvey2,EST_NUM_CAUGHT -NUM_MEASURED ))
+FixedSurvey2$diff_weight<-abs(with(FixedSurvey2,EST_COMBINED_WT -calc_weight ))
+
+subset(FixedSurvey1,diff_count>1&YEAR==2021)
+subset(FixedSurvey2,diff_count>1&YEAR==2021)
+
+subset(FixedSurvey1,diff_count==0&diff_weight>100)
+
+```
+
 
 # data checking fixed survey
 ```{r}
