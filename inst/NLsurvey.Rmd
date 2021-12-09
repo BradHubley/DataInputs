@@ -527,6 +527,38 @@ NL_bintotals.tab2 <- NL_bintotals.tab2 %>%
 write.csv(NL_bintotals.tab2, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NL_lengthdata_binned.csv", row.names = FALSE)
 ```
 
+Observation (sample size) data for Brad
+```{r}
+NL_ss <- NLstrat_length_abundance_detail %>%
+   select("survey.year", "sex", "obs")
+
+NL_ss <- NL_ss %>%
+   group_by(survey.year, sex) %>%
+   summarize(n=n())
+
+write.csv(NL_ss, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NL_n_yrsex.csv", row.names = FALSE)
+
+```
+
+Sample units per year for Brad
+```{r}
+NL_su <- NLstrat_length_abundance_detail %>%
+   select("survey.year", "strat", "sample.units")
+
+NL_su <- NL_su %>%
+   group_by(survey.year, strat) %>%
+   summarize(sample.units = max(sample.units))
+
+NL_su <- NL_su %>%
+   select(-strat) %>%
+   group_by(survey.year) %>%
+   summarize(towable.units = sum(sample.units))
+
+write.csv(NL_su, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NL_towableunits_yr.csv", row.names = FALSE)
+
+```
+
+
 
 Finding mean fish per tow using the summary data
 ```{r}
