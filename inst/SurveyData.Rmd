@@ -61,9 +61,51 @@ devtools::load_all(".")
 ## prepare Data for hook occupancy model
 
 ```{r }
-HookOccupancyData<-PrepareDataHookModel(datadir=datadir)
-HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
+#HookOccupancyData<-PrepareDataHookModel(datadir=datadir)
+#HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
+
+
+RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=T)
+
+FixedSurveyRaph<-FixedSurveyData(datadir=datadir,by.sex=F,add.LF=F, bins=bins)
+
+
 ```
+# data checking random survey
+```{r}
+RandomSurvey1<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
+RandomSurvey2<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISH")
+
+RandomSurvey1$diff_count<-with(RandomSurvey1,EST_NUM_CAUGHT -NUM_MEASURED )
+RandomSurvey1$diff_weight<-abs(with(RandomSurvey1,EST_COMBINED_WT -calc_weight ))
+
+RandomSurvey2$diff_count<-abs(with(RandomSurvey2,EST_NUM_CAUGHT -NUM_MEASURED ))
+RandomSurvey2$diff_weight<-abs(with(RandomSurvey2,EST_COMBINED_WT -calc_weight ))
+
+subset(RandomSurvey1,diff_count>1&YEAR==2021)
+subset(RandomSurvey2,diff_count>1&YEAR==2021)
+
+subset(RandomSurvey1,diff_count==0&diff_weight>100)
+
+```
+# data checking fixed survey
+```{r}
+FixedSurvey1<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
+FixedSurvey2<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISH")
+
+FixedSurvey1$diff_count<-with(FixedSurvey1,EST_NUM_CAUGHT -NUM_MEASURED )
+FixedSurvey1$diff_weight<-abs(with(FixedSurvey1,EST_COMBINED_WT -calc_weight ))
+
+FixedSurvey2$diff_count<-abs(with(FixedSurvey2,EST_NUM_CAUGHT -NUM_MEASURED ))
+FixedSurvey2$diff_weight<-abs(with(FixedSurvey2,EST_COMBINED_WT -calc_weight ))
+
+subset(FixedSurvey1,diff_count>1&YEAR==2021)
+subset(FixedSurvey2,diff_count>1&YEAR==2021)
+
+subset(FixedSurvey1,diff_count==0&diff_weight>100)
+
+```
+
 
 ### Size Composition 
 ## Prepare data for Length Frequemcy plots
@@ -216,8 +258,8 @@ SR20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
 #FS20=subset(FixedSurvey, NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020) 
 ##maybe they don't have to measure all ones caught in the fixed survey stations?
 
-RandomSurvey$N_MEASURED <- rowSums(RandomSurvey[,paste0("L",bins[-1])])
-x20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
+#RandomSurvey$N_MEASURED <- rowSums(RandomSurvey[,paste0("L",bins[-1])])
+#x20=subset(RandomSurvey,NUM_MEASURED!=EST_NUM_CAUGHT&YEAR==2020)
 
 
 SR20 <- SR20 %>%
@@ -417,9 +459,13 @@ dev.off()
 ```{r}
 
 HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2021)
+HSFixed_Index2<-FixedSurveyIndex(datadir=datadir,yrs=1998:2021,use.calc.wt=T)
 
 plot(KgPKH~Year,HSFixed_Index,type='b',pch=16,ylim=c(0,max(KgPKH)))
 lines(mean3_biomass~Year,HSFixed_Index,col='red')
+
+plot(KgPKH~Year,HSFixed_Index2,type='b',pch=16,ylim=c(0,max(KgPKH)))
+lines(mean3_biomass~Year,HSFixed_Index2,col='red')
 
 
 HSFixed_Index_old<-FixedSurveyIndex(datadir=datadir,yrs=1998:2021,old.model=T)
@@ -432,7 +478,6 @@ for(i in 1:7){
   temp<-FixedSurveyIndex(datadir=datadir,yrs=1998:(2021-i),old.model=T)
   lines(predicted~year,temp,col=i+1)
 }
-
 
 ```
 

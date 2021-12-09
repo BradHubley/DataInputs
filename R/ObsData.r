@@ -11,7 +11,7 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   Mar.datawrangling::get_data(db='isdb',data.dir=datadir,env=isdb)
 
   # filter for targeded halibut and commercial index trips
-  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[!isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(14, 41, 2210, 4511, 7002,7052,7050,7051,7053,7055),]
+  isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[!isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(14, 70, 2210, 4511, 7002,7052,7050,7051,7053,7055),]
   # tripcd_id NOT IN (14, 41, 2210, 4511, 7002) /* per K Trzinski request, excluding Trip Types: SILVER HAKE; MACKEREL; SHRIMP; SQUID; SILVER HAKE, SQUID, ARGENTINE */
   # TRIPCD_ID NOT IN (7052,7050,7051,7053,7055) /*per N den Heyer, May 5, 2014 - these are surveys*/
 

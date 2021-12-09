@@ -1,6 +1,6 @@
 #' @export
 
-RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS'){
+RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), LW=c(a=0.006803616,b=3.119924), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS',adj.calc.wt=F){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -18,7 +18,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == 5,]
 
   # filter out bad sets
-  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
+  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3,NA),]
 
     # filter for halibut
   isdb$ISSPECIESCODES= isdb$ISSPECIESCODES[isdb$ISSPECIESCODES$SPECCD_ID == sp,]
@@ -66,11 +66,19 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   if(add.LF){
     if(LF.from=='ISFISH'){
       #bins<-seq(size.range[1],size.range[2],bin.size)
+      isdb$ISFISH$FISH_WEIGHT<-LW[1]*isdb$ISFISH$FISH_LENGTH^LW[2]
       cid=unique(isdb$ISFISH$CATCH_ID)
       LF <-list()
       LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$count)})))
       names(LFnosex)[-1]<-paste0("L",bins[-1])
       LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
+      LFnosex <- isdb$ISFISH %>%
+        group_by(CATCH_ID) %>%
+        mutate(calc_weight=sum(FISH_WEIGHT)/1000) %>%
+        select(CATCH_ID,calc_weight) %>%
+        filter(!duplicated(CATCH_ID)) %>%
+        right_join(LFnosex)
+
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
@@ -79,7 +87,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
         LF <- do.call("rbind",LF)
         names(LF)[-(1:2)]<-paste0("L",bins[-1])
 
-        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED')])
+        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED','calc_weight')])
       }
       if(by.sex==F)LF <- LFnosex
       #browser()
@@ -91,14 +99,19 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
       ISSAMPLES = subset(isdb$ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
       ISFISHLENGTHS=subset(isdb$ISFISHLENGTHS,SMPL_ID %in% ISSAMPLES$SMPL_ID,c("SMPL_ID","FISH_LENGTH","NUM_AT_LENGTH"))
 
-      fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)%>% group_by(CATCH_ID) %>% mutate(avglength=weighted.mean(FISH_LENGTH ,NUM_AT_LENGTH,na.rm=T))
+      fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)%>%
+        group_by(CATCH_ID) %>%
+        mutate(FISH_WEIGHT=LW[1]*FISH_LENGTH^LW[2]) %>%
+        mutate(avg_length=weighted.mean(FISH_LENGTH ,NUM_AT_LENGTH,na.rm=T)) %>%
+        mutate(calc_weight=sum(FISH_WEIGHT*NUM_AT_LENGTH)/1000)
+
 
       cid=unique(fishlengths$CATCH_ID)
       LF <-list()
       LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
       #names(LFnosex)[-1]<-paste0("L",bins[-1])
       LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
-      LFnosex <- merge(LFnosex,subset(fishlengths,!duplicated(CATCH_ID),c("CATCH_ID","avglength")))
+      LFnosex <- merge(LFnosex,subset(fishlengths,!duplicated(CATCH_ID),c("CATCH_ID","avg_length","calc_weight")))
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
@@ -107,7 +120,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
         LF <- do.call("rbind",LF)
         #names(LF)[-(1:2)]<-paste0("L",bins[-1])
 
-        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED')])
+        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED',"avg_length","calc_weight")])
       }
       if(by.sex==F)LF <- LFnosex
 
@@ -127,14 +140,20 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
 
   if(hook.data==T){
     hookData<-PrepareDataHookModel(datadir = datadir)
-    hooknames <- c("FISHSET_ID", "broken_hook", "empty_baited", "empty_unbaited", "other_species", "target_species", "missing_hook", "total_sampled", "ASSIGNED_STATION", "ASSIGNED_STRATUM_ID")
+    hooknames <- c("FISHSET_ID","total_target_species","total_other_species", "total_sampled", "broken_hook", "empty_baited", "empty_unbaited", "other_species", "target_species", "missing_hook", "ASSIGNED_STATION", "ASSIGNED_STRATUM_ID")#
     HALIBUTSURVEY <-left_join(HALIBUTSURVEY,hookData[,hooknames])
   }
 
+  HALIBUTSURVEY$EST_NUM_CAUGHT [is.na(HALIBUTSURVEY$EST_NUM_CAUGHT )] <- 0
+  HALIBUTSURVEY$EST_COMBINED_WT [is.na(HALIBUTSURVEY$EST_COMBINED_WT )] <- 0
 
-
-write.csv(HALIBUTSURVEY,file.path(datadir,"RandomHalibutSurveyData_LF.csv"),row.names = F)
-return(HALIBUTSURVEY)
+  if(add.LF){
+    if(adj.calc.wt) HALIBUTSURVEY$calc_weight <- with(HALIBUTSURVEY,calc_weight*(EST_NUM_CAUGHT/NUM_MEASURED))
+    HALIBUTSURVEY$NUM_MEASURED[is.na(HALIBUTSURVEY$NUM_MEASURED)] <- 0
+    HALIBUTSURVEY$calc_weight [is.na(HALIBUTSURVEY$calc_weight )] <- 0
+  }
+  write.csv(HALIBUTSURVEY,file.path(datadir,"RandomHalibutSurveyData_LF.csv"),row.names = F)
+  return(HALIBUTSURVEY)
 
 }
 

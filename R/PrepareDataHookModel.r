@@ -5,7 +5,7 @@
 #output: word_document
 #---
 #' @export
-PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
+PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE, set.type=5){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -17,7 +17,7 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
 
   ## Get Hook data from flat files
 
-  hook_data <- hookData(datadir=datadir, species=sp, getrawdata=getrawdata)
+  if(set.type==5)hook_data <- hookData(datadir=datadir, species=sp, getrawdata=getrawdata)
 
   # Get Halibut Survey from ISDB
   isdb <- new.env()
@@ -43,10 +43,10 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057),]
 
   # filter for random survey
-  isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == 5,]
+  isdb$ISSETTYPECODES= isdb$ISSETTYPECODES[isdb$ISSETTYPECODES$SETCD_ID == set.type,]
 
   # filter out bad sets
-  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3),]
+  isdb$ISFISHSETS= isdb$ISFISHSETS[isdb$ISFISHSETS$HAULCCD_ID %in% c(1,2,3,NA),]
 
   # Apply filter
   self_filter('isdb',env=isdb)
@@ -99,17 +99,20 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE){
   allfish[is.na(allfish)]<-0
 
   HALIBUTSURVEY <- left_join(sets,allfish) %>%
-    left_join(.,trips) %>%
-    left_join(.,hook_data)
+    left_join(.,trips)
+
 
   HALIBUTSURVEY$total_other_species[is.na(HALIBUTSURVEY$total_other_species)]<-0
   HALIBUTSURVEY$total_target_species[is.na(HALIBUTSURVEY$total_target_species)]<-0
 
-  # get assigned strata
-  StnStrt<-read.csv(file.path(wd,"data","HS_STATION_STRATA.csv"))
-  HALIBUTSURVEY$ASSIGNED_STATION<-floor(as.numeric( HALIBUTSURVEY$STATION))
-  HALIBUTSURVEY <- left_join(HALIBUTSURVEY,StnStrt)
-  HALIBUTSURVEY$STRATUM_ID <- HALIBUTSURVEY$ASSIGNED_STRATUM_ID
+  if(set.type==5){
+    HALIBUTSURVEY <- left_join(HALIBUTSURVEY, hook_data)
+    # get assigned strata
+    StnStrt<-read.csv(file.path(datadir,"Survey","HS_STATION_STRATA.csv"))
+    HALIBUTSURVEY$ASSIGNED_STATION<-floor(as.numeric( HALIBUTSURVEY$STATION))
+    HALIBUTSURVEY <- left_join(HALIBUTSURVEY,StnStrt)
+    HALIBUTSURVEY$STRATUM_ID <- HALIBUTSURVEY$ASSIGNED_STRATUM_ID
+  }
 
 
 
