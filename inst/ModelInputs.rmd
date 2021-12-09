@@ -33,10 +33,10 @@ bins=seq(0,260,5)
 
 # Update data from database 
 
-# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+ #Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
-# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd,force.extract=T)
+# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 #get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
@@ -77,8 +77,8 @@ BiologicalParameters$bins<-bins
 
 ```{r}
 
-RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020, raw=T)
+RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2021, raw=T)
 RVinputs$NSRV_unsexed<-RVinputs$NSRV_combined-(RVinputs$NSRV_males+RVinputs$NSRV_females) # unsexed
 NSRV_Index<-RVinputs$Index
 NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,
@@ -106,8 +106,8 @@ NLRV_Index<-rowSums(NLRV_Lengths)
 
 #Halibut Survey Catch Composition
 ```{r}
-  Yrs1 = 2000:2020        
-  Yrs2 = 2017:2020        
+  Yrs1 = 2000:2021        
+  Yrs2 = 2017:2021        
 
   FixedSurvey <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=T)
   RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
@@ -138,11 +138,12 @@ NLRV_Index<-rowSums(NLRV_Lengths)
                          HSRandom_combined=HSRandom_combined,
                          HSRandom_unsexed=HSRandom_unsexed)
   
-  HSRandom_Index<-data.frame(Year= 2017:2020,
-                             Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
-                             se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
+  #HSRandom_Index<-data.frame(Year= 2017:2020,
+   #                          Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
+   #                          se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
   
-  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1970:2020)
+  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2021)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021)
 
 
 ```
@@ -150,12 +151,12 @@ NLRV_Index<-rowSums(NLRV_Lengths)
 #Landings
 ```{r}
 Landings_t<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
-
+Landings_t<-rbind(Landings_t,data.frame(X=52,Year=2021,Landings_t[51,3:6]))
 ```
 
 #Fishery Catch Composition
 ```{r}
-CCyrs=1978:2020
+CCyrs=1978:2021
 
  nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PS", "3U")
  nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
@@ -217,7 +218,7 @@ Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
 # Put it all together
 ```{r}
 
-save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata.rdata"))
+save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2021.rdata"))
 
 ```
 
@@ -225,12 +226,21 @@ save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixe
 # Bubble plots
 ```{r}
 
-BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2020,path=file.path(wd,'figures'),filen='NSRVSurvey',inches=0.3)
-BubblePlotLF(list(NLRV_Lengths),bins=bins,yrs=1996:2019,path=file.path(wd,'figures'),filen='NLRVSurvey',inches=0.3)
-BubblePlotLF(HSFixed_Lengths,bins=bins,yrs=2000:2020,path=file.path(wd,'figures'),filen='FixedSurvey',inches=0.3)
-BubblePlotLF(HSRandom_Lengths,bins=bins,yrs=2017:2020,path=file.path(wd,'figures'),filen='RandomSurvey',inches=0.3)
-BubblePlotLF(Fishery_Lengths,bins=bins,yrs=1978:2020,path=file.path(wd,'figures'),filen='Commercial',inches=0.3)
+BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2020,path=file.path(wd,'figures'),filen='NSRVSurvey',inches=0.3,graphic='png')
+BubblePlotLF(list(NLRV_Lengths),bins=bins,yrs=1996:2019,path=file.path(wd,'figures'),filen='NLRVSurvey',inches=0.3,graphic='png')
+BubblePlotLF(HSFixed_Lengths,bins=bins,yrs=2000:2021,path=file.path(wd,'figures'),filen='FixedSurvey',inches=0.3,graphic='png')
+BubblePlotLF(HSRandom_Lengths,bins=bins,yrs=2017:2021,path=file.path(wd,'figures'),filen='RandomSurvey',inches=0.3,graphic='png')
+BubblePlotLF(Fishery_Lengths,bins=bins,yrs=1978:2021,path=file.path(wd,'figures'),filen='Commercial',inches=0.3,graphic='png')
+
 
 ```
 
+# bubble for doc
+```{r}
+combinedLengths<-list(Fishery_Lengths$LLNafo3_combined,Fishery_Lengths$LLNafo4_combined,Fishery_Lengths$OTNafo3_combined,Fishery_Lengths$OTNafo4_combined,NSRV_Lengths$NSRV_combined,HSFixed_Lengths$HSFixed_combined,HSRandom_Lengths$HSRandom_combined)
+names(combinedLengths)<-c("LL_NAFO3","LL_NAFO4","OT_NAFO3","OT_NAFO4","RV_4VWX","HS_Fixed","HS_Random")
+
+BubblePannelPlotLF(combinedLengths,bins=bins,yrs=1970:2021,path=file.path(wd,'figures'),filen='Combined',inches=0.1,graphic='png',ht=11,wd=8)
+
+```
 

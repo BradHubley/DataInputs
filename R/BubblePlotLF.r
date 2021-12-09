@@ -5,10 +5,10 @@ BubblePlotLF<-function(LF,bins,yrs,log.trans=F,filen='',prop=F,LS=81,window=NULL
   mids<-bins[-1]-diff(bins)/2
 
   if(graphic=='pdf')pdf(file.path(path,paste0('LC',filen,'.pdf')),width=wd,height=ht)
-  if(graphic=='png')png(file.path(path,paste0('LC',filen,'.png')),width=wd,height=ht,units='in',res=200)
   if(graphic=='R')x11()
   par(mar=c(5, 5, 4, 2))
   for(i in 1:length(LF)){
+  if(graphic=='png')png(file.path(path,paste0('LC',filen,i,'.png')),width=wd,height=ht,units='in',res=200)
     #LF[[i]]=t(LF[[i]])
     if(prop)LF[[i]]<-proportions(LF[[i]],1)
     z=as.vector(unlist(LF[[i]]))
@@ -22,6 +22,7 @@ BubblePlotLF<-function(LF,bins,yrs,log.trans=F,filen='',prop=F,LS=81,window=NULL
       if(window[2]!=200)abline(h=window[2],col='grey')
     }
     text(max(yrs),max(mids),label,cex=2)
+    if(graphic=='png')dev.off()
   }
-  if(graphic!='R')dev.off()
+  if(graphic=='pdf')dev.off()
 }
