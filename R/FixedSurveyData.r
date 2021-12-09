@@ -1,5 +1,5 @@
 #' @export
-FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), by.sex=T, LF.from='ISFISHLENGTHS',correct.splitsets=T){
+FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), LW=c(a=0.006803616,b=3.119924), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS',correct.splitsets=T,adj.calc.wt=F){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -72,11 +72,19 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
   if(add.LF){
     if(LF.from=='ISFISH'){
       #bins<-seq(size.range[1],size.range[2],bin.size)
+      isdb$ISFISH$FISH_WEIGHT<-LW[1]*isdb$ISFISH$FISH_LENGTH^LW[2]
       cid=unique(isdb$ISFISH$CATCH_ID)
       LF <-list()
       LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$count)})))
       names(LFnosex)[-1]<-paste0("L",bins[-1])
       LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
+      LFnosex <- isdb$ISFISH %>%
+        group_by(CATCH_ID) %>%
+        mutate(calc_weight=sum(FISH_WEIGHT)/1000) %>%
+        select(CATCH_ID,calc_weight) %>%
+        filter(!duplicated(CATCH_ID)) %>%
+        right_join(LFnosex)
+
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
@@ -85,7 +93,7 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
         LF <- do.call("rbind",LF)
         names(LF)[-(1:2)]<-paste0("L",bins[-1])
 
-        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED')])
+        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED','calc_weight')])
       }
       if(by.sex==F)LF <- LFnosex
       #browser()
@@ -98,13 +106,19 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
       ISSAMPLES = subset(isdb$ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
       ISFISHLENGTHS=subset(isdb$ISFISHLENGTHS,SMPL_ID %in% ISSAMPLES$SMPL_ID,c("SMPL_ID","FISH_LENGTH","NUM_AT_LENGTH"))
 
-      fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)
+      fishlengths <- left_join(ISSAMPLES,ISFISHLENGTHS)%>%
+        group_by(CATCH_ID) %>%
+        mutate(FISH_WEIGHT=LW[1]*FISH_LENGTH^LW[2]) %>%
+        mutate(avg_length=weighted.mean(FISH_LENGTH ,NUM_AT_LENGTH,na.rm=T)) %>%
+        mutate(calc_weight=sum(FISH_WEIGHT*NUM_AT_LENGTH)/1000)
+
 
       cid=unique(fishlengths$CATCH_ID)
       LF <-list()
       LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
       #names(LFnosex)[-1]<-paste0("L",bins[-1])
       LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
+      LFnosex <- merge(LFnosex,subset(fishlengths,!duplicated(CATCH_ID),c("CATCH_ID","avg_length","calc_weight")))
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
@@ -113,7 +127,7 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
         LF <- do.call("rbind",LF)
         #names(LF)[-(1:2)]<-paste0("L",bins[-1])
 
-        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED')])
+        LF <-merge(LF,LFnosex[,c('CATCH_ID','NUM_MEASURED',"avg_length","calc_weight")])
       }
       if(by.sex==F)LF <- LFnosex
       #browser()
@@ -167,6 +181,22 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
 
   }
 
+  if(hook.data==T){
+    hookData<-PrepareDataHookModel(datadir = datadir, set.type=4)
+    hooknames <- c("FISHSET_ID", "total_target_species","total_other_species")
+    HALIBUTSURVEY <-left_join(HALIBUTSURVEY,hookData[,hooknames])
+  }
+
+
+  HALIBUTSURVEY$EST_NUM_CAUGHT [is.na(HALIBUTSURVEY$EST_NUM_CAUGHT )] <- 0
+  HALIBUTSURVEY$EST_COMBINED_WT [is.na(HALIBUTSURVEY$EST_COMBINED_WT )] <- 0
+  HALIBUTSURVEY$avg_weight<-HALIBUTSURVEY$EST_COMBINED_WT/HALIBUTSURVEY$EST_NUM_CAUGHT
+
+  if(add.LF){
+    if(adj.calc.wt) HALIBUTSURVEY$calc_weight <- with(HALIBUTSURVEY,calc_weight*(EST_NUM_CAUGHT/NUM_MEASURED))
+    HALIBUTSURVEY$NUM_MEASURED[is.na(HALIBUTSURVEY$NUM_MEASURED)] <- 0
+    HALIBUTSURVEY$calc_weight [is.na(HALIBUTSURVEY$calc_weight )] <- 0
+  }
 
 
 
