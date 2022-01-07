@@ -65,27 +65,31 @@ hookData <- function(years=2017:2020, species=30, datadir, getrawdata=FALSE){
   #6 = damaged or broken hook
 
 
+
+  ys<-2019:2020
+  ys[ys%in%years]
   hook_occupancy_lst<-list()
 
-  for(y in 3:length(years)){
+  if(length(ys>0))for(y in 1:length(ys)){
 
-    files_to_get <- list.files(path = file.path(datadir,"Survey","hookoccupancy",years[y]))
+    files_to_get <- list.files(path = file.path(datadir,"Survey","hookoccupancy",ys[y]))
     hook_occupancy_tmp <- NULL
     for(i in 1:length(files_to_get)){
-      hook_hold <- read.fwf(file.path(datadir,"Survey","hookoccupancy",years[y], files_to_get[i]), widths=c(2,10,3,3,3,4,4,3,16))
+      hook_hold <- read.fwf(file.path(datadir,"Survey","hookoccupancy",ys[y], files_to_get[i]), widths=c(2,10,3,3,3,4,4,3,16))
       hook_occupancy_tmp <- rbind(hook_occupancy_tmp, hook_hold)
 
     }
 
     colnames(hook_occupancy_tmp) <- c("Line_Type", "TRIP", "SET_NO", "GEAR_TYPE", "TUB_NO", "HOOKS_PER_TUB", "HOOK_NO", "HOOK_CONDITION", "SPECCD_ID")
-    hook_occupancy_tmp$YEAR=years[y]
+    hook_occupancy_tmp$YEAR=ys[y]
 
-    hook_occupancy_lst[[y-2]] <- hook_occupancy_tmp
+    hook_occupancy_lst[[y]] <- hook_occupancy_tmp
 
   }
 
   hook_occupancy <- do.call("rbind",hook_occupancy_lst)[c("YEAR","Line_Type", "TRIP", "SET_NO", "GEAR_TYPE", "TUB_NO", "HOOK_NO", "HOOK_CONDITION", "SPECCD_ID")]
   hook_occupancy <- rbind(hook_occupancy_pre2018,hook_occupancy)
+
 
   # clean up
   hook_occupancy$TRIP<-gsub(" ", "", hook_occupancy$TRIP, fixed = TRUE)
@@ -96,9 +100,6 @@ hookData <- function(years=2017:2020, species=30, datadir, getrawdata=FALSE){
   hook_occupancy[hook_occupancy$TRIP == "J17-0271A1", "TRIP"] = "J17-0271A"
   hook_occupancy[hook_occupancy$TRIP == "J17-0271A2", "TRIP"] = "J17-0271B"
 
-
-  raw_hook_data <-hook_occupancy
-  hook_occupancy <- raw_hook_data
 
   hook_occupancy$labels <- NA
   hook_occupancy$labels[hook_occupancy$HOOK_CONDITION==0] = "empty_unbaited"
@@ -112,7 +113,6 @@ hookData <- function(years=2017:2020, species=30, datadir, getrawdata=FALSE){
   hook_occupancy <- subset(hook_occupancy,!is.na(labels)) # these hooks indicate something was caught but no species identified, should be removed?
   #hook_occupancy[is.na(hook_occupancy)]<-0
 
-  raw_hook_data <-hook_occupancy
 
   hook_data <- hook_occupancy %>% group_by(TRIP,SET_NO) %>% count(labels) %>% pivot_wider(names_from = labels,values_from = n) %>% data.frame()
   hook_data[is.na(hook_data)]<-0
@@ -120,8 +120,8 @@ hookData <- function(years=2017:2020, species=30, datadir, getrawdata=FALSE){
 
   # crate summary tub by tub
   raw_tub_data <- hook_occupancy %>% group_by(TRIP,SET_NO,TUB_NO) %>% count(labels) %>% pivot_wider(names_from = labels,values_from = n) %>% data.frame()
-  hook_data[is.na(hook_data)]<-0
-  hook_data$total_sampled=rowSums(hook_data[,3:8])
+  raw_tub_data[is.na(raw_tub_data)]<-0
+  raw_tub_data$total_sampled=rowSums(raw_tub_data[,3:8])
 
   if(getrawdata==FALSE){return(hook_data)}
   if(getrawdata==TRUE){return(raw_tub_data)}

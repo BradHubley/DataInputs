@@ -17,7 +17,10 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE, set.
 
   ## Get Hook data from flat files
 
-  if(set.type==5)hook_data <- hookData(datadir=datadir, species=sp, getrawdata=getrawdata)
+  if(set.type==5){
+    hook_data_old <- hookData(datadir=datadir, species=sp, getrawdata=getrawdata) #remove if old hook data gets into database
+    hook_data <- hookDataBase(datadir=datadir, species=sp, getrawdata=getrawdata)
+  }
 
   # Get Halibut Survey from ISDB
   isdb <- new.env()
@@ -106,7 +109,10 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE, set.
   HALIBUTSURVEY$total_target_species[is.na(HALIBUTSURVEY$total_target_species)]<-0
 
   if(set.type==5){
-    HALIBUTSURVEY <- left_join(HALIBUTSURVEY, hook_data)
+    hook1<-right_join(HALIBUTSURVEY[,c("FISHSET_ID","SET_NO","TRIP")], hook_data_old) # remove if no hook_data_old
+    hook2<-right_join(HALIBUTSURVEY[,c("FISHSET_ID","SET_NO","TRIP")], hook_data)     # remove if no hook_data_old
+    hook_data<-full_join(hook1,hook2)                                                 # remove if no hook_data_old
+    HALIBUTSURVEY <-  left_join(HALIBUTSURVEY,hook_data)
     # get assigned strata
     StnStrt<-read.csv(file.path(datadir,"Survey","HS_STATION_STRATA.csv"))
     HALIBUTSURVEY$ASSIGNED_STATION<-floor(as.numeric( HALIBUTSURVEY$STATION))
