@@ -20,11 +20,12 @@ source(file.path(wd, "passwords.r"))
 
 Changing LF data from text file to data frame
 ```{r}
-NLobs <- read.fwf("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/maritimes_Ahal_LF_95_20 (002).lfdata", widths=c(1,4,2,4,1,3,8,1,2,3,3,2,5,3,4,1,2,2,2,1,3,4,6,4,3,1,4,1,rep((3),times=250)))
+NLobs_LF <- read.fwf("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/maritimes_Ahal_LF_95_20 (002).lfdata", widths=c(1,4,2,4,1,3,8,1,2,3,3,2,5,3,4,1,2,2,2,1,3,4,6,4,3,1,4,1,rep((3),times=250)))
                   
 
-colnames(NLobs) <- c("data_source", "set_no", "country_q", "sample_spp", "sex", "deployment_no", "vessel", "ton_class", "gear", "mesh_size", "NAFO_div", "unit_area", "ASOC", "num_measured", "start_time", "sample_type", "year", "month", "day", "quarter", "country", "depth_m", "total_wt_kg", "sample_wt_kg", "otoliths", "len_gr_int", "spp_sought", "blank",  seq(1,250))
+colnames(NLobs_LF) <- c("data_source", "set_no", "country_q", "sample_spp", "sex", "deployment_no", "vessel", "ton_class", "gear", "mesh_size", "NAFO_div", "unit_area", "ASOC", "num_measured", "start_time", "sample_type", "year", "month", "day", "quarter", "country", "depth_m", "total_wt_kg", "sample_wt_kg", "otoliths", "len_gr_int", "spp_sought", "blank",  seq(1,250))
 
+write.csv(NLobs_LF, "C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLobserver_lf.csv")
 ```
 
 Changing set info from text file to data frame
@@ -32,6 +33,8 @@ Changing set info from text file to data frame
 NLobs_set <- read.fwf("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/maritimes_Ahal_SC_95_20 (002).sdet", widths=c(2,2,10,4,4,3,2,2,3,3,3,1,3,4,1,1,2,2,2,3,2,4,4,4,4,4,1,4,2,2,2,3,4,1,1,1,4,5,4,1,3,3,3,3,3,3,8,3,5,6,6,6,6,6,5,5,2,2,1,3,5))
 
 colnames(NLobs_set) <- c("year", "country", "side_no", "hpwr","deployment_no", "set_no","vessel_class", "gear", "codend_mesh", "body_mesh_size", "roller_size", "chafing_gear", "num_gillnets", "num_hooks", "net_damage", "in_out_eez", "day", "month", "NAFO_div", "unit_area", "tow_speed", "lat_ddmm", "long_ddmm", "av_fishing_depth_m", "start_time", "set_dur", "data_type", "directed_spp", "num_spp", "quota", "trip_type", "av_len_gillnet", "num_pots", "window", "num_windows", "record_type", "species", "kept_wt_kg", "discard_wt_kg", "blank1", "num_ind", "blank2", "blank3", "blank4", "blank5", "blank6", "stratarea", "pots", "est_wt_crab", "ASOC", "start_lat_ddmmmm", "start_long_ddmmmm", "end_lat_ddmmmm", "end_long_ddmmmm", "logbook_id", "logbook_id2", "haul_day", "haul_month", "catch_comp", "subtrip_no", "ASO_company")
+
+write.csv(NLobs_set, "C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLobserver_setdetail.csv")
 ```
 
 NAFO divisions and unit areas need fixing for NLobs_set
