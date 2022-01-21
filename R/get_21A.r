@@ -2,10 +2,12 @@
 # get 21A Atlantic halibut landing, unit ton
 # Download from here: https://www.nafo.int/Data/STATLANT. Select HAL - ATLANTIC HALIBUT as the species, select all countries,  and save the .csv
 # count="CDN" for Canada; "Foreign" for foreign countries; others for all countries
-#'@export
+# zone 5 ("5ZC","5ZE","5Z","5Y") is restricted to CDN landings only
+# landings in "5Z" only occurred in 1960s.
+
 
 get_21A <- function(count, yearstart,datadir){
-  landA = read.csv(file.path(datadir,'Landings',"Export.csv"))
+  landA = read.csv(file.path(datadir,"Export.csv"))
   #  names(landA)
   names(landA)[5]="Catch"
   names(landA)[1]="Year"
@@ -13,20 +15,32 @@ get_21A <- function(count, yearstart,datadir){
   #  unique(landA$Species)
   #  unique(landA$Country)
 
+  #filter divisions; zone 5 includes CDN landings only
+  landA = as.data.frame(landA) %>%
+    filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z))
+  landA5 =   landA   %>%
+    filter(Division %in% c("5ZC","5ZE","5Z","5Y"),
+           grepl("CAN",landA$Country))
+  landA34 =   landA   %>%
+    filter(!Division %in% c("5ZC","5ZE","5Z","5Y"))
+
+  landA=rbind(landA34, landA5)
+#  unique(landA5$Country)
+
+
   # Canada+Foreign landings by year/area; assign Area 5 to 4X
   if (count=="CDN") {
-    nafoA = as.data.frame(landA) %>%
+    nafoA = landA %>%
       filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z),
              grepl("CAN",landA$Country))
   } else if (count=="Foreign") {
-      nafoA = as.data.frame(landA) %>%
+      nafoA = landA %>%
           filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z),
           !grepl("CAN",landA$Country))
 
     } else {
 
-    nafoA = as.data.frame(landA) %>%
-      filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z))
+    nafoA = landA
   }
 
 
