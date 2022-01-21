@@ -28,7 +28,7 @@ library(devtools)
 library(Mar.datawrangling)
 #library(bio.halibut)
 library(tidyverse)
-# devtools::load_all(".")
+devtools::load_all(".")
 source(file.path(getwd(), "directories.r"))
 
 # NAFO divisions
@@ -65,7 +65,7 @@ CanA = get_21A(count="CDN", yearstart = ystart, datadir=datadir)  #1970
 # sort(unique(CanA$Division))
 
 CanB1=get_21B(count="CDN",ystart,yendCDN,1, datadir=datadir)
-# unique(CanB$Division)
+# unique(CanB1$Division)
 CanBdiv = get_21B(count="CDN",ystart,yendCDN,2, datadir=datadir)
 
 ```
@@ -168,7 +168,6 @@ Differences in Canadian landing among 21A, 21B, and MARFIS
 ###### NOTE: do this part after MARFIS+NL as landing in Area 3
 
 
-
 # MARFIS: catch by year/division aggregating gear
 mardiv = mar   %>%
   group_by(Year,Division)  %>%
@@ -213,15 +212,23 @@ CanABM34=CanABM34[, -7]
 #Barplot data; replace NA with 0
 
 CanABM34p = CanABM34   %>%
-    replace(is.na(.), 0)
-tiff(file.path(wd,"figures","CDN_21A_B_3.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
-barplot(CanABM34p$Catch3BA~CanABM34p$Year,
- xlab= "Year", ylab="Canadian landing in Area 3 (t): 21B - 21A ",ylim=c(-400, 100))
-dev.off()
+    replace(is.na(.), 0) %>%
+    mutate(per3=Catch3BA/Catch3A, per4=Catch4BA/Catch4A)
+range(CanABM34p$per3)  # <62%
+range(CanABM34p$per4)  # <7.7%
 
-tiff(file.path(wd,"figures","CDN_21A_B_4.tiff"), width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
+png(file.path(wd,"figures","barplot_CDN_21A_B.png"), width = width1, height = height1,units='in',pointsize=12, res=300,type='cairo')
+par(mfrow=c(2,1), oma=c(1,1,1,0), mar=c(4,5,0.5,0) )
+
+# tiff(file.path(wd,"figures","CDN_21A_B_3.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
+barplot(CanABM34p$Catch3BA~CanABM34p$Year,
+ xlab= "Year", ylab="Canadian landing in Area 3 (t): 21B - 21A ",ylim=c(-400, 0))
+text(0.5,-50, "A", cex=2 )
+# tiff(file.path(wd,"figures","CDN_21A_B_4.tiff"), width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
 barplot(CanABM34p$Catch4BA~CanABM34p$Year,
- xlab= "Year", ylab="Canadian landing in Area 4 (t): 21B - 21A ", ylim=c(-100, 100))
+ xlab= "Year", ylab="Canadian landing in Area 4 (t): 21B - 21A ", ylim=c(-400, 0))
+text(0.5,-50, "B", cex=2 )
+
 dev.off()
 
 ```
@@ -235,7 +242,7 @@ Recent Canadian landing data by gear and division from 2001 to 2020 was based on
   landNL = read.csv(file.path(datadir,"landingNL.csv"))
   unique(landNL$Gear.Name)
   landNL = landNL   %>%
-    mutate(Catch1 = Landed.RW )  %>%
+    mutate(Catch1 = Landed.RW/1000 )  %>%
     rename (Year = 1, Division = 7) %>%
     mutate( Gear =replace(Gear.Name, 
                           Gear.Name=="Bottom Otter Trawl (stern)", "OT")) %>%
@@ -276,12 +283,10 @@ Recent Canadian landing data by gear and division from 2001 to 2020 was based on
     filter(Year >=yCDN & Year<=yendCDN) %>%
     rename(Catch=4)
     
-
 # CDN landing for Area 3 & 4 from yCDN to yendCDN
     land34= rbind(land03, land04) %>%
       arrange(Year, Division,Gear)
 
- 
 ```
 
 
@@ -296,7 +301,7 @@ CanB00= CanB1  %>%
 
 # updated 21B CDN landing by gear division
 CanB = rbind(CanB00, land34)
-
+write.csv(CanB, "CanB_diff.csv")
 
 #tiff(file.path(wd,"figures","NAFOlandingCDN_gear_div.tiff"), width=178, height =140,units ="mm", pointsize =10, res= 500) # bg="white",
 png(file.path(wd,"figures","NAFOlandingCDN_gear_div.png"), width = width1, height = height1,units='in',pointsize=12, res=300,type='cairo')
@@ -317,66 +322,6 @@ dev.off()
 
 ```
 
-Data comparison
-
-```{r comparison 21A & updated 21B}
-  
-# CHECK Line 206 comparison
-# check differences between 21A and landCDN34   
-CanA03 = get_21A(count="CDN", yearstart = ystart, datadir=datadir) %>%
-    filter(Year >yCDN & Year<=yendCDN ) %>%
-    filter(grepl("3",Division)) %>%
-    group_by(Year) %>%
-    summarise (CatchA03=sum(CatchA) )
-
-CanA04 = get_21A(count="CDN", yearstart = ystart, datadir=datadir) %>%
-    filter(Year >yendB & Year<=yend) %>%
-    filter(grepl("4",Division)) %>%
-    group_by(Year) %>%
-    summarise (CatchA04=sum(CatchA) )
-
-CanB03 = CanB.final %>%
-    filter(grepl("3",Division)) %>%  
-    group_by(Year) %>%
-    summarise (CatchB03=sum(Catch) )
-CanB04 = mar04 %>%
-    filter(grepl("4",Division)) %>%
-    group_by(Year) %>%
-    summarise (CatchB04=sum(Catch) ) 
-
-
-CanCDN03 = merge(CanA03, CanB03)%>%
-   mutate(Catch03D= CatchA03-CatchB03)
-CanCDN04 = merge(CanA04, CanB04 )%>%
-   mutate(Catch04D= CatchA04-CatchB04)  
-CanCDN = merge (CanCDN03, CanCDN04)
-
-
-############  below is copy from previous comparison. 
-nafoABM34= cbind(nafoABM3,nafoABM4)
-nafoABM34=nafoABM34[, -7] 
-
-# plot for the whole time series  21B - 21A 
-#Barplot data; replace NA with 0
-
-nafoABM34p = nafoABM34   %>%
-    replace(is.na(.), 0)
-tiff(file.path(wd,"figures","CDN_21A_B_3.tiff"), width=120, height=80, units="mm", pointsize = 10, bg="white", res=500)
-barplot(nafoABM34p$Catch3BA~nafoABM34p$Year,
- xlab= "Year", ylab="Landing in Area 3 (t): 21B - 21A ",ylim=c(-400, 100))
-dev.off()
-
-tiff(file.path(wd,"figures","CDN_21A_B_4.tiff"), width=120, height=100, units="mm", pointsize = 10, bg="white", res=500)
-barplot(nafoABM34p$Catch4BA~nafoABM34p$Year,
- xlab= "Year", ylab="Landing in Area 4 (t): 21B - 21A ", ylim=c(-100, 100))
-dev.off()
-
-
-
-### 
-
-
-```
 
  
 
