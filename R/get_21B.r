@@ -8,16 +8,16 @@
 # type=1 by Div gear
 # type =2 (by div),
 # type =3(catch by gear across all years/div)
-# type = 4(SCAL format: Year,LL3, LL4, OT3, OT4)
-#'@export
+# type = 4(SCAL format: Year,LL3, LL4, OT3, OT4), 'Landings',
+# zone 5 ("5ZC","5ZE","5Y") is restricted to CDN landings only
 
 
 get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
-  nafo.70.79 <- read.csv(file.path(datadir,'Landings',"NAFO21B-70-79.txt"), header = TRUE)
-  nafo.80.89 <- read.csv(file.path(datadir,'Landings',"NAFO21B-80-89.txt"), header = TRUE)
-  nafo.90.99 <- read.csv(file.path(datadir,'Landings',"NAFO21B-90-99.txt"), header = TRUE)
-  nafo.00.09 <- read.csv(file.path(datadir,'Landings',"NAFO21B-2000-09.txt"), header = TRUE)
-  nafo.10.16 <- read.csv(file.path(datadir,'Landings',"NAFO-21B-2010-16.txt"), header = TRUE)
+  nafo.70.79 <- read.csv(file.path(datadir,"NAFO21B-70-79.txt"), header = TRUE)
+  nafo.80.89 <- read.csv(file.path(datadir,"NAFO21B-80-89.txt"), header = TRUE)
+  nafo.90.99 <- read.csv(file.path(datadir,"NAFO21B-90-99.txt"), header = TRUE)
+  nafo.00.09 <- read.csv(file.path(datadir,"NAFO21B-2000-09.txt"), header = TRUE)
+  nafo.10.16 <- read.csv(file.path(datadir,"NAFO-21B-2010-16.txt"), header = TRUE)
   names(nafo.00.09)[9]<-"Catches"
   names(nafo.10.16)[9]<-"Catches"
   names(nafo.10.16)[3]<-"GearCode"
@@ -25,11 +25,11 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
   names(nafo.10.16)[7]<-"Code"
   sort(unique(nafo.10.16$Divcode))
 
-  division <- read.csv(file.path(datadir,'Landings',"divisions.txt"), header = F)
+  division <- read.csv(file.path(datadir,"divisions.txt"), header = F)
   colnames(division)=c("Divcode", "Div")
-  gear <- read.csv(file.path(datadir,'Landings',"gear.txt"), header = F)
+  gear <- read.csv(file.path(datadir,"gear.txt"), header = F)
   colnames(gear)=c("GearName","GearCode", "Gear")
-  species <- read.csv(file.path(datadir,'Landings',"species.txt"), sep="",header = F)  # A halibut code 120
+  species <- read.csv(file.path(datadir,"species.txt"), sep="",header = F)  # A halibut code 120
   # divisions of interest
   divCAN<-division$Divcode[division$Div%in%c("3N","3O","3P","3PS","3NK","4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")]
 
@@ -38,22 +38,28 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
   nafoall = merge(nafoall, division)
   nafoall = merge(nafoall, gear)
 
-  #selct species-A halibut, divisions-areas of 3,4,5,
+  # estimate annual catch as a sum of monthly catch
+  nafoall$total<-rowSums(nafoall[,10:21])
+
+  #filter divisions; zone 5 includes CDN landings only in "5ZC","5ZE","5Y"
+  nafoAH5 = nafoall   %>%
+    filter (Code=="120",Divcode%in%divCAN,Div%in%c("5ZC","5ZE","5Y"),Country%in%c(2,3,27,28))
+  nafoAH34 = nafoall   %>%
+    filter (Code=="120",Divcode%in%divCAN,!Div%in%c("5ZC","5ZE","5Y") )
+  # unique(nafoAH34$Div)
+  nafoAH=rbind(nafoAH34, nafoAH5)
+
+  #select species-A halibut, divisions-areas of 3,4,5,
+
   if (count=="CDN") {
-    nafoAH = nafoall %>%
-    filter (Code=="120",Divcode%in%divCAN, Country %in% c(2,3,27,28) )
+    nafoAH = nafoAH %>%
+    filter (Country %in% c(2,3,27,28) )
 
-  }  else {
-
-    nafoAH = nafoall %>%
-    filter (Code=="120",Divcode%in%divCAN )
   }
 
-  nafoAH$total<-rowSums(nafoAH[,10:21])
-
   # NAFO 21B all country landing by year/division/gear(>10)
-  # manage areas: 5ZC and 5ZE (CDN catch),5Y assigned to 4X
-  # 3NK only has two years of minor catch. assign3NK to 3N
+  # manage areas: 5ZC, 5ZE,5Y assigned to 4X
+  # 3NK only has 2004 (not known), 2016(OT)of minor catch. assign3NK to 3N
 
   nafoB1=nafoAH  %>%
     dplyr::select(Year, Div,GearName,total )  %>%

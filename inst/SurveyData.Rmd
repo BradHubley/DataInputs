@@ -94,11 +94,70 @@ RandomSurvey1$diff_weight<-with(RandomSurvey1,EST_COMBINED_WT -calc_weight )
 RandomSurvey2$diff_count<-with(RandomSurvey2,EST_NUM_CAUGHT -NUM_MEASURED )
 RandomSurvey2$diff_weight<-with(RandomSurvey2,EST_COMBINED_WT -calc_weight )
 
-subset(RandomSurvey1,abs(diff_count)>1&YEAR==2021)
+subset(RandomSurvey1,abs(diff_count)>1&YEAR==2020)
 subset(RandomSurvey1,abs(diff_count)>1&YEAR==2021&!is.na(L5))
 subset(RandomSurvey2,abs(diff_count)>1&YEAR==2021)
 
 subset(RandomSurvey1,diff_count==0&diff_weight>100)
+subset(RandomSurvey2,diff_count==0&diff_weight>100)
+```
+
+Making spreadsheet of data what needs to be fixed for Stratified Random Survey (whole time series)
+```{r}
+#weight from both datasets (using ISFISH and ISFISHLENGTHS)
+rs_ISFISH_w <- subset(RandomSurvey2,diff_count==0&diff_weight>100)
+rs_ISFISHLENGTHS_w <- subset(RandomSurvey1,diff_count==0&diff_weight>100)
+rs_w <- rs_ISFISHLENGTHS_w %>% bind_rows(.,rs_ISFISH_w)
+rs_w <- rs_w[!duplicated(rs_w$FISHSET_ID), ]
+
+write.csv(rs_w, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_weightissues.csv", row.names = FALSE)
+
+#length from both datasets (using ISFISH and ISFISHLENGTHS)
+rs_ISFISH_l <- subset(RandomSurvey2,abs(diff_count)>1)
+rs_ISFISHLENGTHS_l <- subset(RandomSurvey1,abs(diff_count)>1)
+rs_l <- rs_ISFISHLENGTHS_l %>% bind_rows(.,rs_ISFISH_l)
+rs_l <- rs_l[!duplicated(rs_l$FISHSET_ID), ]
+
+write.csv(rs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_lengthissues.csv", row.names = FALSE)
+```
+
+
+Making spreadsheet of data what needs to be fixed for Stratified Random Survey (whole time series)
+```{r}
+#weight from both datasets (using ISFISH and ISFISHLENGTHS)
+fs_ISFISH_w <- subset(FixedSurvey2,diff_count==0&diff_weight>100)
+fs_ISFISHLENGTHS_w <- subset(FixedSurvey1,diff_count==0&diff_weight>100)
+fs_w <- fs_ISFISHLENGTHS_w %>% bind_rows(.,fs_ISFISH_w)
+fs_w <- fs_w[!duplicated(fs_w$FISHSET_ID), ]
+
+write.csv(fs_w, "C:/Users/harperd/Documents/Halibut/GitDataInputs/fixedsurvey_weightissues.csv", row.names = FALSE)
+
+#length from both datasets (using ISFISH and ISFISHLENGTHS)
+fs_ISFISH_l <- subset(FixedSurvey2,abs(diff_count)>1)
+fs_ISFISHLENGTHS_l <- subset(FixedSurvey1,abs(diff_count)>1)
+fs_l <- fs_ISFISHLENGTHS_l %>% bind_rows(.,fs_ISFISH_l)
+fs_l <- fs_l[!duplicated(fs_l$FISHSET_ID), ]
+
+write.csv(fs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/fixedsurvey_lengthissues.csv", row.names = FALSE)
+```
+
+
+# data checking fixed survey
+```{r}
+FixedSurvey1<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
+FixedSurvey2<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISH")
+
+FixedSurvey1$diff_count<-with(FixedSurvey1,EST_NUM_CAUGHT -NUM_MEASURED )
+FixedSurvey1$diff_weight<-abs(with(FixedSurvey1,EST_COMBINED_WT -calc_weight ))
+
+FixedSurvey2$diff_count<-abs(with(FixedSurvey2,EST_NUM_CAUGHT -NUM_MEASURED ))
+FixedSurvey2$diff_weight<-abs(with(FixedSurvey2,EST_COMBINED_WT -calc_weight ))
+
+subset(FixedSurvey1,diff_count>1&YEAR==2021)
+subset(FixedSurvey2,diff_count>1&YEAR==2021)
+
+FS_weight1 <- subset(FixedSurvey1,diff_count==0&diff_weight>100)
+FS_weight2 <- subset(FixedSurvey2,diff_count==0&diff_weight>100)
 
 ```
 
@@ -119,25 +178,8 @@ subset(FixedSurvey2,diff_count>1&YEAR==2021)
 
 subset(FixedSurvey1,diff_count==0&diff_weight>100)
 
-```
-
-
-# data checking fixed survey
-```{r}
-FixedSurvey1<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
-FixedSurvey2<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISH")
-
-FixedSurvey1$diff_count<-with(FixedSurvey1,EST_NUM_CAUGHT -NUM_MEASURED )
-FixedSurvey1$diff_weight<-abs(with(FixedSurvey1,EST_COMBINED_WT -calc_weight ))
-
-FixedSurvey2$diff_count<-abs(with(FixedSurvey2,EST_NUM_CAUGHT -NUM_MEASURED ))
-FixedSurvey2$diff_weight<-abs(with(FixedSurvey2,EST_COMBINED_WT -calc_weight ))
-
-subset(FixedSurvey1,diff_count>1&YEAR==2021)
-subset(FixedSurvey2,diff_count>1&YEAR==2021)
-
-subset(FixedSurvey1,diff_count==0&diff_weight>100)
-
+FS_weight_diff <- anti_join(FS_weight1, FS_weight2, by = c("SET_NO", "TRIP"))
+FS_weight_diff2 <- anti_join(FS_weight2, FS_weight1, by = c("SET_NO", "TRIP"))
 ```
 
 

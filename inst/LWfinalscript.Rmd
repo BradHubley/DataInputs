@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
  library(lubridate)
  library(stringr)
 
+
 datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 #source(file.path(wd, "passwords.r"))
@@ -859,10 +860,11 @@ df2 <- data.frame(YEAR=row.names(coef(final_mod)[[1]]), coef(final_mod)[[1]])
 final_modOA <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), hal_datOR)
 summary(final_modOA)
 coef(summary(final_modOA))
+fixef(final_modOA)
 coef(final_mod)
 
 tab_model(final_mod, final_modOA,  file="tab_model.html")
-tab_model(final_mod)
+tab_model(final_modOA)
 plot_model(final_mod, type = "pred", terms = c("FISH_LENGTH", "QUARTER"), colors = "bw") + theme_classic()
 
 
@@ -992,3 +994,231 @@ ggplot(hal_datOR, aes(FISH_LENGTH, stat = "count", fill = TYPE, col = TYPE)) +
 #theme(legend.position="top")
 ```
 
+Model selection where final model has unsexed data
+```{r}
+m1mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+#summary(m1mf)
+#simple lm of L X W
+m2mf <- lm(log(FISH_WEIGHT) ~ log(FISH_LENGTH), hal_datORmf)
+#(FE: length; RE: year)
+m3mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR), hal_datORmf)
+#(FE: length; RE: trip)
+m4mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|TRIPCD_ID), hal_datORmf)
+#(FE:length; RE: trip, year)
+m5mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+#(FE: length, sex; RE: trip, year)
+m6mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+#(FE: length, quarter; RE: trip, year)
+m7mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+#(FE: length, nafo; RE: trip, year)
+m8mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+#(FE: length, sex, quarter; RE: trip, year)
+m9mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + QUARTER + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+#(FE: length, sex, nafo; RE: trip, year)
+m10mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+#(FE: length, quarter, nafo; RE: trip, year)
+m11mf <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datORmf)
+
+
+anova(m1mf, m2mf, m3mf, m4mf, m5mf, m6mf, m7mf, m8mf, m9mf, m10mf, m11mf)
+#AIC smaller  = better...in the case where it's negative, would most negative be better? (if so: m9 and m1 are very close...only difference is NAFO_ZONE is not in m9, so that would make is a slightly better model as NAFO_ZONE as a parameter does basically nothing?)
+#m5 and m8 are basically the same (according to the anova) which makes sense since NAFO seems to have basically no effect (not significant and visualizations show total overlap)
+
+plot_model(m1mf, type = "pred", terms = c("FISH_LENGTH", "QUARTER", "SEXCD_ID", "NAFO_ZONE"))
+```
+
+
+
+Checking outliers using same method as previous assessment but with a and b from this model...the same number of outliers are removed
+```{r}
+test2_halAll <- hal_datAll %>%
+  dplyr::select(id, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
+
+test2_halAll$out<-0
+test2_halAll<-test_halAll[!is.na(test2_halAll$FISH_LENGTH),]
+test2_halAll<-test_halAll[!is.na(test2_halAll$FISH_WEIGHT),]
+
+#identify outliers (using a and b from THIS assessment log(a) = -4.996801, b =3.119528, so a = 0.006759536)
+mod_outliers2<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_halAll,start=c(a=0.006759536,b=3.119528),na.action=na.omit) 
+
+#these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
+test2_halAll$upper<-predict(mod_outliers2, list(FISH_LENGTH = test2_halAll$FISH_LENGTH))*1.75
+test2_halAll$lower<-predict(mod_outliers2, list(FISH_LENGTH = test2_halAll$FISH_LENGTH))*0.25
+test2_halAll$out[test2_halAll$FISH_WEIGHT<test2_halAll$upper&test2_halAll$FISH_WEIGHT>test2_halAll$lower]<-1
+test2_lenwt.dat.all<-test_halAll[,c(1:8)]
+
+all_outliers2 <- test2_lenwt.dat.all %>% filter(out == "0") #here we lose 326 fish as outliers (the overall dataset, it's 0.56%) 
+test2_full <- test2_lenwt.dat.all %>% filter(out == "1") 
+
+#bring test_full back together with the other df
+test2_full <- test2_full %>%
+  dplyr::select("id") %>%
+  left_join(hal_datAll, by = "id")
+
+test2_full %>%
+  filter(FISH_WEIGHT < 250) %>%
+  ggplot(aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+#the problem seen above where issues arose due to kg vs. g units is not seen here, these data seem cleaned
+
+ggplot(test2_full, aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+
+hal_datOR_new <- test2_full
+
+# test_full %>% filter(between(FISH_LENGTH, 175, 200), between(FISH_WEIGHT, 20000, 21000)) %>%
+# ggplot(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
+#   geom_point()+
+#   geom_text(aes(label=as.character(TRIP)))#outliers have been removed and data appear far more clean
+```
+
+Checking outliers using the boxplot method...bocplot method uses interquartile range and removes anything outside the 25th and 75th percentile (+/- 1.5*IQR)...using the predicted data here instead you get the same 326 outliers using the box plot method as using the interquartile range Nell used...because they are basically doing the same thing...very different than using the boxplot on the raw data...not sure how else to do this?
+```{r}
+hal_datAll2 <- hal_datAll
+
+hal_datAll2 <- hal_datAll
+
+hal_datAll2 <- hal_datAll2 %>%
+  mutate(log_a = log(FISH_LENGTH), log_b = log(FISH_WEIGHT))
+
+hal_datAll2test <- hal_datAll2 %>%
+  dplyr::select(id, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
+
+
+hal_datAll2test$out<-0
+hal_datAll2test<-hal_datAll2test[!is.na(hal_datAll2test$FISH_LENGTH),]
+hal_datAll2test<-hal_datAll2test[!is.na(hal_datAll2test$FISH_WEIGHT),]
+
+#identify outliers (using a and b from THIS assessment log(a) = -4.996801, b =3.119528, so a = 0.006759536)
+mod_outliers2<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_halAll,start=c(a=0.001,b=3),na.action=na.omit) 
+
+#these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
+hal_datAll2test$upper<-predict(mod_outliers2, list(FISH_LENGTH = hal_datAll2test$FISH_LENGTH))*1.75
+hal_datAll2test$lower<-predict(mod_outliers2, list(FISH_LENGTH = hal_datAll2test$FISH_LENGTH))*0.25
+hal_datAll2test$out[hal_datAll2test$FISH_WEIGHT<hal_datAll2test$upper&hal_datAll2test$FISH_WEIGHT>hal_datAll2test$lower]<-1
+
+hal_datAll2test<-hal_datAll2test[,c(1:8)]
+
+all_outliers3 <- hal_datAll2test %>% filter(out == "0") #here we lose 326 fish as outliers (the overall dataset, it's 0.56%) 
+hal_datAll2test <- hal_datAll2test %>% filter(out == "1") 
+
+hal_datAll2 <- hal_datAll2test %>%
+  dplyr::select("id") %>%
+  left_join(hal_datAll2, by %in% C())
+
+###WRONG!!
+# base boxplot and outliers
+boxplot(hal_datAll2test$FISH_WEIGHT ~ hal_datAll2test$FISH_LENGTH)
+boxplot(hal_datAll2test$FISH_WEIGHT ~ hal_datAll2test$FISH_LENGTH)$out
+subset(hal_datAll2test, hal_datAll2test$FISH_WEIGHT %in% boxplot(hal_datAll2test$FISH_WEIGHT ~ hal_datAll2test$FISH_LENGTH)$out)
+
+# columns for visualization
+hal_datAll2test$OUTLIER <- ifelse(hal_datAll2test$FISH_WEIGHT %in% boxplot(hal_datAll2test$FISH_WEIGHT ~ hal_datAll2test$FISH_LENGTH, plot = F)$out, hal_datAll2test$FISH_WEIGHT, NA)
+hal_datAll2test$INLIER <- ifelse(is.na(hal_datAll2test$OUTLIER), hal_datAll2test$FISH_WEIGHT, NA)
+
+hal_datAll2test_out <- hal_datAll2test %>% drop_na(OUTLIER)
+hal_datAll2test <- hal_datAll2test %>% drop_na(INLIER)
+```
+
+Looking at that data (removing outliers from all data means dropping 13,305 observations; further removing all unknown for sex drops 19,353 observations)
+```{r}
+hal_datAll2 <- hal_datAll2 %>%
+  mutate(MONTH = substr(BOARD_DATE, 6,7))
+
+hal_datAll2 <- hal_datAll2 %>%
+    mutate(QUARTER = 
+           ifelse(MONTH %in% c("01","02","03"), "1", 
+           ifelse(MONTH %in% c("04","05","06"), "2",
+           ifelse(MONTH %in% c("07","08","09"), "3", 
+           ifelse(MONTH %in% c("10","11","12"), "4", "Error")))))
+
+hal_datAll2 <- hal_datAll2 %>%
+  mutate(NAFO = replace(NAFO, NAFO %in% c("5Y", "5Z", "4X"), "4X+5"))
+
+hal_datAll2 <- hal_datAll2 %>%
+  mutate(NAFO_ZONE = substr(NAFO,1,1)) %>%
+  mutate(NAFO_ZONE = replace(NAFO_ZONE, NAFO_ZONE == 4, "4+5"))
+
+hal_datAll2mf <- hal_datAll2 %>% filter(SEXCD_ID %in% c(1, 2))
+
+
+m1mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+summary(m1mf2)
+#simple lm of L X W
+m2mf2 <- lm(log(FISH_WEIGHT) ~ log(FISH_LENGTH), hal_datAll2mf)
+#(FE: length; RE: year)
+m3mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR), hal_datAll2mf)
+#(FE: length; RE: trip)
+m4mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|TRIPCD_ID), hal_datAll2mf)
+#(FE:length; RE: trip, year)
+m5mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+#(FE: length, sex; RE: trip, year)
+m6mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+#(FE: length, quarter; RE: trip, year)
+m7mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+#(FE: length, nafo; RE: trip, year)
+m8mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+#(FE: length, sex, quarter; RE: trip, year)
+m9mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + QUARTER + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+#(FE: length, sex, nafo; RE: trip, year)
+m10mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + SEXCD_ID + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+#(FE: length, quarter, nafo; RE: trip, year)
+m11mf2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + NAFO_ZONE + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2mf)
+
+
+anova(m1mf2, m2mf2, m3mf2, m4mf2, m5mf2, m6mf2, m7mf2, m8mf2, m9mf2, m10mf2, m11mf2)
+
+
+mod_finalOA2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2)
+summary(mod_finalOA2)
+coef(summary(mod_finalOA2))
+fixef(mod_finalOA2)
+coef(mod_finalOA2)
+
+tab_model(final_mod, final_modOA,  file="tab_model.html")
+tab_model(final_modOA)
+plot_model(final_mod, type = "pred", terms = c("FISH_LENGTH", "QUARTER"), colors = "bw") + theme_classic()
+  
+mod_finalQ2 <- lmer(log(FISH_WEIGHT) ~ log(FISH_LENGTH) + QUARTER + (1|YEAR) + (1|TRIPCD_ID), hal_datAll2)
+summary(mod_finalQ2)
+coef(summary(mod_finalQ2))
+fixef(mod_finalQ2)
+ 
+
+##plotting quarter for interest
+Qtest2 <- ggpredict(m1mf2, terms = c("FISH_LENGTH", "QUARTER"), condition = c(NAFO = 3, SEXCD_ID = c(0,1,2)), type = "re")
+
+ggplot(Qtest, aes(x = x, y = predicted, colour = group)) +
+  geom_line() +
+  labs(
+    colour = get_legend_title(Qtest),
+    x = get_x_title(Qtest),
+    y = get_y_title(Qtest),
+    title = get_title(Qtest)
+  )
+
+plot(Qtest)
+```
+
+Getting the gear into the trip type table
+```{r}
+hal_datORtrip <- hal_datOR %>%
+  mutate(TRIPCD_ID = replace(TRIPCD_ID, TRIPCD_ID %in% c("8", "70", "230", "4320", "7054", "7055","7060", "7061"), "7099"))
+
+hal_datORtrip$TRIPCD_ID <- as.integer(hal_datORtrip$TRIPCD_ID)
+
+hal_datORtrip %>% count(TRIPCD_ID)
+
+#NA here are the RV trips
+trips_halcaught2 <- hal_datORtrip %>%
+  left_join(ISTRIPTYPECODES, by = "TRIPCD_ID") %>%
+  dplyr::select("TRIPCD_ID", "TRIP_TYPE") %>%
+  count(TRIPCD_ID, TRIP_TYPE)
+
+hal_tripsgears <- hal_datORtrip %>%
+  left_join(ISTRIPTYPECODES, by = "TRIPCD_ID") %>%
+  dplyr::select("TRIPCD_ID", "TRIP_TYPE", "GEAR") %>%
+  count(TRIPCD_ID, TRIP_TYPE, GEAR)
+hal_tripsgears <- hal_tripsgears %>%
+  mutate(TRIP_TYPE = replace_na(TRIP_TYPE,"RV"))
+```

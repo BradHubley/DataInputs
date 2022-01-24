@@ -138,7 +138,7 @@ setdata_halRV[is.na(setdata_halRV$FWT),] #there are 1188 fish missing weights
 
 ---Extract ISDB data using RORACLE
 ```{r}
-#get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "", fn.oracle.password = "", fn.oracle.dsn = "PTRAN", force.extract = T)
+get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = "PTRAN", force.extract = T)
 ```
 
 Pull ISDB data from where it is stored locally (previously pulled from database using oracle)
@@ -191,7 +191,7 @@ hal_rmNAwt <- hal_fish %>%
 Trimming down the dataframe to useful columns
 ```{r}
 hal_fishTrim <- hal_rmNAwt %>%
-  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
+  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS")
 ```
 
 Create year column and column of 5yr bins starting in 1970
@@ -382,7 +382,7 @@ trips_halcaught <- hal_alltrips %>%
 Trimming down the dataframe to useful columns
 ```{r}
 hal_alltrips <- hal_alltrips %>%
-  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS", "LAT1", "LONG1", "LAT2", "LONG2", "LAT3", "LONG3", "LAT4", "LONG4")
+  dplyr::select("TRIP_ID", "TRIP", "TRIPCD_ID", "VESS_ID", "LICENSE_NO", "BOARD_DATE", "LANDING_DATE", "FISHSET_ID", "SET_NO", "SETCD_ID", "SPECSCD_ID.x", "NAFAREA_ID", "CATCH_ID", "SPECCD_ID", "FISH_ID", "FISH_NO", "SEXCD_ID", "FISH_LENGTH", "FISH_WEIGHT", "MATCD_ID", "COMMENTS", "LAT1", "LONG1", "LAT2", "LONG2", "LAT3", "LONG3", "LAT4", "LONG4")
 ```
 
 
