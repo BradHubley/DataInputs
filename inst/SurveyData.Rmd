@@ -44,15 +44,11 @@ devtools::load_all(".")
 # get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 
-#get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
-
-# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+ get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 
-# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISGEARSUCCESS"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+  get_data_custom(schema="isdb", data.dir = datadir, tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
-
-#get_data_custom(schema="isdb",data.dir=datadir,tables=c("ISGEARSUCCESS"),usepkg="roracle",fn.oracle.dsn="PTRAN",fn.oracle.username=uid,fn.oracle.password=pwd)
 
 
 ```
@@ -65,15 +61,28 @@ devtools::load_all(".")
 #HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 
 
-RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=T,bins=bins,hook.data=T)
+RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
+RandomSurveyRaph$STATION <- RandomSurveyRaph$ASSIGNED_STATION
+RandomSurveyRaph$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
 
-FixedSurveyRaph<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, bins=bins,hook.data=T)
-RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=T)
+colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","total_other_species","total_target_species","broken_hook","empty_baited","empty_unbaited","other_species","target_species","missing_hook","total_sampled","avg_weight")
 
-FixedSurveyRaph<-FixedSurveyData(datadir=datadir,by.sex=F,add.LF=F, bins=bins)
+RandomSurvey <- RandomSurveyRaph[,colNames1]
 
+FixedSurveyRaph<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+FixedSurveyRaph$avg_weight<-FixedSurveyRaph$EST_COMBINED_WT / FixedSurveyRaph$total_target_species
+FixedSurveyRaph$DEPTH[FixedSurveyRaph$DEPTH==0]<-NA
+
+colNames2 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","total_other_species","total_target_species","avg_weight")
+
+FixedSurvey <- FixedSurveyRaph[,colNames2]
+
+write.csv(FixedSurvey,file.path(datadir,"FixedSurvey.csv"),row.names=F)
+write.csv(RandomSurvey,file.path(datadir,"RandomSurvey.csv"),row.names=F)
 
 ```
+
 # data checking random survey
 ```{r}
 RandomSurvey1<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
@@ -92,6 +101,8 @@ subset(RandomSurvey2,abs(diff_count)>1&YEAR==2021)
 subset(RandomSurvey1,diff_count==0&diff_weight>100)
 
 ```
+
+
 # data checking fixed survey
 ```{r}
 FixedSurvey1<-FixedSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
