@@ -154,6 +154,16 @@ Landings_t<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
 Landings_t<-rbind(Landings_t,data.frame(X=52,Year=2021,Landings_t[51,3:6]))
 ```
 
+```{r}
+NLmalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesOTobs_binned2022.csv"))
+NLfemalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesOTobs_binned2022.csv"))
+NLunknownOT<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownOTobs_binned2022.csv"))
+NLmalesLL<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesLLobs_binned2022.csv"))
+NLfemalesLL<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesLLobs_binned2022.csv"))
+NLunknownLL<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownLLobs_binned2022.csv"))
+```
+
+
 #Fishery Catch Composition
 ```{r}
 CCyrs=1978:2021
