@@ -154,9 +154,6 @@ Landings_t<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
 Landings_t<-rbind(Landings_t,data.frame(X=52,Year=2021,Landings_t[51,3:6]))
 ```
 
-```{r}
-```
-
 
 #Fishery Catch Composition
 ```{r}
