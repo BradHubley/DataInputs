@@ -44,10 +44,10 @@ devtools::load_all(".")
 # get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 
- get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 
-  get_data_custom(schema="isdb", data.dir = datadir, tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+#  get_data_custom(schema="isdb", data.dir = datadir, tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 
 
@@ -60,6 +60,7 @@ devtools::load_all(".")
 #HookOccupancyData<-PrepareDataHookModel(datadir=datadir)
 #HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 
+RandomSurveytest<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
 
 RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
 RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
@@ -80,6 +81,9 @@ FixedSurvey <- FixedSurveyRaph[,colNames2]
 
 write.csv(FixedSurvey,file.path(datadir,"FixedSurvey.csv"),row.names=F)
 write.csv(RandomSurvey,file.path(datadir,"RandomSurvey.csv"),row.names=F)
+
+FixedSurvey<-read.csv(file.path(datadir,"FixedSurvey.csv"))
+RandomSurvey<-read.csv(file.path(datadir,"RandomSurvey.csv"))
 
 ```
 
