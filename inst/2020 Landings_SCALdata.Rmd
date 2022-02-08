@@ -2,7 +2,7 @@
 title: "Update landings"
 author: "Brad & Lingbo"
 date: "September 12, 2021"
-output: html_document; SCAL data 1970-2020:nafoS  
+output: html_document; SCAL data 1970-2021:nafoS  
 ---
 
 ## R Markdown
@@ -33,7 +33,7 @@ library(devtools)
 library(Mar.datawrangling)
 library(ggplot2)
 library(tidyverse)
-# devtools::load_all(".")
+devtools::load_all(".")
 #source("LandingFunctions.R")
 source(file.path(getwd(), "directories.r"))
 # source(file.path(wd, "passwords.r"))
@@ -53,7 +53,7 @@ ystart =1970
 # 21B last year
 yendB=2016
 # 21A last year(assessment year)
-yend=2020
+yend=2021
 # annual TAC table
 TAC = data.frame(Year=1988:2020,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507))
 # figure width and height
@@ -119,6 +119,7 @@ Download MARFIS data since 2000.
 # no need to run this, if you just ran 2020Landings_CDNdata.rmd
 
 # get_data(db='marfis',data.dir=file.path(wd,'data'),fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
+
   get_data(db='marfis',data.dir=datadir)
   SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]
   PRO_SPC_INFO = PRO_SPC_INFO  %>%
@@ -358,7 +359,7 @@ As there was no data since 2017 in 21B, landing by gear was estimated as the sum
   landNL = read.csv(file.path(datadir,"landingNL.csv"))
   unique(landNL$Gear.Name)
   landNL = landNL   %>%
-    mutate(Catch1 = Landed.RW )  %>%
+    mutate(Catch1 = Landed.RW/1000 )  %>%
     rename (Year = 1, Division = 7) %>%
     mutate( Gear =replace(Gear.Name, 
                           Gear.Name=="Bottom Otter Trawl (stern)", "OT")) %>%
@@ -516,7 +517,7 @@ nafoland = rbind(nafoland1,landCF)
 
 # FINAL gear landing data SCAL format
 nafoS= get_SCALformat(nafoland)
- write.csv(nafoS, "nafoSCAL.csv")
+ write.csv(nafoS, "nafoSISCAL.csv")
 
 ```
 
@@ -629,7 +630,7 @@ barplot(nafoscalp$OT4d~nafoscalp$Year,
  xlab= "", ylab="", ylim=c(-200, 200))
 text(1.5,180, "D", cex=2 )
 mtext("Year", outer=T, line=2, side=1, cex=1.5)
-mtext("SCAL input data: 2014 version - 2021 version", outer=T, line=0.5, side=2, cex=1.5)
+mtext("Model input data: 2014 version - 2021 version", outer=T, line=0.5, side=2, cex=1.5)
 dev.off()
 ```
 
@@ -675,7 +676,7 @@ barplot(Bscalp$OT4d~Bscalp$Year,
  xlab= "", ylab="", ylim=c(-200, 200))
 text(1.5,180, "D", cex=2 )
 mtext("Year", outer=T, line=2, side=1, cex=1.5)
-mtext(" 2014 SCAL input data - 2021 online 21B ", outer=T, line=0.5, side=2, cex=1.5)
+mtext(" 2014 model input data - 2021 online 21B ", outer=T, line=0.5, side=2, cex=1.5)
 dev.off()
 
 ```

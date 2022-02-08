@@ -154,6 +154,7 @@ Landings_t<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
 Landings_t<-rbind(Landings_t,data.frame(X=52,Year=2021,Landings_t[51,3:6]))
 ```
 
+
 #Fishery Catch Composition
 ```{r}
 CCyrs=1978:2021
@@ -174,25 +175,54 @@ obsNAFO3LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="LL"),bins
 obsNAFO4LL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = CCyrs)
 
 
+
 LLNafo4_males<-getNAL(portNAFO4LL,sex=1)+getNAL(obsNAFO4LL,sex=1)
 LLNafo4_females<-getNAL(portNAFO4LL,sex=2)+getNAL(obsNAFO4LL,sex=2)
 LLNafo4_combined<-getNAL(portNAFO4LL,sex='all')+getNAL(obsNAFO4LL,sex='all')
 LLNafo4_unsexed<-getNAL(portNAFO4LL,sex=0)+getNAL(obsNAFO4LL,sex=0)
 
-LLNafo3_males<-getNAL(portNAFO3LL,sex=1)+getNAL(obsNAFO3LL,sex=1)
-LLNafo3_females<-getNAL(portNAFO3LL,sex=2)+getNAL(obsNAFO3LL,sex=2)
-LLNafo3_combined<-getNAL(portNAFO3LL,sex='all')+getNAL(obsNAFO3LL,sex='all')
-LLNafo3_unsexed<-getNAL(portNAFO3LL,sex=0)+getNAL(obsNAFO3LL,sex=0)
+# add NL observer data
+NLmalesLL<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesLLobs_binned2022.csv"))
+NLmalesLL<-merge(data.frame(year=CCyrs),NLmalesLL,all=T)[,-1]
+NLmalesLL[is.na(NLmalesLL)]<-0
+dimnames(NLmalesLL)<-list(CCyrs,paste0("L",bins[-1]))
+NLfemalesLL<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesLLobs_binned2022.csv"))
+NLfemalesLL<-merge(data.frame(year=CCyrs),NLfemalesLL,all=T)[,-1]
+NLfemalesLL[is.na(NLfemalesLL)]<-0
+dimnames(NLfemalesLL)<-list(CCyrs,paste0("L",bins[-1]))
+NLunknownLL<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownLLobs_binned2022.csv"))
+NLunknownLL<-merge(data.frame(year=CCyrs),NLunknownLL,all=T)[,-1]
+NLunknownLL[is.na(NLunknownLL)]<-0
+dimnames(NLunknownLL)<-list(CCyrs,paste0("L",bins[-1]))
+
+LLNafo3_males<-getNAL(portNAFO3LL,sex=1)+getNAL(obsNAFO3LL,sex=1)+NLmalesLL
+LLNafo3_females<-getNAL(portNAFO3LL,sex=2)+getNAL(obsNAFO3LL,sex=2)+NLfemalesLL
+LLNafo3_combined<-getNAL(portNAFO3LL,sex='all')+getNAL(obsNAFO3LL,sex='all')+NLmalesLL+NLfemalesLL+NLunknownLL
+LLNafo3_unsexed<-getNAL(portNAFO3LL,sex=0)+getNAL(obsNAFO3LL,sex=0)+NLunknownLL
 
 OTNafo4_males<-getNAL(portNAFO4OT,sex=1)+getNAL(obsNAFO4OT,sex=1)
 OTNafo4_females<-getNAL(portNAFO4OT,sex=2)+getNAL(obsNAFO4OT,sex=2)
 OTNafo4_combined<-getNAL(portNAFO4OT,sex='all')+getNAL(obsNAFO4OT,sex='all')
 OTNafo4_unsexed<-getNAL(portNAFO4OT,sex=0)+getNAL(obsNAFO4OT,sex=0)
 
-OTNafo3_males<-getNAL(portNAFO3OT,sex=1)+getNAL(obsNAFO3OT,sex=1)
-OTNafo3_females<-getNAL(portNAFO3OT,sex=2)+getNAL(obsNAFO3OT,sex=2)
-OTNafo3_combined<-getNAL(portNAFO3OT,sex='all')+getNAL(obsNAFO3OT,sex='all')
-OTNafo3_unsexed<-getNAL(portNAFO3OT,sex=0)+getNAL(obsNAFO3OT,sex=0)
+# add NL observer data
+NLmalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesOTobs_binned2022.csv"))
+NLmalesOT<-merge(data.frame(year=CCyrs),NLmalesOT,all=T)[,-1]
+NLmalesOT[is.na(NLmalesOT)]<-0
+dimnames(NLmalesOT)<-list(CCyrs,paste0("L",bins[-1]))
+NLfemalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesOTobs_binned2022.csv"))
+NLfemalesOT<-merge(data.frame(year=CCyrs),NLfemalesOT,all=T)[,-1]
+NLfemalesOT[is.na(NLfemalesOT)]<-0
+dimnames(NLfemalesOT)<-list(CCyrs,paste0("L",bins[-1]))
+NLunknownOT<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownOTobs_binned2022.csv"))
+NLunknownOT<-merge(data.frame(year=CCyrs),NLunknownOT,all=T)[,-1]
+NLunknownOT[is.na(NLunknownOT)]<-0
+dimnames(NLunknownOT)<-list(CCyrs,paste0("L",bins[-1]))
+
+OTNafo3_males<-getNAL(portNAFO3OT,sex=1)+getNAL(obsNAFO3OT,sex=1)+NLmalesOT
+OTNafo3_females<-getNAL(portNAFO3OT,sex=2)+getNAL(obsNAFO3OT,sex=2)+NLfemalesOT
+OTNafo3_combined<-getNAL(portNAFO3OT,sex='all')+getNAL(obsNAFO3OT,sex='all')+NLmalesOT+NLfemalesOT+NLunknownOT
+OTNafo3_unsexed<-getNAL(portNAFO3OT,sex=0)+getNAL(obsNAFO3OT,sex=0)+NLunknownOT
 
 Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
                       LLNafo4_females=LLNafo4_females,

@@ -13,29 +13,30 @@ knitr::opts_chunk$set(echo = TRUE)
  library(stringr)
  library(data.table)
 
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/"
-wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/"
+#wd=file.path(datadir,"Newfoundland Data/DataInputs/"
+source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r"))
 ```
 
 
 Changing LF data from text file to data frame
 ```{r}
-NLobs_LF <- read.fwf("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/maritimes_Ahal_LF_95_20 (002).lfdata", widths=c(1,4,2,4,1,3,8,1,2,3,3,2,5,3,4,1,2,2,2,1,3,4,6,4,3,1,4,1,rep((3),times=250)))
+NLobs_LF <- read.fwf(file.path(datadir,"Newfoundland Data/maritimes_Ahal_LF_95_20.lfdata"), widths=c(1,4,2,4,1,3,8,1,2,3,3,2,5,3,4,1,2,2,2,1,3,4,6,4,3,1,4,1,rep((3),times=250)))
                   
 
 colnames(NLobs_LF) <- c("data_source", "set_no", "country_q", "sample_spp", "sex", "deployment_no", "vessel", "ton_class", "gear", "mesh_size", "NAFO_div", "unit_area", "ASOC", "num_measured", "start_time", "sample_type", "year", "month", "day", "quarter", "country", "depth_m", "total_wt_kg", "sample_wt_kg", "otoliths", "len_gr_int", "spp_sought", "blank",  seq(1,250))
 
-write.csv(NLobs_LF, "C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLobserver_lf.csv")
+write.csv(NLobs_LF, file.path(datadir,"Newfoundland Data/NLobserver_lf.csv"))
 ```
 
 Changing set info from text file to data frame
 ```{r}
-NLobs_set <- read.fwf("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/maritimes_Ahal_SC_95_20 (002).sdet", widths=c(2,2,10,4,4,3,2,2,3,3,3,1,3,4,1,1,2,2,2,3,2,4,4,4,4,4,1,4,2,2,2,3,4,1,1,1,4,5,4,1,3,3,3,3,3,3,8,3,5,6,6,6,6,6,5,5,2,2,1,3,5))
+NLobs_set <- read.fwf(file.path(datadir,"Newfoundland Data/maritimes_Ahal_SC_95_20.sdet"), widths=c(2,2,10,4,4,3,2,2,3,3,3,1,3,4,1,1,2,2,2,3,2,4,4,4,4,4,1,4,2,2,2,3,4,1,1,1,4,5,4,1,3,3,3,3,3,3,8,3,5,6,6,6,6,6,5,5,2,2,1,3,5))
 
 colnames(NLobs_set) <- c("year", "country", "side_no", "hpwr","deployment_no", "set_no","vessel_class", "gear", "codend_mesh", "body_mesh_size", "roller_size", "chafing_gear", "num_gillnets", "num_hooks", "net_damage", "in_out_eez", "day", "month", "NAFO_div", "unit_area", "tow_speed", "lat_ddmm", "long_ddmm", "av_fishing_depth_m", "start_time", "set_dur", "data_type", "directed_spp", "num_spp", "quota", "trip_type", "av_len_gillnet", "num_pots", "window", "num_windows", "record_type", "species", "kept_wt_kg", "discard_wt_kg", "blank1", "num_ind", "blank2", "blank3", "blank4", "blank5", "blank6", "stratarea", "pots", "est_wt_crab", "ASOC", "start_lat_ddmmmm", "start_long_ddmmmm", "end_lat_ddmmmm", "end_long_ddmmmm", "logbook_id", "logbook_id2", "haul_day", "haul_month", "catch_comp", "subtrip_no", "ASO_company")
 
-write.csv(NLobs_set, "C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLobserver_setdetail.csv")
+write.csv(NLobs_set, file.path(datadir,"Newfoundland Data/NLobserver_setdetail.csv"))
 ```
 
 NAFO divisions and unit areas need fixing for NLobs_set (DO WE NEED UNIT AREAS(subdivisions within NAFO divisions??)
@@ -89,23 +90,28 @@ Question: do you want it binned like how our other data is binned (right now it'
 
 
 Data for Brad (3 tables (one for each sex category), years as row, columns are LF bins)
+
+## Otter Trawl
+
 ```{r}
-NLobs_males <- NLobs_lf %>% 
-  filter(sex == 1)
-NLobs_females <- NLobs_lf %>% 
-  filter(sex == 5)
-NLobs_unknown <- NLobs_lf %>%
-  filter(is.na(sex))
+NLobs_lf<-NLobs_LF
+NLobs_malesOT <- NLobs_lf %>% 
+  filter(sex == 1 & gear == 1)
+NLobs_femalesOT <- NLobs_lf %>% 
+  filter(sex == 5 & gear == 1)
+NLobs_unknownOT <- NLobs_lf %>%
+  filter(is.na(sex) & gear == 1)
+
 
 #males
-NLmales_LF <- NLobs_males %>% 
+NLmalesOT_LF <- NLobs_malesOT %>% 
   select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
 
-NLmales_LF <- NLmales_LF %>%
+NLmalesOT_LF <- NLmalesOT_LF %>%
   group_by(year) %>%
   summarise_each(funs(sum))
 
-NLmales_LF <- NLmales_LF %>%
+NLmalesOT_LF <- NLmalesOT_LF %>%
   mutate(year= replace(year, year == 0, 2000)) %>%
   mutate(year= replace(year, year == 1, 2001)) %>%
   mutate(year= replace(year, year == 2, 2002)) %>%
@@ -134,14 +140,14 @@ NLmales_LF <- NLmales_LF %>%
   mutate(year= replace(year, year == 99, 1999)) 
 
 #females
-NLfemales_LF <- NLobs_females %>% 
+NLfemalesOT_LF <- NLobs_femalesOT %>% 
   select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
 
-NLfemales_LF <- NLfemales_LF %>%
+NLfemalesOT_LF <- NLfemalesOT_LF %>%
   group_by(year) %>%
   summarise_each(funs(sum))
 
-NLfemales_LF <- NLfemales_LF %>%
+NLfemalesOT_LF <- NLfemalesOT_LF %>%
   mutate(year= replace(year, year == 0, 2000)) %>%
   mutate(year= replace(year, year == 1, 2001)) %>%
   mutate(year= replace(year, year == 2, 2002)) %>%
@@ -170,14 +176,14 @@ NLfemales_LF <- NLfemales_LF %>%
   mutate(year= replace(year, year == 99, 1999))
 
 ##unknown sex
-NLunknown_LF <- NLobs_unknown %>% 
+NLunknownOT_LF <- NLobs_unknownOT %>% 
   select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
 
-NLunknown_LF <- NLunknown_LF %>%
+NLunknownOT_LF <- NLunknownOT_LF %>%
   group_by(year) %>%
   summarise_each(funs(sum))
 
-NLunknown_LF <- NLunknown_LF %>%
+NLunknownOT_LF <- NLunknownOT_LF %>%
   mutate(year= replace(year, year == 0, 2000)) %>%
   mutate(year= replace(year, year == 1, 2001)) %>%
   mutate(year= replace(year, year == 2, 2002)) %>%
@@ -205,169 +211,381 @@ NLunknown_LF <- NLunknown_LF %>%
   mutate(year= replace(year, year == 98, 1998)) %>%
   mutate(year= replace(year, year == 99, 1999))
 
-write.csv(NLmales_LF, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLmaleLF2022.csv")
-write.csv(NLfemales_LF, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLfemaleLF2022.csv")
-write.csv(NLunknown_LF, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLunknownLF2022.csv")
+write.csv(NLmalesOT_LF, file.path(datadir,"Newfoundland Data/NLmaleOTLF2022.csv"),row.names=F)
+write.csv(NLfemalesOT_LF, file.path(datadir,"Newfoundland Data/NLfemaleOTLF2022.csv"),row.names=F)
+write.csv(NLunknownOT_LF, file.path(datadir,"Newfoundland Data/NLunknownOTLF2022.csv"),row.names=F)
 
 
-##bin by 5cm (0,250)
+##bin by 5cm (0,250) 
+
+## added this in case no observation in a year
+    yrs<-1995:2020
+    NLmalesOT_LF <- merge(NLmalesOT_LF,data.frame(year=yrs),all=T)
+    NLmalesOT_LF[is.na(NLmalesOT_LF)]<-0
 
 #male
-NLmales2 <- transpose(NLmales_LF, keep.names = "", make.names = "year") 
+NLmales2 <- transpose(NLmalesOT_LF, keep.names = "", make.names = "year") 
 NLmales2 <-NLmales2 %>% rename_with( ~ paste0("yr", .x))
 NLmales2 <- NLmales2 %>%
   rename(length = yrV1)
 
 NLmales2$length <- as.numeric(NLmales2$length)
 
-NLmales_1995 <- binNumAtLen(num.at.len = NLmales2$yr1995, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_1996 <- binNumAtLen(num.at.len = NLmales2$yr1996, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_1997 <- binNumAtLen(num.at.len = NLmales2$yr1997, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_1998 <- binNumAtLen(num.at.len = NLmales2$yr1998, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_1999 <- binNumAtLen(num.at.len = NLmales2$yr1999, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2000 <- binNumAtLen(num.at.len = NLmales2$yr2000, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2001 <- binNumAtLen(num.at.len = NLmales2$yr2001, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2002 <- binNumAtLen(num.at.len = NLmales2$yr2002, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2003 <- binNumAtLen(num.at.len = NLmales2$yr2003, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2004 <- binNumAtLen(num.at.len = NLmales2$yr2004, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2005 <- binNumAtLen(num.at.len = NLmales2$yr2005, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2006 <- binNumAtLen(num.at.len = NLmales2$yr2006, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2007 <- binNumAtLen(num.at.len = NLmales2$yr2007, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2008 <- binNumAtLen(num.at.len = NLmales2$yr2008, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2009 <- binNumAtLen(num.at.len = NLmales2$yr2009, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2010 <- binNumAtLen(num.at.len = NLmales2$yr2010, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2011 <- binNumAtLen(num.at.len = NLmales2$yr2011, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2012 <- binNumAtLen(num.at.len = NLmales2$yr2012, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2013 <- binNumAtLen(num.at.len = NLmales2$yr2013, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2014 <- binNumAtLen(num.at.len = NLmales2$yr2014, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2015 <- binNumAtLen(num.at.len = NLmales2$yr2015, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2016 <- binNumAtLen(num.at.len = NLmales2$yr2016, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2017 <- binNumAtLen(num.at.len = NLmales2$yr2017, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2018 <- binNumAtLen(num.at.len = NLmales2$yr2018, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2019 <- binNumAtLen(num.at.len = NLmales2$yr2019, len = NLmales2$length, bins = seq(0, 260, 5))
-NLmales_2020 <- binNumAtLen(num.at.len = NLmales2$yr2020, len = NLmales2$length, bins = seq(0, 260, 5))
+## changed code here to do it as a loop
+    NLmalesOT<-list()
+    for(i in 1:length(yrs)){
+      NLmalesOT[[i]]<-binNumAtLen(num.at.len = NLmales2[,paste0("yr",yrs[i])], len = NLmales2$length, bins = seq(0, 260, 5))
+    }
+    NLmalesOT.tab <- data.frame(do.call("cbind",NLmalesOT))
+    names(NLmalesOT.tab)<-yrs
+    
+## to here
 
+NLmalesOT.tab <- tibble::rownames_to_column(NLmalesOT.tab, "length")
 
-NLmales.tab <- data.frame(yr1995 = NLmales_1995, yr1996 = NLmales_1996, yr1997 = NLmales_1997, yr1998 = NLmales_1998, yr1999 = NLmales_1999, yr2000 = NLmales_2000, yr2001 = NLmales_2001, yr2002 = NLmales_2002, yr2003 = NLmales_2003, yr2004 = NLmales_2004, yr2005 = NLmales_2005, yr2006 = NLmales_2006, yr2007 = NLmales_2007, yr2008 = NLmales_2008, yr2009 = NLmales_2009, yr2010 = NLmales_2010, yr2011 = NLmales_2011, yr2012 = NLmales_2012, yr2013 = NLmales_2013, yr2014 = NLmales_2014, yr2015 = NLmales_2015, yr2016 = NLmales_2016, yr2017 = NLmales_2017, yr2018 = NLmales_2018, yr2019 = NLmales_2019, yr2020 = NLmales_2020)
+NLmalesOT.tab$length<-gsub("L"," ", as.character(NLmalesOT.tab$length))
 
-NLmales.tab <- tibble::rownames_to_column(NLmales.tab, "length")
+NLmalesOT.tab$length <- as.numeric(NLmalesOT.tab$length)
 
-NLmales.tab$length<-gsub("L"," ", as.character(NLmales.tab$length))
+NLmalesOT.tab <- transpose(NLmalesOT.tab, keep.names = "yr", make.names = "length")
 
-NLmales.tab$length <- as.numeric(NLmales.tab$length)
+NLmalesOT.tab$yr <- gsub("yr"," ", as.character(NLmalesOT.tab$yr))
 
-NLmales.tab <- transpose(NLmales.tab, keep.names = "yr", make.names = "length")
-
-NLmales.tab$yr <- gsub("yr"," ", as.character(NLmales.tab$yr))
-
-NLmales.tab <- NLmales.tab %>%
+NLmalesOT.tab <- NLmalesOT.tab %>%
    rename(year = yr)
 
-write.csv(NLmales.tab, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLmalesobs_binned2022.csv", row.names = FALSE)
+write.csv(NLmalesOT.tab, file.path(datadir,"Newfoundland Data/NLmalesOTobs_binned2022.csv"), row.names = FALSE)
 
 #female
-NLfemales2 <- transpose(NLfemales_LF, keep.names = "", make.names = "year") 
+
+
+## added this in case no observation in a year
+    yrs<-1995:2020
+    NLfemalesOT_LF <- merge(NLfemalesOT_LF,data.frame(year=yrs),all=T)
+    NLfemalesOT_LF[is.na(NLfemalesOT_LF)]<-0
+
+NLfemales2 <- transpose(NLfemalesOT_LF, keep.names = "", make.names = "year") 
 NLfemales2 <-NLfemales2 %>% rename_with( ~ paste0("yr", .x))
 NLfemales2 <- NLfemales2 %>%
   rename(length = yrV1)
 
 NLfemales2$length <- as.numeric(NLfemales2$length)
 
-NLfemales_1995 <- binNumAtLen(num.at.len = NLfemales2$yr1995, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_1996 <- binNumAtLen(num.at.len = NLfemales2$yr1996, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_1997 <- binNumAtLen(num.at.len = NLfemales2$yr1997, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_1998 <- binNumAtLen(num.at.len = NLfemales2$yr1998, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_1999 <- binNumAtLen(num.at.len = NLfemales2$yr1999, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2000 <- binNumAtLen(num.at.len = NLfemales2$yr2000, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2001 <- binNumAtLen(num.at.len = NLfemales2$yr2001, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2002 <- binNumAtLen(num.at.len = NLfemales2$yr2002, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2003 <- binNumAtLen(num.at.len = NLfemales2$yr2003, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2004 <- binNumAtLen(num.at.len = NLfemales2$yr2004, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2005 <- binNumAtLen(num.at.len = NLfemales2$yr2005, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2006 <- binNumAtLen(num.at.len = NLfemales2$yr2006, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2007 <- binNumAtLen(num.at.len = NLfemales2$yr2007, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2008 <- binNumAtLen(num.at.len = NLfemales2$yr2008, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2009 <- binNumAtLen(num.at.len = NLfemales2$yr2009, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2010 <- binNumAtLen(num.at.len = NLfemales2$yr2010, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2011 <- binNumAtLen(num.at.len = NLfemales2$yr2011, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2012 <- binNumAtLen(num.at.len = NLfemales2$yr2012, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2013 <- binNumAtLen(num.at.len = NLfemales2$yr2013, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2014 <- binNumAtLen(num.at.len = NLfemales2$yr2014, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2015 <- binNumAtLen(num.at.len = NLfemales2$yr2015, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2016 <- binNumAtLen(num.at.len = NLfemales2$yr2016, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2017 <- binNumAtLen(num.at.len = NLfemales2$yr2017, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2018 <- binNumAtLen(num.at.len = NLfemales2$yr2018, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2019 <- binNumAtLen(num.at.len = NLfemales2$yr2019, len = NLfemales2$length, bins = seq(0, 260, 5))
-NLfemales_2020 <- binNumAtLen(num.at.len = NLfemales2$yr2020, len = NLfemales2$length, bins = seq(0, 260, 5))
+
+## changed code here to do it as a loop
+    NLfemalesOT<-list()
+    for(i in 1:length(yrs)){
+      NLfemalesOT[[i]]<-binNumAtLen(num.at.len = NLfemales2[,paste0("yr",yrs[i])], len = NLfemales2$length, bins = seq(0, 260, 5))
+    }
+    NLfemalesOT.tab <- data.frame(do.call("cbind",NLfemalesOT))
+    names(NLfemalesOT.tab)<-yrs
+    
+## to here
 
 
-NLfemales.tab <- data.frame(yr1995 = NLfemales_1995, yr1996 = NLfemales_1996, yr1997 = NLfemales_1997, yr1998 = NLfemales_1998, yr1999 = NLfemales_1999, yr2000 = NLfemales_2000, yr2001 = NLfemales_2001, yr2002 = NLfemales_2002, yr2003 = NLfemales_2003, yr2004 = NLfemales_2004, yr2005 = NLfemales_2005, yr2006 = NLfemales_2006, yr2007 = NLfemales_2007, yr2008 = NLfemales_2008, yr2009 = NLfemales_2009, yr2010 = NLfemales_2010, yr2011 = NLfemales_2011, yr2012 = NLfemales_2012, yr2013 = NLfemales_2013, yr2014 = NLfemales_2014, yr2015 = NLfemales_2015, yr2016 = NLfemales_2016, yr2017 = NLfemales_2017, yr2018 = NLfemales_2018, yr2019 = NLfemales_2019, yr2020 = NLfemales_2020)
+NLfemalesOT.tab <- tibble::rownames_to_column(NLfemalesOT.tab, "length")
 
-NLfemales.tab <- tibble::rownames_to_column(NLfemales.tab, "length")
+NLfemalesOT.tab$length<-gsub("L"," ", as.character(NLfemalesOT.tab$length))
 
-NLfemales.tab$length<-gsub("L"," ", as.character(NLfemales.tab$length))
+NLfemalesOT.tab$length <- as.numeric(NLfemalesOT.tab$length)
 
-NLfemales.tab$length <- as.numeric(NLfemales.tab$length)
+NLfemalesOT.tab <- transpose(NLfemalesOT.tab, keep.names = "yr", make.names = "length")
 
-NLfemales.tab <- transpose(NLfemales.tab, keep.names = "yr", make.names = "length")
+NLfemalesOT.tab$yr <- gsub("yr"," ", as.character(NLfemalesOT.tab$yr))
 
-NLfemales.tab$yr <- gsub("yr"," ", as.character(NLfemales.tab$yr))
-
-NLfemales.tab <- NLfemales.tab %>%
+NLfemalesOT.tab <- NLfemalesOT.tab %>%
    rename(year = yr)
 
-write.csv(NLfemales.tab, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLfemalesobs_binned2022.csv", row.names = FALSE)
+write.csv(NLfemalesOT.tab, file.path(datadir,"Newfoundland Data/NLfemalesOTobs_binned2022.csv"), row.names = FALSE)
 
 #unknown sex
-NLunknown2 <- transpose(NLunknown_LF, keep.names = "", make.names = "year") 
+
+## added this in case no observation in a year
+    yrs<-1995:2020
+    NLunknownOT_LF <- merge(NLunknownOT_LF,data.frame(year=yrs),all=T)
+    NLunknownOT_LF[is.na(NLunknownOT_LF)]<-0
+
+NLunknown2 <- transpose(NLunknownOT_LF, keep.names = "", make.names = "year") 
 NLunknown2 <-NLunknown2 %>% rename_with( ~ paste0("yr", .x))
 NLunknown2 <- NLunknown2 %>%
   rename(length = yrV1)
 
 NLunknown2$length <- as.numeric(NLunknown2$length)
 
-NLunknown_1995 <- binNumAtLen(num.at.len = NLunknown2$yr1995, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_1996 <- binNumAtLen(num.at.len = NLunknown2$yr1996, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_1998 <- binNumAtLen(num.at.len = NLunknown2$yr1998, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_1999 <- binNumAtLen(num.at.len = NLunknown2$yr1999, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2000 <- binNumAtLen(num.at.len = NLunknown2$yr2000, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2001 <- binNumAtLen(num.at.len = NLunknown2$yr2001, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2002 <- binNumAtLen(num.at.len = NLunknown2$yr2002, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2003 <- binNumAtLen(num.at.len = NLunknown2$yr2003, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2004 <- binNumAtLen(num.at.len = NLunknown2$yr2004, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2005 <- binNumAtLen(num.at.len = NLunknown2$yr2005, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2006 <- binNumAtLen(num.at.len = NLunknown2$yr2006, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2007 <- binNumAtLen(num.at.len = NLunknown2$yr2007, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2008 <- binNumAtLen(num.at.len = NLunknown2$yr2008, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2009 <- binNumAtLen(num.at.len = NLunknown2$yr2009, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2010 <- binNumAtLen(num.at.len = NLunknown2$yr2010, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2011 <- binNumAtLen(num.at.len = NLunknown2$yr2011, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2012 <- binNumAtLen(num.at.len = NLunknown2$yr2012, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2013 <- binNumAtLen(num.at.len = NLunknown2$yr2013, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2014 <- binNumAtLen(num.at.len = NLunknown2$yr2014, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2015 <- binNumAtLen(num.at.len = NLunknown2$yr2015, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2016 <- binNumAtLen(num.at.len = NLunknown2$yr2016, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2017 <- binNumAtLen(num.at.len = NLunknown2$yr2017, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2018 <- binNumAtLen(num.at.len = NLunknown2$yr2018, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2019 <- binNumAtLen(num.at.len = NLunknown2$yr2019, len = NLunknown2$length, bins = seq(0, 260, 5))
-NLunknown_2020 <- binNumAtLen(num.at.len = NLunknown2$yr2020, len = NLunknown2$length, bins = seq(0, 260, 5))
 
+## changed code here to do it as a loop
+    NLunknownOT<-list()
+    for(i in 1:length(yrs)){
+      NLunknownOT[[i]]<-binNumAtLen(num.at.len = NLunknown2[,paste0("yr",yrs[i])], len = NLunknown2$length, bins = seq(0, 260, 5))
+    }
+    NLunknownOT.tab <- data.frame(do.call("cbind",NLunknownOT))
+    names(NLunknownOT.tab)<-yrs
+    
+## to here
 
-NLunknown.tab <- data.frame(yr1995 = NLunknown_1995, yr1996 = NLunknown_1996, yr1998 = NLunknown_1998, yr1999 = NLunknown_1999, yr2000 = NLunknown_2000, yr2001 = NLunknown_2001, yr2002 = NLunknown_2002, yr2003 = NLunknown_2003, yr2004 = NLunknown_2004, yr2005 = NLunknown_2005, yr2006 = NLunknown_2006, yr2007 = NLunknown_2007, yr2008 = NLunknown_2008, yr2009 = NLunknown_2009, yr2010 = NLunknown_2010, yr2011 = NLunknown_2011, yr2012 = NLunknown_2012, yr2013 = NLunknown_2013, yr2014 = NLunknown_2014, yr2015 = NLunknown_2015, yr2016 = NLunknown_2016, yr2017 = NLunknown_2017, yr2018 = NLunknown_2018, yr2019 = NLunknown_2019, yr2020 = NLunknown_2020)
+NLunknownOT.tab <- tibble::rownames_to_column(NLunknownOT.tab, "length")
 
-NLunknown.tab <- tibble::rownames_to_column(NLunknown.tab, "length")
+NLunknownOT.tab$length<-gsub("L"," ", as.character(NLunknownOT.tab$length))
 
-NLunknown.tab$length<-gsub("L"," ", as.character(NLunknown.tab$length))
+NLunknownOT.tab$length <- as.numeric(NLunknownOT.tab$length)
 
-NLunknown.tab$length <- as.numeric(NLunknown.tab$length)
+NLunknownOT.tab <- transpose(NLunknownOT.tab, keep.names = "yr", make.names = "length")
 
-NLunknown.tab <- transpose(NLunknown.tab, keep.names = "yr", make.names = "length")
+NLunknownOT.tab$yr <- gsub("yr"," ", as.character(NLunknownOT.tab$yr))
 
-NLunknown.tab$yr <- gsub("yr"," ", as.character(NLunknown.tab$yr))
-
-NLunknown.tab <- NLunknown.tab %>%
+NLunknownOT.tab <- NLunknownOT.tab %>%
    rename(year = yr)
 
-write.csv(NLunknown.tab, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLunknownobs_binned2022.csv", row.names = FALSE)
+write.csv(NLunknownOT.tab, file.path(datadir,"Newfoundland Data/NLunknownOTobs_binned2022.csv"), row.names = FALSE)
 ```
+
+## Longline
+
+Data for Brad (3 tables (one for each sex category), years as row, columns are LF bins)
+```{r}
+
+NLobs_malesLL <- NLobs_lf %>% 
+  filter(sex == 1 & gear == 7)
+NLobs_femalesLL <- NLobs_lf %>% 
+  filter(sex == 5 & gear == 7)
+NLobs_unknownLL <- NLobs_lf %>%
+  filter(is.na(sex) & gear == 7)
+
+
+#males
+NLmalesLL_LF <- NLobs_malesLL %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLmalesLL_LF <- NLmalesLL_LF %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLmalesLL_LF <- NLmalesLL_LF %>%
+  mutate(year= replace(year, year == 0, 2000)) %>%
+  mutate(year= replace(year, year == 1, 2001)) %>%
+  mutate(year= replace(year, year == 2, 2002)) %>%
+  mutate(year= replace(year, year == 3, 2003)) %>%
+  mutate(year= replace(year, year == 4, 2004)) %>%
+  mutate(year= replace(year, year == 5, 2005)) %>%
+  mutate(year= replace(year, year == 6, 2006)) %>%
+  mutate(year= replace(year, year == 7, 2007)) %>%
+  mutate(year= replace(year, year == 8, 2008)) %>%
+  mutate(year= replace(year, year == 9, 2009)) %>%
+  mutate(year= replace(year, year == 10, 2010)) %>%
+  mutate(year= replace(year, year == 11, 2011)) %>%
+  mutate(year= replace(year, year == 12, 2012)) %>%
+  mutate(year= replace(year, year == 13, 2013)) %>%
+  mutate(year= replace(year, year == 14, 2014)) %>%
+  mutate(year= replace(year, year == 15, 2015)) %>%
+  mutate(year= replace(year, year == 16, 2016)) %>%
+  mutate(year= replace(year, year == 17, 2017)) %>%
+  mutate(year= replace(year, year == 18, 2018)) %>%
+  mutate(year= replace(year, year == 19, 2019)) %>%
+  mutate(year= replace(year, year == 20, 2020)) %>%
+  mutate(year= replace(year, year == 95, 1995)) %>%
+  mutate(year= replace(year, year == 96, 1996)) %>%
+  mutate(year= replace(year, year == 97, 1997)) %>%
+  mutate(year= replace(year, year == 98, 1998)) %>%
+  mutate(year= replace(year, year == 99, 1999)) 
+
+#females
+NLfemalesLL_LF <- NLobs_femalesLL %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLfemalesLL_LF <- NLfemalesLL_LF %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLfemalesLL_LF <- NLfemalesLL_LF %>%
+  mutate(year= replace(year, year == 0, 2000)) %>%
+  mutate(year= replace(year, year == 1, 2001)) %>%
+  mutate(year= replace(year, year == 2, 2002)) %>%
+  mutate(year= replace(year, year == 3, 2003)) %>%
+  mutate(year= replace(year, year == 4, 2004)) %>%
+  mutate(year= replace(year, year == 5, 2005)) %>%
+  mutate(year= replace(year, year == 6, 2006)) %>%
+  mutate(year= replace(year, year == 7, 2007)) %>%
+  mutate(year= replace(year, year == 8, 2008)) %>%
+  mutate(year= replace(year, year == 9, 2009)) %>%
+  mutate(year= replace(year, year == 10, 2010)) %>%
+  mutate(year= replace(year, year == 11, 2011)) %>%
+  mutate(year= replace(year, year == 12, 2012)) %>%
+  mutate(year= replace(year, year == 13, 2013)) %>%
+  mutate(year= replace(year, year == 14, 2014)) %>%
+  mutate(year= replace(year, year == 15, 2015)) %>%
+  mutate(year= replace(year, year == 16, 2016)) %>%
+  mutate(year= replace(year, year == 17, 2017)) %>%
+  mutate(year= replace(year, year == 18, 2018)) %>%
+  mutate(year= replace(year, year == 19, 2019)) %>%
+  mutate(year= replace(year, year == 20, 2020)) %>%
+  mutate(year= replace(year, year == 95, 1995)) %>%
+  mutate(year= replace(year, year == 96, 1996)) %>%
+  mutate(year= replace(year, year == 97, 1997)) %>%
+  mutate(year= replace(year, year == 98, 1998)) %>%
+  mutate(year= replace(year, year == 99, 1999))
+
+##unknown sex
+NLunknownLL_LF <- NLobs_unknownOT %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLunknownLL_LF <- NLunknownLL_LF %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLunknownLL_LF <- NLunknownLL_LF %>%
+  mutate(year= replace(year, year == 0, 2000)) %>%
+  mutate(year= replace(year, year == 1, 2001)) %>%
+  mutate(year= replace(year, year == 2, 2002)) %>%
+  mutate(year= replace(year, year == 3, 2003)) %>%
+  mutate(year= replace(year, year == 4, 2004)) %>%
+  mutate(year= replace(year, year == 5, 2005)) %>%
+  mutate(year= replace(year, year == 6, 2006)) %>%
+  mutate(year= replace(year, year == 7, 2007)) %>%
+  mutate(year= replace(year, year == 8, 2008)) %>%
+  mutate(year= replace(year, year == 9, 2009)) %>%
+  mutate(year= replace(year, year == 10, 2010)) %>%
+  mutate(year= replace(year, year == 11, 2011)) %>%
+  mutate(year= replace(year, year == 12, 2012)) %>%
+  mutate(year= replace(year, year == 13, 2013)) %>%
+  mutate(year= replace(year, year == 14, 2014)) %>%
+  mutate(year= replace(year, year == 15, 2015)) %>%
+  mutate(year= replace(year, year == 16, 2016)) %>%
+  mutate(year= replace(year, year == 17, 2017)) %>%
+  mutate(year= replace(year, year == 18, 2018)) %>%
+  mutate(year= replace(year, year == 19, 2019)) %>%
+  mutate(year= replace(year, year == 20, 2020)) %>%
+  mutate(year= replace(year, year == 95, 1995)) %>%
+  mutate(year= replace(year, year == 96, 1996)) %>%
+  mutate(year= replace(year, year == 97, 1997)) %>%
+  mutate(year= replace(year, year == 98, 1998)) %>%
+  mutate(year= replace(year, year == 99, 1999))
+
+write.csv(NLmalesLL_LF, file.path(datadir,"Newfoundland Data/NLmaleLLLF2022.csv"))
+write.csv(NLfemalesLL_LF, file.path(datadir,"Newfoundland Data/NLfemaleLLLF2022.csv"))
+write.csv(NLunknownLL_LF, file.path(datadir,"Newfoundland Data/NLunknownLLLF2022.csv"))
+
+
+##bin by 5cm (0,250) yrs<-1995:2020 NLmalesOT_LF <- merge(NLmalesOT_LF,data.frame(year=yrs),all=T) NLmalesOT_LF[is.na(NLmalesOT_LF)]<-0
+
+#male
+
+## added this in case no observation in a year
+    yrs<-1995:2020
+    NLmalesLL_LF <- merge(NLmalesLL_LF,data.frame(year=yrs),all=T)
+    NLmalesLL_LF[is.na(NLmalesLL_LF)]<-0
+
+#male
+NLmales2 <- transpose(NLmalesLL_LF, keep.names = "", make.names = "year") 
+NLmales2 <-NLmales2 %>% rename_with( ~ paste0("yr", .x))
+NLmales2 <- NLmales2 %>%
+  rename(length = yrV1)
+
+NLmales2$length <- as.numeric(NLmales2$length)
+
+## changed code here to do it as a loop
+    NLmalesLL<-list()
+    for(i in 1:length(yrs)){
+      NLmalesLL[[i]]<-binNumAtLen(num.at.len = NLmales2[,paste0("yr",yrs[i])], len = NLmales2$length, bins = seq(0, 260, 5))
+    }
+    NLmalesLL.tab <- data.frame(do.call("cbind",NLmalesLL))
+    names(NLmalesLL.tab)<-yrs
+    
+## to here
+    
+NLmalesLL.tab <- tibble::rownames_to_column(NLmalesLL.tab, "length")
+
+NLmalesLL.tab$length<-gsub("L"," ", as.character(NLmalesLL.tab$length))
+
+NLmalesLL.tab$length <- as.numeric(NLmalesLL.tab$length)
+
+NLmalesLL.tab <- transpose(NLmalesLL.tab, keep.names = "yr", make.names = "length")
+
+NLmalesLL.tab$yr <- gsub("yr"," ", as.character(NLmalesLL.tab$yr))
+
+NLmalesLL.tab <- NLmalesLL.tab %>%
+   rename(year = yr)
+
+write.csv(NLmalesLL.tab, file.path(datadir,"Newfoundland Data/NLmalesLLobs_binned2022.csv"), row.names = FALSE)
+
+#female
+
+## added this in case no observation in a year
+    yrs<-1995:2020
+    NLfemalesLL_LF <- merge(NLfemalesLL_LF,data.frame(year=yrs),all=T)
+    NLfemalesLL_LF[is.na(NLfemalesLL_LF)]<-0
+
+#female
+NLfemales2 <- transpose(NLfemalesLL_LF, keep.names = "", make.names = "year") 
+NLfemales2 <-NLfemales2 %>% rename_with( ~ paste0("yr", .x))
+NLfemales2 <- NLfemales2 %>%
+  rename(length = yrV1)
+
+NLfemales2$length <- as.numeric(NLfemales2$length)
+
+## changed code here to do it as a loop
+    NLfemalesLL<-list()
+    for(i in 1:length(yrs)){
+      NLfemalesLL[[i]]<-binNumAtLen(num.at.len = NLfemales2[,paste0("yr",yrs[i])], len = NLfemales2$length, bins = seq(0, 260, 5))
+    }
+    NLfemalesLL.tab <- data.frame(do.call("cbind",NLfemalesLL))
+    names(NLfemalesLL.tab)<-yrs
+    
+## to here
+    
+NLfemalesLL.tab <- tibble::rownames_to_column(NLfemalesLL.tab, "length")
+
+NLfemalesLL.tab$length<-gsub("L"," ", as.character(NLfemalesLL.tab$length))
+
+NLfemalesLL.tab$length <- as.numeric(NLfemalesLL.tab$length)
+
+NLfemalesLL.tab <- transpose(NLfemalesLL.tab, keep.names = "yr", make.names = "length")
+
+NLfemalesLL.tab$yr <- gsub("yr"," ", as.character(NLfemalesLL.tab$yr))
+
+NLfemalesLL.tab <- NLfemalesLL.tab %>%
+   rename(year = yr)
+
+write.csv(NLfemalesLL.tab, file.path(datadir,"Newfoundland Data/NLfemalesLLobs_binned2022.csv"), row.names = FALSE)
+
+#unknown sex
+
+## added this in case no observation in a year
+    yrs<-1995:2020
+    NLunknownLL_LF <- merge(NLunknownLL_LF,data.frame(year=yrs),all=T)
+    NLunknownLL_LF[is.na(NLunknownLL_LF)]<-0
+
+#unknown
+NLunknown2 <- transpose(NLunknownLL_LF, keep.names = "", make.names = "year") 
+NLunknown2 <-NLunknown2 %>% rename_with( ~ paste0("yr", .x))
+NLunknown2 <- NLunknown2 %>%
+  rename(length = yrV1)
+
+NLunknown2$length <- as.numeric(NLunknown2$length)
+
+## changed code here to do it as a loop
+    NLunknownLL<-list()
+    for(i in 1:length(yrs)){
+      NLunknownLL[[i]]<-binNumAtLen(num.at.len = NLunknown2[,paste0("yr",yrs[i])], len = NLunknown2$length, bins = seq(0, 260, 5))
+    }
+    NLunknownLL.tab <- data.frame(do.call("cbind",NLunknownLL))
+    names(NLunknownLL.tab)<-yrs
+    
+## to here
+    
+NLunknownLL.tab <- tibble::rownames_to_column(NLunknownLL.tab, "length")
+
+NLunknownLL.tab$length<-gsub("L"," ", as.character(NLunknownLL.tab$length))
+
+NLunknownLL.tab$length <- as.numeric(NLunknownLL.tab$length)
+
+NLunknownLL.tab <- transpose(NLunknownLL.tab, keep.names = "yr", make.names = "length")
+
+NLunknownLL.tab$yr <- gsub("yr"," ", as.character(NLunknownLL.tab$yr))
+
+NLunknownLL.tab <- NLunknownLL.tab %>%
+   rename(year = yr)
+
+write.csv(NLunknownLL.tab, file.path(datadir,"Newfoundland Data/NLunknownLLobs_binned2022.csv"), row.names = FALSE)
+```
+
 
