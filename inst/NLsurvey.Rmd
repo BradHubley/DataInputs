@@ -12,7 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
  library(lubridate)
  library(stringr)
 
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/"
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021"
+#datadir="C:/Users/hubleyb/Documents/Halibut/data/Newfoundland Data/Newfoundland RV Data - Received 2021"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, "passwords.r"))
 ```
@@ -36,23 +37,23 @@ Thing to consider when looking at the data with respect to the halibut managemen
       - still enough to consider strata completed
 
 ```{r}
-NL_hal_LFraw <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NL_AtlanticHalibut_LF.csv")
+NL_hal_LFraw <- read.csv(file.path(datadir,"NL_AtlanticHalibut_LF.csv"))
 
-NLstrat_length_abundance_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_abundance_details.csv")
+NLstrat_length_abundance_detail <- read.csv(file.path(datadir,"NLstrat1_length_abundance_details.csv"))
 
-NLstrat_length_abundance_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_abundance_summary.csv")
+NLstrat_length_abundance_summary <- read.csv(file.path(datadir,"NLstrat1_length_abundance_summary.csv"))
 
-NLstrat_lengthyear_meanabundance_matrix <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_year_mean_abundance_matrix.csv")
+NLstrat_lengthyear_meanabundance_matrix <- read.csv(file.path(datadir,"NLstrat1_length_year_mean_abundance_matrix.csv"))
 
-NLstrat_lengthyear_totalabundance_matrix <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_year_total_abundance_matrix.csv")
+NLstrat_lengthyear_totalabundance_matrix <- read.csv(file.path(datadir,"NLstrat1_length_year_total_abundance_matrix.csv"))
 
-NLstrat_abundance_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_abundance_details.csv")
+NLstrat_abundance_detail <- read.csv(file.path(datadir,"NLstrat2_abundance_details.csv"))
 
-NLstrat_abundance_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_abundance_summary.csv")
+NLstrat_abundance_summary <- read.csv(file.path(datadir,"NLstrat2_abundance_summary.csv"))
 
-NLstrat_biomass_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_biomass_details.csv")
+NLstrat_biomass_detail <- read.csv(file.path(datadir,"NLstrat2_biomass_details.csv"))
 
-NLstrat_biomass_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_biomass_summary.csv")
+NLstrat_biomass_summary <- read.csv(file.path(datadir,"NLstrat2_biomass_summary.csv"))
 ```
 
 NL_hal_LFraw is just from 2008-2019
