@@ -95,7 +95,7 @@ dev.off()
 ### Loop for annual
 
 ```{r}
-
+yrs=2001:2021
 lvls=seq(0,7000,1000)
 xl=c(-69,-47)
 yl=c(40,48)
@@ -105,10 +105,12 @@ for(y in yrs){
   #catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
   #summary(catch.data)
   tmp<-subset(MARFISdata,YEAR==y)
-  catch.data <- data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  )
+  catch.data <- na.omit(data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  ))
   catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
   
-  pdf(file.path(wd,'figures',paste0('marfisCatch',y,'.pdf')),width=10,height=7)
+  #pdf(file.path(wd,'figures',paste0('marfisCatch',y,'.pdf')),width=10,height=7)
+    png(file.path(wd,'figures',paste0('marfisCatch',y,'.png')),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
+    
   
   SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
   SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
