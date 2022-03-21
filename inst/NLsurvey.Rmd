@@ -534,13 +534,13 @@ NL_ss <- NLstrat_length_abundance_detail %>%
 
 NL_ss <- NL_ss %>%
    group_by(survey.year, sex) %>%
-   summarize(n=n())
+   summarize(obs=sum(obs))
 
 write.csv(NL_ss, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_n_yrsex.csv", row.names = FALSE)
 
 NL_ss_nosex <- NL_ss %>%
    group_by(survey.year) %>%
-   summarize(n=n())
+   summarize(obs=sum(obs))
 write.csv(NL_ss_nosex, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_n_yr.csv", row.names = FALSE)
 ```
 
@@ -761,6 +761,7 @@ NLm_binobs.tablong <- gather(NLm_binobs.tab, "year", "obs", -"length")
 NLm_binobs.tablong$year<-gsub("yr"," ", as.character(NLm_binobs.tablong$year))
 
 write.csv(NLm_binobs.tablong, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_m_LF_obs.csv", row.names = FALSE)
+
 #female+male+unsexed
 NL_n_mfu <- NLstrat_length_abundance_detail %>% filter(sex == "female+male+unsexed")
 NLmfu1996 <- NL_n_mfu %>% filter(survey.year == 1996)
@@ -825,6 +826,7 @@ NLmfu_binobs.tablong <- gather(NLmfu_binobs.tab, "year", "obs", -"length")
 NLmfu_binobs.tablong$year<-gsub("yr"," ", as.character(NLmfu_binobs.tablong$year))
 
 write.csv(NLmfu_binobs.tablong, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_mfu_LF_obs.csv", row.names = FALSE)
+
 #unsexed
 NL_n_u <- NLstrat_length_abundance_detail %>% filter(sex == "unsexed")
 NLu1996 <- NL_n_u %>% filter(survey.year == 1996)
@@ -885,7 +887,7 @@ NLu_binobs.tab$length<-gsub("L"," ", as.character(NLu_binobs.tab$length))
 
 NLu_binobs.tab$length <- as.numeric(NLu_binobs.tab$length)
 
-NLu_binobs.tablong <- gather(NLmfu_binobs.tab, "year", "obs", -"length")
+NLu_binobs.tablong <- gather(NLu_binobs.tab, "year", "obs", -"length")
 NLu_binobs.tablong$year<-gsub("yr"," ", as.character(NLu_binobs.tablong$year))
 
 write.csv(NLu_binobs.tablong, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_u_LF_obs.csv", row.names = FALSE)

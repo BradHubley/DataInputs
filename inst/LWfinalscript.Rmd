@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
-#source(file.path(wd, "passwords.r"))
+source(file.path(wd, "passwords.r"))
 ```
 
 ---Extract MAR RV survey data using RORACLE
@@ -122,7 +122,7 @@ setdata_halRV[is.na(setdata_halRV$FWT),] #there are 1188 fish missing weights
 
 ---Extract ISDB data using RORACLE
 ```{r}
-#get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "", fn.oracle.password = "", fn.oracle.dsn = "PTRAN", force.extract = T)
+get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "", fn.oracle.password = "", fn.oracle.dsn = "PTRAN", force.extract = T)
 ```
 
 Pull ISDB data from where it is stored locally (previously pulled from database using oracle)
@@ -170,7 +170,7 @@ hal_alltrips <- hal_allsetinfo %>%
 
 ```
 
-Removing the port sampled data (weights not measured with consistant methods)
+Removing the port sampled data (weights not measured with consistent methods)
 ```{r}
 hal_alltrips <- hal_alltrips %>%
   filter(TRIPCD_ID != "7058")
@@ -547,6 +547,9 @@ hal_datOR<- hal_datOR %>%
 hal_datORtrip <- hal_datOR %>%
   mutate(TRIPCD_ID = replace(TRIPCD_ID, TRIPCD_ID %in% c("8", "70", "230", "4320", "7054", "7055","7060", "7061"), "7099"))
 
+hal_datOR <- hal_datOR %>%
+  mutate(TRIPCD_ID = replace(TRIPCD_ID, TRIPCD_ID %in% c("8", "70", "230", "4320", "7054", "7055","7060", "7061"), "7099"))
+
 hal_datORtrip$TRIPCD_ID <- as.integer(hal_datORtrip$TRIPCD_ID)
 
 hal_datORtrip %>% count(TRIPCD_ID)
@@ -863,8 +866,12 @@ coef(summary(final_modOA))
 fixef(final_modOA)
 coef(final_mod)
 
+final_pred <- ggpredict(final_modOA, terms = c("FISH_LENGTH"), type = "re")
+final_<-predict(final_modOA, list(FISH_LENGTH = hal_datOR$FISH_LENGTH))
+final_pred2 <- as.data.frame(exp(predict(final_modOA, newdata = data.frame(FISH_LENGTH = 1:200), type = "response", re.form = NA)), options(scipen=999))
+
 tab_model(final_mod, final_modOA,  file="tab_model.html")
-tab_model(final_modOA)
+tab_model(final_mod, final_modOA)
 plot_model(final_mod, type = "pred", terms = c("FISH_LENGTH", "QUARTER"), colors = "bw") + theme_classic()
 
 

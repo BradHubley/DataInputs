@@ -434,6 +434,12 @@ stations_ci <- sets_ci %>%
   group_by(YEAR) %>%
   summarise(n_station = n())
 
+type_ci <- sets_ci %>%
+  dplyr::select("YEAR", "TRIPCD_ID") %>%
+  group_by(YEAR, TRIPCD_ID) %>%
+  summarize(n=n())
+type_ci <- spread(type_ci, TRIPCD_ID, n)
+
 catch_ci <- sets_ci %>%
   group_by(YEAR) %>%
   summarise(catch = sum(EST_COMBINED_WT, na.rm = TRUE)) %>%
@@ -444,6 +450,9 @@ ci_stats <- vessels_ci %>%
 #commercial index summary
 ci_stats <- ci_stats %>%
   left_join(catch_ci, by = "YEAR")
+
+#ci stats for sea vs shore sampled
+ci_stats_obs <- 
 ```
 
 monthly distribution of stations

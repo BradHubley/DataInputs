@@ -138,7 +138,7 @@ setdata_halRV[is.na(setdata_halRV$FWT),] #there are 1188 fish missing weights
 
 ---Extract ISDB data using RORACLE
 ```{r}
-get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = "PTRAN", force.extract = T)
+#get_data("isdb", data.dir = "C:/Users/harperd/Documents/Halibut/RDataVault/", usepkg = "roracle",fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = "PTRAN", force.extract = T)
 ```
 
 Pull ISDB data from where it is stored locally (previously pulled from database using oracle)
