@@ -218,3 +218,45 @@ tt + geom_point(data = dat3, aes(x = P1LONG, y = P1LAT, colour = residtemp, size
   na.value = "grey50", guide = "colourbar", aesthetics = "colour") + geom_point(data = dat4, aes(x = P1LONG, y = P1LAT)) + geom_point(data = dat5, colour="Red", aes(x = P1LONG, y = P1LAT))
 
 ```
+
+
+NEw data 
+```{r}
+
+#tempdata = raster("data/global-analysis-forecast-phy-001-024_1634228890026.nc")
+#plot(tempdata)
+
+nc_data <- nc_open('data/global-analysis-forecast-phy-001-024_1634228890026.nc')
+# Save the print(nc) dump to a text file
+{
+    sink('data/global-analysis-forecast-phy-001-024_1634228890026.txt')
+ print(nc_data)
+    sink()
+}
+
+```
+
+```{r}
+
+lon <- ncvar_get(nc_data, "lon")
+lat <- ncvar_get(nc_data, "lat", verbose = F)
+t <- ncvar_get(nc_data, "time")
+
+```
+
+```{r}
+ndvi.array <- ncvar_get(nc_data, "NDVI") # store the data in a 3-dimensional array
+dim(ndvi.array)
+```
+
+```{r}
+fillvalue <- ncatt_get(nc_data, "NDVI", "_FillValue")
+fillvalue
+
+```
+
+```{r}
+
+```
+
+
