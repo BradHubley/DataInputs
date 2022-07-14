@@ -1,3 +1,4 @@
+#' @export
 FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
 
   FSindexData <- FixedSurveyData(datadir=datadir, by.sex=F,adj.calc.wt=use.calc.wt,add.LF=use.calc.wt)

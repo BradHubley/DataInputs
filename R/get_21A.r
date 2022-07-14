@@ -4,6 +4,7 @@
 # count="CDN" for Canada; "Foreign" for foreign countries; others for all countries
 # zone 5 ("5ZC","5ZE","5Z","5Y") is restricted to CDN landings only
 # landings in "5Z" only occurred in 1960s.
+#' @export
 
 
 get_21A <- function(count, yearstart,datadir){

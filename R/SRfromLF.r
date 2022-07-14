@@ -1,3 +1,4 @@
+#' @export
 SRfromLF<-function(LF){
 SR<-list()
 for(i in 1:length(LF)){

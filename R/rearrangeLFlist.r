@@ -1,3 +1,4 @@
+#' @export
 rearrangeLFlist<-function(input){
   output<-list()
   y=nrow(input[[1]])

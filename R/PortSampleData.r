@@ -1,3 +1,4 @@
+#' @export
 
 PortSampleData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.sex=T,bins=seq(0,260,5),lwA=0.006803616,lwB=3.119924){
 

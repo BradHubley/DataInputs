@@ -1,3 +1,4 @@
+#' @export
 binNumAtLen <- function(num.at.len,len,bins) {
   freq <- tapply(num.at.len, cut(len, breaks = bins,
                                     right = FALSE), function(x) {

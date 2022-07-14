@@ -1,3 +1,4 @@
+#' @export
 getMARFISdata <- function(datadir,sp=130,gear){
 
   marfis <- new.env()

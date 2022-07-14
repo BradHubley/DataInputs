@@ -1,3 +1,4 @@
+#' @export
 
 prepRVdata<-function(RVdata,years, bins, pal=F,raw=F){
 

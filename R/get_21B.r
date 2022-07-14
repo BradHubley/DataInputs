@@ -10,6 +10,7 @@
 # type =3(catch by gear across all years/div)
 # type = 4(SCAL format: Year,LL3, LL4, OT3, OT4), 'Landings',
 # zone 5 ("5ZC","5ZE","5Y") is restricted to CDN landings only
+#' @export
 
 
 get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){

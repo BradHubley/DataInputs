@@ -1,3 +1,4 @@
+#' @export
 RVindex <- function(uid, pwd, use.local=T,plot=T,AY=lubridate::year(Sys.time())-1,datadir="C:/Users/hubleyb/Documents/Halibut/data"){
 
   if(use.local==F){

@@ -1,3 +1,4 @@
+#' @export
 
 HOmem<-function(data, year, tmbdir, filename="rep_code"){
 

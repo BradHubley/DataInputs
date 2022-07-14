@@ -1,9 +1,10 @@
-StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean'){
+#' @export
+StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=1){
 
   RSindexData <- RandomSurveyData(datadir=datadir, add.LF=F,by.sex=F)
   RSindexData$STRAT <- as.numeric(substr(RSindexData$ASSIGNED_STRATUM_ID,2,3))
 
-    load(file.path(datadir,"Survey","SurveyStrata.rdata"))
+    load(file.path(datadir,"Survey","SurveyStrata.rdata")) # check this to make sure it's up to date
     areas<- StrataAreas$area
     strata<-StrataAreas$PID
 
@@ -28,7 +29,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean'){
   for (i in 1:length(yrs)){
 
     # Stratified mean and variance
-    n<-with(subset(RSindexData,YEAR==yrs[i]),tapply(STATION,STRAT,length))
+    n<-with(subset(RSindexData,YEAR==yrs[i]),tapply(STATION,STRAT,length))*nadj
     Nh<-with(subset(RSindexData,YEAR==yrs[i]),tapply(NPKH,STRAT,mean))
     NVh<-with(subset(RSindexData,YEAR==yrs[i]),tapply(NPKH,STRAT,var))
     Bh<-with(subset(RSindexData,YEAR==yrs[i]),tapply(WPKH,STRAT,mean))
