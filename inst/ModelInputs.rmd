@@ -276,6 +276,17 @@ Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
 
 #BubblePlotLF(Fishery_Lengths,bins=bins,yrs=CCyrs,path=file.path(wd,'figures'),filen='Commercial',inches=0.3)
 
+# redo plot for data inputs to include NL data
+
+OT3<-revNAL(list(OTNafo3_males,OTNafo3_females,OTNafo3_unsexed))
+LL3<-revNAL(list(LLNafo3_males,LLNafo3_females,LLNafo3_unsexed))
+YrsObs = 1991:2020 
+
+BarPlotLF(OT3[which(names(OT3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+BarPlotLF(LL3[which(names(LL3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+
 ```
 
 # Put it all together

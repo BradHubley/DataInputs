@@ -634,6 +634,27 @@ for(i in 1:length(Ns)){
 }
 
 1-SEs/SEs[1]
+
+
+ RSindexData <- RandomSurveyData(datadir=datadir, add.LF=F,by.sex=F)
+ n<-with(RSindexData,tapply(EST_NUM_CAUGHT,YEAR,length))
+ sd<-with(RSindexData,tapply(EST_NUM_CAUGHT,YEAR,sd))
+ se<-sd/sqrt(n)
+ niter=1000; yrs=2017:2021; sd100<-matrix(NA,niter,length(yrs))
+ for(j in 1:niter){
+   for(i in 1:length(yrs)){
+     x<-subset(RSindexData,YEAR==yrs[i])
+     x<-x[sample(1:nrow(x),100),]
+     sd100[j,i]<-sd(x$EST_NUM_CAUGHT)
+   }
+ }
+ se100<-colMeans(sd100)/sqrt(100)
+ se100
+ tabse<-cbind(seq(100,250,50),rbind(colMeans(sd100)/sqrt(100),sd/sqrt(n),sd/sqrt(200),sd/sqrt(250)))
+ write.csv(tabse,file.path(datadir,"Survey","RSse.csv"),row.names=F)
+ 
+ tabse<-read.csv(file.path(datadir,"Survey","RSse.csv"))
+
 ```
 
 # a look at mean/variance in each strata
