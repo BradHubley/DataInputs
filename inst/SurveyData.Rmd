@@ -60,28 +60,32 @@ devtools::load_all(".")
 #HookOccupancyData<-PrepareDataHookModel(datadir=datadir)
 #HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 
-RandomSurveytest<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
+#sp=220 #dogfish
+#sp=15 #cusk
+#sp=30 #halibut
+sp=10 #cod
 
-RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+
+RandomSurveyRaph<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
 RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
 RandomSurveyRaph$STATION <- RandomSurveyRaph$ASSIGNED_STATION
 RandomSurveyRaph$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
 
-colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","total_other_species","total_target_species","broken_hook","empty_baited","empty_unbaited","other_species","target_species","missing_hook","total_sampled","avg_weight")
+colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","broken_hook","empty_baited","empty_unbaited","other_species","target_species","missing_hook","total_sampled","avg_weight")
 
 RandomSurvey <- RandomSurveyRaph[,colNames1]
 names(RandomSurveyRaph)
 
-FixedSurveyRaph<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+FixedSurveyRaph<-FixedSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
 FixedSurveyRaph$avg_weight<-FixedSurveyRaph$EST_COMBINED_WT / FixedSurveyRaph$total_target_species
 FixedSurveyRaph$DEPTH[FixedSurveyRaph$DEPTH==0]<-NA
 
-colNames2 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","total_other_species","total_target_species","avg_weight")
+colNames2 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","avg_weight")
 
 FixedSurvey <- FixedSurveyRaph[,colNames2]
 
-write.csv(FixedSurvey,file.path(datadir,"FixedSurvey.csv"),row.names=F)
-write.csv(RandomSurvey,file.path(datadir,"RandomSurvey.csv"),row.names=F)
+write.csv(FixedSurvey,file.path(datadir,"FixedSurveyCod.csv"),row.names=F)
+write.csv(RandomSurvey,file.path(datadir,"RandomSurveyCod.csv"),row.names=F)
 
 FixedSurvey<-read.csv(file.path(datadir,"FixedSurvey.csv"))
 RandomSurvey<-read.csv(file.path(datadir,"RandomSurvey.csv"))
@@ -575,7 +579,7 @@ for(i in 1:7){
 
 ```{r}
 
-#HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021)
+HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021)
 
 #HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=2000:2021)
 

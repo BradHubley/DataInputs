@@ -34,7 +34,7 @@ bins=seq(0,260,5)
 
 # Update data from database 
 
- #Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
 # Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
@@ -172,8 +172,8 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
    #                          Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
    #                          se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
   
-  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2021)
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021)
+  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022)
 
 
 ```
@@ -327,12 +327,12 @@ BubblePannelPlotLF(combinedLengths,bins=bins,yrs=1970:2021,path=file.path(wd,'fi
 png(file.path(wd,'figures',"Modelindices.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
 par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
 
-plot(NPT~year,NSRV_Index, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT)*1.2), type='b',pch=16,xlim=c(1970,2021),xaxt='n')
+plot(NPT~year,NSRV_Index, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT)*1.2), type='b',pch=16,xlim=c(1970,2022),xaxt='n')
 axis(1,lab=F)
 points(2018,NSRV_Index$NPT[NSRV_Index$year==2018],col='red',cex=2)
 points(2021,NSRV_Index$NPT[NSRV_Index$year==2021],col='red',cex=2)
 lines(mean~survey.year,NLRV_Index,type='b',pch=16,col='green3')
-plot(KgPKH~Year,subset(HSFixed_Index,Year<2022),type='b',pch=16,col='red',ylim=c(0,250),xlim=c(1998,2021), ylab="Kg / 1000 hooks")
+plot(KgPKH~Year,subset(HSFixed_Index,Year<2023),type='b',pch=16,col='red',ylim=c(0,250),xlim=c(1998,2022), ylab="Kg / 1000 hooks")
 lines(KgPKH~Year,HSRandom_Index,type='b',pch=16,col='blue')
 lines(KgPKH+KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
 lines(KgPKH-KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
@@ -355,7 +355,7 @@ points(2018,NSRV_Index$NPT[NSRV_Index$year==2018],col='red',cex=2)
 #points(2021,NSRV_Index$NPT[NSRV_Index$year==2021],col='red',cex=2)
 #lines(mean~survey.year,NLRV_Index,type='b',pch=16,col='green3')
 plot(KgPKH~Year,subset(HSFixed_Index,Year<2022),type='b',pch=16,col='red',ylim=c(0,255),xlim=c(1970,2021), ylab="Kg / 1000 hooks")
-lines(KgPKH~Year,HSRandom_Index,type='b',pch=16,col='blue')
+lines(KgPKH~Year,subset(HSRandom_Index,Year<2022),type='b',pch=16,col='blue')
 #lines(KgPKH+KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
 #lines(KgPKH-KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
 
