@@ -18,12 +18,13 @@ FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
   if(use.calc.wt)FSindexData$WPKH <-  FSindexData$calc_weight/(FSindexData$NUM_HOOK_HAUL/1000)
 
   Year<-sort(unique(FSindexData$YEAR))
+  n<-with(FSindexData,tapply(WPKH,YEAR,length))
   KgPKH<-with(FSindexData,tapply(WPKH,YEAR,mean))
   KgPKHse<-with(FSindexData,tapply(WPKH,YEAR,sd))
   NPKH<-with(FSindexData,tapply(NPKH,YEAR,mean))
   NPKHse<-with(FSindexData,tapply(NPKH,YEAR,sd))
 
-  out<-data.frame(Year=Year,KgPKH=KgPKH,KgPKHse=KgPKHse,NPKH=NPKH,NPKHse=NPKHse)
+  out<-data.frame(Year=Year,n=n,KgPKH=KgPKH,KgPKHse=KgPKHse,NPKH=NPKH,NPKHse=NPKHse)
   out<-subset(out,Year%in%yrs)
 
   if(old.model){

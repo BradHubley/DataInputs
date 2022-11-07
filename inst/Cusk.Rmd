@@ -1,0 +1,82 @@
+---
+title: "Cusk"
+author: "Brad"
+date: "2022-11-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ROracle)
+library(devtools)
+library(tidyverse)
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r")) 
+
+ds_all <- Mar.datawrangling::load_datasources()
+
+devtools::load_all(".")
+
+
+```
+
+
+## Update data from database 
+
+```{r }
+
+
+# Update data from database 
+
+# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# open and check setprofile_wide to confirm that you have year, latitude & longitude
+
+FixedSurvey<-FixedSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F)
+
+
+```
+
+## Get Cusk Index from Halbut fixed survey
+
+```{r}
+sp=15 #Cusk species code
+
+Cusk.stns<- c(2,6, 12,14, 17, 18, 24, 25, 27, 29, 31, 33, 36, 37, 38, 39, 41, 42, 45, 47, 48, 49, 51, 53, 58,59, 69, 72,73, 74, 76, 77, 86, 90, 91, 97, 98, 101,102, 123, 124, 126, 128, 132,137, 139, 140, 144, 147, 153, 154, 159, 161, 162 ,165, 170, 176)
+
+
+FixedSurveyCusk <- subset(FixedSurvey,STATION%in%Cusk.stns&YEAR>1998)
+
+  FixedSurveyCusk$EST_NUM_CAUGHT[is.na(FixedSurveyCusk$EST_NUM_CAUGHT)]<-0
+  FixedSurveyCusk$EST_COMBINED_WT[is.na(FixedSurveyCusk$EST_COMBINED_WT)]<-0
+  FixedSurveyCusk$NUM_HOOK_HAUL[is.na(FixedSurveyCusk$NUM_HOOK_HAUL)]<-1000
+
+  FixedSurveyCusk$NPKH <-  FixedSurveyCusk$EST_NUM_CAUGHT/(FixedSurveyCusk$NUM_HOOK_HAUL/1000)
+  FixedSurveyCusk$WPKH <-  FixedSurveyCusk$EST_COMBINED_WT/(FixedSurveyCusk$NUM_HOOK_HAUL/1000)
+
+
+  
+B <- with(FixedSurveyCusk,tapply(WPKH,YEAR,mean,na.rm=T))
+n <-  with(FixedSurveyCusk,tapply(WPKH,YEAR,length))
+Bse <- with(FixedSurveyCusk,tapply(WPKH,YEAR,sd,na.rm=T))/sqrt(n)
+y <- as.numeric(names(B))
+
+GM3<-mavg(B,geometric=T)
+
+```
+
+## Plot Index
+```{r}
+
+
+USR= 26.6
+LRP= 13.3
+plot(y,B,ylim=c(0,45),pch=18,col='deepskyblue',ylab="CPUE (Kg/1000 hooks)", xlab='')
+arrows(y,B-1.96*Bse,y,B+1.96*Bse,col='deepskyblue',code=3,angle=90,length=0.02)
+abline(h=USR,lty=2,col='green4')
+abline(h=LRP,lty=5,col='red4',lwd=3)
+lines(y,GM3,lwd=2,col='royalblue')
+
+legend('topleft',c("Halibut Survey Biomass Index", "USR","LRP","3-yr mean"),pch=c(18,NA,NA,NA),lty = c(NA,2,5,1),lwd=c(NA,1,3,2),col=c("deepskyblue","green4","red4","royalblue"),bty='n',cex=0.8)
+
+
+```
+
