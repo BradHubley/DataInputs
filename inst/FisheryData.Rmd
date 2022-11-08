@@ -49,9 +49,10 @@ MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
 MARFISdataOT$CLASS <-"OT"
 
 MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
+
 ```
 
-# Make Tables
+# Make Tables by class
 
 ```{r }
 yrs1<-2002:2011
@@ -66,6 +67,27 @@ table2<-table2[c("NAFO","LL35", "LL35-45", "LL45-65", "LL65", "OT")]
 
 write.csv(table1,file.path(datadir,"MARFIStable1.csv"),row.names=F)
 write.csv(table2,file.path(datadir,"MARFIStable2.csv"),row.names=F)
+
+
+```
+
+
+
+# Make Tables by month
+
+```{r }
+yrs1<-2016:2018
+yrs2<-2019:2021
+
+MARFISdata$MONTH<-month(MARFISdata$DATE_FISHED)
+
+table1<- MARFISdata %>% filter(YEAR%in%yrs1&!is.na(NAFO)) %>% group_by(NAFO,MONTH) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = MONTH,values_from = Landings) %>% tibble()
+
+
+table2<- MARFISdata %>% filter(!is.na(CLASS)&YEAR%in%yrs2&!is.na(NAFO)) %>% group_by(NAFO,CLASS) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = CLASS,values_from = Landings) %>% tibble()
+
+write.csv(table1,file.path(datadir,"MARFIS_nafo_month_2016-2018.csv"),row.names=F)
+write.csv(table2,file.path(datadir,"MARFIS_nafo_month_2019-2021.csv"),row.names=F)
 
 
 ```
