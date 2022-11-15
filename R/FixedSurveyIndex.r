@@ -32,13 +32,7 @@ FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
     out<-makeOldFSIndex(FSindexData,do.plot=F)$index
   }
 
-  mean3_biomass <- NULL
-  for(i in 3:nrow(out)){
-    hold_mean <- mean(out[i:(i-2),2])
-    mean3_biomass <- c(mean3_biomass, hold_mean)
-  }
-
-  out$mean3_biomass <- c(rep(NA, 2), mean3_biomass)
+  out$mean3_biomass <- mavg(out$KgPKH)
 
 
   return(out)
