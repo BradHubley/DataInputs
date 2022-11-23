@@ -172,8 +172,8 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
    #                          Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
    #                          se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
   
-  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022)
+  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2021)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021,use.calc.weight = T)
 
 
 ```
@@ -292,9 +292,9 @@ BarPlotLF(LL3[which(names(LL3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"
 # Put it all together
 ```{r}
 
-save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2021.rdata"))
+save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2021cw.rdata"))
 
-load(file=file.path(scaldir,"SCALmodeldata2021.rdata"))
+load(file=file.path(scaldir,"SCALmodeldata2021cw.rdata"))
 
 ```
 

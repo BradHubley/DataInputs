@@ -1,7 +1,7 @@
 #' @export
-StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=1){
+StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=1,use.calc.weight=F,restratify=F){
 
-  RSindexData <- RandomSurveyData(datadir=datadir, add.LF=F,by.sex=F)
+  RSindexData <- RandomSurveyData(datadir=datadir, add.LF=T,by.sex=F, LF.from = "ISFISH")
   RSindexData$STRAT <- as.numeric(substr(RSindexData$ASSIGNED_STRATUM_ID,2,3))
 
   load(file.path(datadir,"Survey","SurveyStrata.rdata")) # check this to make sure it's up to date
@@ -13,7 +13,10 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=
   strata2<-StrataAreas$PID
 
 
+
   RSindexData<- subset(RSindexData,YEAR%in%yrs)
+
+  if (restratify)RSindexData<-reStratify(RSindexData,strata2)
 
 
   RSindexData$EST_NUM_CAUGHT[is.na(RSindexData$EST_NUM_CAUGHT)]<-0
@@ -22,6 +25,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=
 
   RSindexData$NPKH <-  RSindexData$EST_NUM_CAUGHT/(RSindexData$NUM_HOOK_HAUL/1000)
   RSindexData$WPKH <-  RSindexData$EST_COMBINED_WT/(RSindexData$NUM_HOOK_HAUL/1000)
+  if(use.calc.weight)  RSindexData$WPKH <-  RSindexData$calc_weight/(RSindexData$NUM_HOOK_HAUL/1000)
 
   sets<-c()
   N<-c()
@@ -33,7 +37,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=
   print(paste("Year", "N/KH", "Kg/KH"))
   for (i in 1:length(yrs)){
 
-    if(yrs[i]>2021)areas<-areas2 # new strata areas in 2022
+    if(yrs[i]>2021 || restratify)areas<-areas2 # new strata areas in 2022
 
     # Stratified mean and variance
     n<-with(subset(RSindexData,YEAR==yrs[i]),tapply(STATION,STRAT,length))*nadj
