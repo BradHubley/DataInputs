@@ -20,6 +20,24 @@ devtools::load_all(".")
 ```
 
 
+## Landings from MARFIS
+
+```{r}
+
+MARFISdataCusk<-getMARFISdata(datadir,sp=173)
+
+MARFISdataCusk$NAFO2<-NA
+MARFISdataCusk$NAFO2[MARFISdataCusk$NAFO%in%c("4X","5Z","5Y")]<-"4X5YZ"
+MARFISdataCusk$NAFO2[MARFISdataCusk$NAFO%in%c("4VN","4VS","4W")]<-"4VW"
+
+yrs1<-2007:2022
+table1<- MARFISdataCusk %>% filter(YEAR%in%yrs1&!is.na(NAFO2)) %>% group_by(YEAR,NAFO2) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = NAFO2,values_from = Landings) %>% tibble()
+
+table1
+
+write.csv(table1,file.path(datadir,"Cusk","landings.csv"),row.names=F)
+```
+
 ## Update data from database 
 
 ```{r }
@@ -30,6 +48,7 @@ devtools::load_all(".")
 # Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
+sp=15 #Cusk species code
 FixedSurvey<-FixedSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F)
 
 
@@ -38,7 +57,7 @@ FixedSurvey<-FixedSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F)
 ## Get Cusk Index from Halbut fixed survey
 
 ```{r}
-sp=15 #Cusk species code
+
 
 Cusk.stns<- c(2,6, 12,14, 17, 18, 24, 25, 27, 29, 31, 33, 36, 37, 38, 39, 41, 42, 45, 47, 48, 49, 51, 53, 58,59, 69, 72,73, 74, 76, 77, 86, 90, 91, 97, 98, 101,102, 123, 124, 126, 128, 132,137, 139, 140, 144, 147, 153, 154, 159, 161, 162 ,165, 170, 176)
 
@@ -65,6 +84,7 @@ GM3<-mavg(B,geometric=T)
 
 ## Plot Index
 ```{r}
+png(file.path(datadir,'Cusk',"Index.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
 
 
 USR= 26.6
@@ -77,6 +97,6 @@ lines(y,GM3,lwd=2,col='royalblue')
 
 legend('topleft',c("Halibut Survey Biomass Index", "USR","LRP","3-yr mean"),pch=c(18,NA,NA,NA),lty = c(NA,2,5,1),lwd=c(NA,1,3,2),col=c("deepskyblue","green4","red4","royalblue"),bty='n',cex=0.8)
 
-
+dev.off()
 ```
 

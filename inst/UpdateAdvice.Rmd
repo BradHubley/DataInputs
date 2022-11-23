@@ -37,8 +37,7 @@ Current.Year <- 2022
 # Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
-
-# get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
 
 ```
 
@@ -47,9 +46,14 @@ Current.Year <- 2022
 #NS RV survey
 
 ```{r}
+
+#RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:Current.Year, raw=T)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2022, raw=T)
 NSRV_Index<-RVinputs$Index
+
+# 
+NSRV_Index$NPT[NSRV_Index$year==2021]<-NA
 
 ```
 
@@ -58,7 +62,7 @@ NSRV_Index<-RVinputs$Index
 ```{r}
 
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
 
 ```
 
@@ -66,6 +70,7 @@ NSRV_Index<-RVinputs$Index
 ```{r}
 value <- HSRandom_Index$mean3_biomass[HSRandom_Index$Year==Current.Year]
 HCR(value)
+#HCR(value, q=0.0019) # when using calculated weight
 
 ```
 
@@ -73,13 +78,13 @@ HCR(value)
 ## plot survey indices SSR version
 ```{r}
 #RVinputs$Index
-png(file.path(wd,'figures',"ModelindicesSSR.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+png(file.path(wd,'figures',"ModelindicesSSR2.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
 par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
 
-plot(NPT~year,subset(NSRV_Index,year!=2021), ylab="Number / tow", xlab = '', ylim=c(0,max(NPT)*1.2), type='o',pch=16,xlim=c(1970,Current.Year),xaxt='n')
+plot(NPT~year,NSRV_Index, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT,na.rm=T)*1.2), type='o',pch=16,xlim=c(1970,Current.Year),xaxt='n')
 axis(1,lab=F)
 points(2018,NSRV_Index$NPT[NSRV_Index$year==2018],col='red',cex=2)
-#points(2021,NSRV_Index$NPT[NSRV_Index$year==2021],col='red',cex=2)
+points(2022,NSRV_Index$NPT[NSRV_Index$year==2022],col='red',cex=2)
 
 plot(KgPKH~Year,HSFixed_Index,type='l',pch=16,col='grey',lty=2,ylim=c(0,255),xlim=c(1970,Current.Year), ylab="Kg / 1000 hooks")
 lines(mean3_biomass~Year,HSFixed_Index)
@@ -92,3 +97,26 @@ dev.off()
 
 
 ```
+
+# Comparing calculated weight vs estimated weight
+```{r}
+ HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+ HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = T)
+
+```
+
+```{r}
+ plot(KgPKH~Year,HSRandom_Index,ylim=c(0,150),type='l',lwd=2)
+ with(HSRandom_Index,lines(Year,mean3_biomass,lty=2))
+ with(HSRandom_Index2,lines(Year,KgPKH,lwd=2,col=2))
+ with(HSRandom_Index2,lines(Year,mean3_biomass,lty=2,col=2))
+ 
+ plot(KgPKH/0.002~Year,HSRandom_Index,ylim=c(0,60000),type='l',lwd=2,ylab="Biomass")
+ with(HSRandom_Index,lines(Year,mean3_biomass/0.002,lty=2))
+ with(HSRandom_Index2,lines(Year,KgPKH/0.0019,lwd=2,col=2))
+ with(HSRandom_Index2,lines(Year,mean3_biomass/0.0019,lty=2,col=2))
+ 
+ 
+ 
+```
+
