@@ -53,7 +53,7 @@ ystart =1970
 # 21B last year
 yendB=2016
 # 21A last year(assessment year)
-yend=2021
+yend=2020
 # annual TAC table
 TAC = data.frame(Year=1988:2020,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507))
 # figure width and height
@@ -73,7 +73,7 @@ Additionally, the 2014 version of 21B data is available in the 2014 Assessment.
 
 ```{r all-country landings NAFO 21A and 21B;  2014 SCAL}
 nafoA = get_21A(count="others", yearstart = ystart, datadir=datadir)  #1970
-# sort(unique(nafoA$Division))
+sort(unique(nafoA$Year))
 
 nafoB=get_21B(count="others",ystart,yend,type=1, datadir=datadir)
 # unique(nafoB$Division)
@@ -225,10 +225,10 @@ nafoABM=  merge(nafoAB, mardiv, all.x=T)%>%
   mutate(CatchBA = CatchB-CatchA) 
 
 # export missing data 21B
-nafoABMmiss= nafoABM[is.na(nafoABM$CatchB),]  %>%
-  select(Year, Division, CatchA, CatchB)  %>%
-  filter (Year<=yend)
-write.csv(nafoABMmiss, file.path(wd,"figures","Missing_21B.csv"))
+# nafoABMmiss= nafoABM[is.na(nafoABM$CatchB),]  %>%
+#   select(Year, Division, CatchA, CatchB)  %>%
+#   filter (Year<=yend)
+# write.csv(nafoABMmiss, file.path(wd,"figures","Missing_21B.csv"))
 
 #compare landing by year/division(3 vs 4) from 21A, 21B, and MARFIS
 
@@ -510,8 +510,6 @@ landCF= merge(landCDN, landfor,all.x = T, by= c("Year", "Division", "Gear")) %>%
   mutate(Catch=Catch.x+Catch.y)%>%
   dplyr::select(Year,Division, Gear, Catch)
 
-
-
 # CDN+foreign landing 1970-yend by gear division
 nafoland = rbind(nafoland1,landCF)
 
@@ -630,7 +628,7 @@ barplot(nafoscalp$OT4d~nafoscalp$Year,
  xlab= "", ylab="", ylim=c(-200, 200))
 text(1.5,180, "D", cex=2 )
 mtext("Year", outer=T, line=2, side=1, cex=1.5)
-mtext("Model input data: 2014 version - 2021 version", outer=T, line=0.5, side=2, cex=1.5)
+mtext("Model input landings (t): 2014 version - 2021 version", outer=T, line=0.5, side=2, cex=1.5)
 dev.off()
 ```
 
@@ -676,7 +674,7 @@ barplot(Bscalp$OT4d~Bscalp$Year,
  xlab= "", ylab="", ylim=c(-200, 200))
 text(1.5,180, "D", cex=2 )
 mtext("Year", outer=T, line=2, side=1, cex=1.5)
-mtext(" 2014 model input data - 2021 online 21B ", outer=T, line=0.5, side=2, cex=1.5)
+mtext(" 2014 model input landings - 2021 online 21B (t) ", outer=T, line=0.5, side=2, cex=1.5)
 dev.off()
 
 ```

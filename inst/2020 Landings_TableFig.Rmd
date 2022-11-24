@@ -1,6 +1,6 @@
 ---
 title: "Update"
-author: "Brad", Lingbo
+author: "Brad", "Lingbo"
 date: "Feb 23, 2022"
 output: html_document
 Highlights: Table 1 and Fig 3 in SAR2022. Select CDN landings  for both CDN landing and international landing in NAFO A zone 5; sum of MARFIS and NL landings for CDN landings in Zone 3. 

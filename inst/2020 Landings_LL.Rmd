@@ -63,12 +63,12 @@ To get the NAFO landings data 21A, download from here: https://www.nafo.int/Data
 To get the NAFO landings data 21B, download from here:
 https://www.nafo.int/Data/Catch-Statistics. There are multiple zipped files each with  one decade's data except the most recent one. Save and unzip all of them.
 ```{r all-country landings NAFO 21A, 21B, 2014 SCAL}
-nafoA = get_21A(count="others", yearstart = ystart, wd=wd)  #1970
+nafoA = get_21A(count="others", yearstart = ystart, datadir=datadir)  #1970
 # sort(unique(nafoA$Division))
 
-nafoB=get_21B(count="others",ystart,yend,1, wd=wd)
+nafoB=get_21B(count="others",ystart,yend,1, datadir=datadir)
 # unique(nafoB$Division)
-nafoBdiv = get_21B(count="others",ystart,yend,2, wd=wd)
+nafoBdiv = get_21B(count="others",ystart,yend,2, datadir=datadir)
 
 # compare 21A landings between CDN and all countries
 # nafoAll= get_21A(count="other", yearstart = 1970)
@@ -84,15 +84,15 @@ nafoBdiv = get_21B(count="others",ystart,yend,2, wd=wd)
 # nafoBdiff= merge( nafoBall, nafoBCDN)%>%
 #   mutate(CatchBd=Catch- CatchCDN )
 
-# current 21B with the version in the last assessment.
+# current 21B with the version in the last assessment. getwd()
 
 nafoBtotal= nafoB %>%
   replace(is.na(.), 0) %>%
   group_by(Year) %>%
   summarise(CatchT=sum(Catch)  )
 
-# 21B data in the 2014 Assessment
-nafoBprev= read.csv("nafoBprevious.csv", header=T)  
+# 21B data in the 2014 Assessment 
+nafoBprev= read.csv( file.path(datadir,"nafoBprevious.csv"), header=T)  
 # compare current 21B with the previous 21B
 nafoBtp= merge(nafoBtotal, nafoBprev)   %>%
   mutate(CatchD=CatchT-CatchAss  )
@@ -104,10 +104,10 @@ dev.off()
 
 
 ## Scal format of 21B  
-nafoBg = get_21B(count="others",1970,2016,4,wd=wd)
+nafoBg = get_21B(count="others",1970,2016,4,datadir=datadir)
 
 # import scal data from 2014 assessment
-scal=read.table(file.path(wd,'data',"scal_catch.dat"), header=F)
+scal=read.table(file.path(datadir,"scal_catch.dat"), header=F)
 colnames(scal)= c("code","Year","LL3scal", "LL4scal", "OT3scal", "OT4scal")
 scal=scal[, 2:6]
 
