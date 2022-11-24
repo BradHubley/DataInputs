@@ -191,7 +191,7 @@ Canadaay
 
 ```{r, echo=F}
 
-plm = rbind(table1$CanadaTotal,table1$ForeignTotal,c(rep(NA,63),Canadaay$CanadaTotal))
+plm = rbind(table1$CanadaTotal,table1$ForeignTotal,c(rep(NA,62),Canadaay$CanadaTotal))
 plm[is.na(plm)]<-0
 
 png(file.path(wd,"figures","Fig2 fishery.png"), width = width1, height = height2,units='in',pointsize=12, res=300,type='cairo')
@@ -203,12 +203,12 @@ barplot(plm,ylim=c(0,5600),col=c('#377eb8','#d53e4f','#377eb8'),border=NA,densit
  mtext("Landings (t)",2,line=3.5,cex=1.5,las=0)
  axis(1,at=seq(0.7,73,1.2),lab=F,tck=-0.01)
  axis(1,at=seq(0.7,75,12),lab=seq(1960,ay,10))
- lines(seq(0.7,75,1.2),table1$TAC,col='#7fbc41',lwd=4)
+ lines(seq(0.7,76.2,1.2),table1$TAC,col='#7fbc41',lwd=4)
 # grid(ny=NULL,nx=NA)
  legend('topright',c("Canada","Foreign","TAC"),fill=c('#377eb8','#d53e4f',NA),col=c(NA,NA,'#7fbc41'),lwd=c(NA,NA,4),border=NA,inset=c(0.2,0.1),bg='white',box.lty=0)
  dev.off()
  
- 
+ getwd()
 
  
 ```
