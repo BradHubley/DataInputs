@@ -1,6 +1,7 @@
 #Nell's "get length and weight" function -> can use this to get data to us AB function on
 
 
+#' @export
 get.lenwt.all<-function(start.year, end.year){
   start.year <- as.numeric(1970)
   end.year <- as.numeric(2013)

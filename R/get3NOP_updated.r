@@ -1,3 +1,4 @@
+#' @export
 get.3NOP.rv.dat.2021<-function(start.year, end.year){
   require(RODBC)
   require(sqldf)

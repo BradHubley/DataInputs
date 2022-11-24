@@ -10,3 +10,6 @@ passwords.r
 directories.r
 summaryLWanalysis
 figures/
+.Rdata
+.httr-oauth
+.DS_Store

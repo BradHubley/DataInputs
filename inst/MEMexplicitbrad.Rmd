@@ -1,0 +1,86 @@
+---
+title: "Reproduction Code"
+author: "Jiaxin Luo & Nell den Heyer"
+date: "2020/2/13"
+output: pdf_document
+---
+
+# Jiaxin version of code read in the data year by year.  Now how have single file with all years, that includes the hook occupancy and total count data from all years.  Station stratification correctly assigned but still gaps -  incomplete sets, temperature or depth lacking
+
+data needed:  
+-stratified random catch data
+-Block IDs
+-temperature & depth data
+-code to create the ultimate survey map
+
+dyn.load  require 32 bit R
+
+# what should be limit for number of HO samples?  Perhaps 210? And how to hand SR sets withou HO data?  Keep them in and use the total data?
+
+```{r setup, include=FALSE}
+library(devtools)
+
+# install_github("Maritimes/Mar.datawrangling")
+# install_github("Maritimes/Mar.fleets")
+
+ library(Mar.datawrangling)
+ library(TMB)
+ library(tidyverse)
+ library(SpatialHub)
+
+#install_github("BradHubley/SpatialHub")
+source(file.path(getwd(), "directories.r"))
+#datadir="C:/Users/hubleyb/Documents/Halibut/data"
+#wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+
+source(file.path(wd, "passwords.r")) 
+#ds_all <- Mar.datawrangling::load_datasources()
+devtools::load_all(".")
+
+# png(paste0(filen,".png"), width = wd, height = ht,units='in',pointsize=12, res=300,type='cairo')
+
+```
+
+
+# read in data
+```{r}
+# Clear memory
+#rm(list=ls())
+# Import 2017 data
+dataSR = read.csv(file.path(datadir,"HalibutSurveyHookData.csv"), header = TRUE)
+summary(dataSR)
+dim(dataSR)
+
+# Drop sets with incomplete HO data: 5 sets some have only 30, others have 180
+not300 = which(dataSR$total_sampled<=200)
+dataSR[not300,]
+dataSR = dataSR[-c(not300), ] 
+dim(dataSR)
+
+
+```
+
+# create function to calculate the mean cpue using MEM -- with either fixed (mean soak) or individual soak
+At present set-up for hook occupancy data -- could add feature to do with just 1000 or 700 + 300
+also not no spatial structure ... no strata involved
+as of right now (May 25) the fixed (average) soak time is deprecated, it could be an option
+
+
+```{r}
+yrs=2017:2020
+repcd=list()
+index=c()
+
+for(i in 1:length(yrs)){
+  
+  repcd[[i]]<-HOmem(data=dataSR, year=yrs[i], tmbdir=file.path(wd,"inst","TMB"), filename="rep_code")
+  index[i] <- exp(repcd[[i]]$fit$par[1])
+}
+out<-data.frame(yrs,index)
+save(out,file=file.path(datadir,"Survey","RSHOMindex.rdata"))
+
+```
+
+

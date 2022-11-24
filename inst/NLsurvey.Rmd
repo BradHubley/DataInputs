@@ -12,7 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
  library(lubridate)
  library(stringr)
 
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/"
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021"
+#datadir="C:/Users/hubleyb/Documents/Halibut/data/Newfoundland Data/Newfoundland RV Data - Received 2021"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 source(file.path(wd, "passwords.r"))
 ```
@@ -36,23 +37,23 @@ Thing to consider when looking at the data with respect to the halibut managemen
       - still enough to consider strata completed
 
 ```{r}
-NL_hal_LFraw <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NL_AtlanticHalibut_LF.csv")
+NL_hal_LFraw <- read.csv(file.path(datadir,"NL_AtlanticHalibut_LF.csv"))
 
-NLstrat_length_abundance_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_abundance_details.csv")
+NLstrat_length_abundance_detail <- read.csv(file.path(datadir,"NLstrat1_length_abundance_details.csv"))
 
-NLstrat_length_abundance_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_abundance_summary.csv")
+NLstrat_length_abundance_summary <- read.csv(file.path(datadir,"NLstrat1_length_abundance_summary.csv"))
 
-NLstrat_lengthyear_meanabundance_matrix <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_year_mean_abundance_matrix.csv")
+NLstrat_lengthyear_meanabundance_matrix <- read.csv(file.path(datadir,"NLstrat1_length_year_mean_abundance_matrix.csv"))
 
-NLstrat_lengthyear_totalabundance_matrix <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat1_length_year_total_abundance_matrix.csv")
+NLstrat_lengthyear_totalabundance_matrix <- read.csv(file.path(datadir,"NLstrat1_length_year_total_abundance_matrix.csv"))
 
-NLstrat_abundance_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_abundance_details.csv")
+NLstrat_abundance_detail <- read.csv(file.path(datadir,"NLstrat2_abundance_details.csv"))
 
-NLstrat_abundance_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_abundance_summary.csv")
+NLstrat_abundance_summary <- read.csv(file.path(datadir,"NLstrat2_abundance_summary.csv"))
 
-NLstrat_biomass_detail <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_biomass_details.csv")
+NLstrat_biomass_detail <- read.csv(file.path(datadir,"NLstrat2_biomass_details.csv"))
 
-NLstrat_biomass_summary <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/NLstrat2_biomass_summary.csv")
+NLstrat_biomass_summary <- read.csv(file.path(datadir,"NLstrat2_biomass_summary.csv"))
 ```
 
 NL_hal_LFraw is just from 2008-2019
@@ -106,7 +107,7 @@ ggplot(NLstrat_length_abundance_detail) +
    theme_classic()
 ```
 
-Binned (but including the 3 sex categories, which is wrong right?)...atrificially inflated by repeat values in female+male+unsexed
+Binned (but including the 3 sex categories, which is wrong right?)...artificially inflated by repeat values in female+male+unsexed
 ```{r}
 NL_binlengthT <- as.data.frame(NL_binlength)
 
@@ -534,10 +535,14 @@ NL_ss <- NLstrat_length_abundance_detail %>%
 
 NL_ss <- NL_ss %>%
    group_by(survey.year, sex) %>%
-   summarize(n=n())
+   summarize(obs=sum(obs))
 
-write.csv(NL_ss, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NL_n_yrsex.csv", row.names = FALSE)
+write.csv(NL_ss, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_n_yrsex.csv", row.names = FALSE)
 
+NL_ss_nosex <- NL_ss %>%
+   group_by(survey.year) %>%
+   summarize(obs=sum(obs))
+write.csv(NL_ss_nosex, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_n_yr.csv", row.names = FALSE)
 ```
 
 Sample units per year for Brad
@@ -624,5 +629,268 @@ NL_unknowns <- NL_unsexed %>%
    summarise(n())
 View(NL_unknowns)
 
+```
+
+Observed sample size length frequency by sex
+```{r}
+#female
+NL_n_f <- NLstrat_length_abundance_detail %>% filter(sex == "female")
+NLf1996 <- NL_n_f %>% filter(survey.year == 1996)
+NLf1997 <- NL_n_f %>% filter(survey.year == 1997)
+NLf1998 <- NL_n_f %>% filter(survey.year == 1998)
+NLf1999 <- NL_n_f %>% filter(survey.year == 1999)
+NLf2000 <- NL_n_f %>% filter(survey.year == 2000)
+NLf2001 <- NL_n_f %>% filter(survey.year == 2001)
+NLf2002 <- NL_n_f %>% filter(survey.year == 2002)
+NLf2003 <- NL_n_f %>% filter(survey.year == 2003)
+NLf2004 <- NL_n_f %>% filter(survey.year == 2004)
+NLf2005 <- NL_n_f %>% filter(survey.year == 2005)
+NLf2006 <- NL_n_f %>% filter(survey.year == 2006)
+NLf2007 <- NL_n_f %>% filter(survey.year == 2007)
+NLf2008 <- NL_n_f %>% filter(survey.year == 2008)
+NLf2009 <- NL_n_f %>% filter(survey.year == 2009)
+NLf2010 <- NL_n_f %>% filter(survey.year == 2010)
+NLf2011 <- NL_n_f %>% filter(survey.year == 2011)
+NLf2012 <- NL_n_f %>% filter(survey.year == 2012)
+NLf2013 <- NL_n_f %>% filter(survey.year == 2013)
+NLf2014 <- NL_n_f %>% filter(survey.year == 2014)
+NLf2015 <- NL_n_f %>% filter(survey.year == 2015)
+NLf2016 <- NL_n_f %>% filter(survey.year == 2016)
+NLf2017 <- NL_n_f %>% filter(survey.year == 2017)
+NLf2018 <- NL_n_f %>% filter(survey.year == 2018)
+NLf2019 <- NL_n_f %>% filter(survey.year == 2019)
+
+NLf1996bin <- binNumAtLen(num.at.len = NLf1996$obs, len = NLf1996$length, bins = seq(0, 260, 5))
+NLf1997bin <- binNumAtLen(num.at.len = NLf1997$obs, len = NLf1997$length, bins = seq(0, 260, 5))
+NLf1998bin <- binNumAtLen(num.at.len = NLf1998$obs, len = NLf1998$length, bins = seq(0, 260, 5))
+NLf1999bin <- binNumAtLen(num.at.len = NLf1999$obs, len = NLf1999$length, bins = seq(0, 260, 5))
+NLf2000bin <- binNumAtLen(num.at.len = NLf2000$obs, len = NLf2000$length, bins = seq(0, 260, 5))
+NLf2001bin <- binNumAtLen(num.at.len = NLf2001$obs, len = NLf2001$length, bins = seq(0, 260, 5))
+NLf2002bin <- binNumAtLen(num.at.len = NLf2002$obs, len = NLf2002$length, bins = seq(0, 260, 5))
+NLf2003bin <- binNumAtLen(num.at.len = NLf2003$obs, len = NLf2003$length, bins = seq(0, 260, 5))
+NLf2004bin <- binNumAtLen(num.at.len = NLf2004$obs, len = NLf2004$length, bins = seq(0, 260, 5))
+NLf2005bin <- binNumAtLen(num.at.len = NLf2005$obs, len = NLf2005$length, bins = seq(0, 260, 5))
+NLf2006bin <- binNumAtLen(num.at.len = NLf2006$obs, len = NLf2006$length, bins = seq(0, 260, 5))
+NLf2007bin <- binNumAtLen(num.at.len = NLf2007$obs, len = NLf2007$length, bins = seq(0, 260, 5))
+NLf2008bin <- binNumAtLen(num.at.len = NLf2008$obs, len = NLf2008$length, bins = seq(0, 260, 5))
+NLf2009bin <- binNumAtLen(num.at.len = NLf2009$obs, len = NLf2009$length, bins = seq(0, 260, 5))
+NLf2010bin <- binNumAtLen(num.at.len = NLf2010$obs, len = NLf2010$length, bins = seq(0, 260, 5))
+NLf2011bin <- binNumAtLen(num.at.len = NLf2011$obs, len = NLf2011$length, bins = seq(0, 260, 5))
+NLf2012bin <- binNumAtLen(num.at.len = NLf2012$obs, len = NLf2012$length, bins = seq(0, 260, 5))
+NLf2013bin <- binNumAtLen(num.at.len = NLf2013$obs, len = NLf2013$length, bins = seq(0, 260, 5))
+NLf2014bin <- binNumAtLen(num.at.len = NLf2014$obs, len = NLf2014$length, bins = seq(0, 260, 5))
+NLf2015bin <- binNumAtLen(num.at.len = NLf2015$obs, len = NLf2015$length, bins = seq(0, 260, 5))
+NLf2016bin <- binNumAtLen(num.at.len = NLf2016$obs, len = NLf2016$length, bins = seq(0, 260, 5))
+NLf2017bin <- binNumAtLen(num.at.len = NLf2017$obs, len = NLf2017$length, bins = seq(0, 260, 5))
+NLf2018bin <- binNumAtLen(num.at.len = NLf2018$obs, len = NLf2018$length, bins = seq(0, 260, 5))
+NLf2019bin <- binNumAtLen(num.at.len = NLf2019$obs, len = NLf2019$length, bins = seq(0, 260, 5))
+
+NLf_binobs.tab <- data.frame(yr1996 = NLf1996bin, yr1997 = NLf1997bin, yr1998 = NLf1998bin, yr1999 = NLf1999bin, yr2000 = NLf2000bin, yr2001 = NLf2001bin, yr2002 = NLf2002bin, yr2003 = NLf2003bin, yr2004 = NLf2004bin, yr2005 = NLf2005bin, yr2006 = NLf2006bin, yr2007 = NLf2007bin, yr2008 = NLf2008bin, yr2009 = NLf2009bin, yr2010 = NLf2010bin, yr2011 = NLf2011bin, yr2012 = NLf2012bin, yr2013 = NLf2013bin, yr2014 = NLf2014bin, yr2015 = NLf2015bin, yr2016 = NLf2016bin, yr2017 = NLf2017bin, yr2018 = NLf2018bin, yr2019 = NLf2019bin)
+
+NLf_binobs.tab <- tibble::rownames_to_column(NLf_binobs.tab, "length")
+
+NLf_binobs.tab$length<-gsub("L"," ", as.character(NLf_binobs.tab$length))
+
+NLf_binobs.tab$length <- as.numeric(NLf_binobs.tab$length)
+
+NLf_binobs.tablong <- gather(NLf_binobs.tab, "year", "obs", -"length")
+NLf_binobs.tablong$year<-gsub("yr"," ", as.character(NLf_binobs.tablong$year))
+
+write.csv(NLf_binobs.tablong, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_f_LF_obs.csv", row.names = FALSE)
+#male
+
+NL_n_m <- NLstrat_length_abundance_detail %>% filter(sex == "male")
+NLm1996 <- NL_n_m %>% filter(survey.year == 1996)
+NLm1997 <- NL_n_m %>% filter(survey.year == 1997)
+NLm1998 <- NL_n_m %>% filter(survey.year == 1998)
+NLm1999 <- NL_n_m %>% filter(survey.year == 1999)
+NLm2000 <- NL_n_m %>% filter(survey.year == 2000)
+NLm2001 <- NL_n_m %>% filter(survey.year == 2001)
+NLm2002 <- NL_n_m %>% filter(survey.year == 2002)
+NLm2003 <- NL_n_m %>% filter(survey.year == 2003)
+NLm2004 <- NL_n_m %>% filter(survey.year == 2004)
+NLm2005 <- NL_n_m %>% filter(survey.year == 2005)
+NLm2006 <- NL_n_m %>% filter(survey.year == 2006)
+NLm2007 <- NL_n_m %>% filter(survey.year == 2007)
+NLm2008 <- NL_n_m %>% filter(survey.year == 2008)
+NLm2009 <- NL_n_m %>% filter(survey.year == 2009)
+NLm2010 <- NL_n_m %>% filter(survey.year == 2010)
+NLm2011 <- NL_n_m %>% filter(survey.year == 2011)
+NLm2012 <- NL_n_m %>% filter(survey.year == 2012)
+NLm2013 <- NL_n_m %>% filter(survey.year == 2013)
+NLm2014 <- NL_n_m %>% filter(survey.year == 2014)
+NLm2015 <- NL_n_m %>% filter(survey.year == 2015)
+NLm2016 <- NL_n_m %>% filter(survey.year == 2016)
+NLm2017 <- NL_n_m %>% filter(survey.year == 2017)
+NLm2018 <- NL_n_m %>% filter(survey.year == 2018)
+NLm2019 <- NL_n_m %>% filter(survey.year == 2019)
+
+NLm1996bin <- binNumAtLen(num.at.len = NLm1996$obs, len = NLm1996$length, bins = seq(0, 260, 5))
+NLm1997bin <- binNumAtLen(num.at.len = NLm1997$obs, len = NLm1997$length, bins = seq(0, 260, 5))
+NLm1998bin <- binNumAtLen(num.at.len = NLm1998$obs, len = NLm1998$length, bins = seq(0, 260, 5))
+NLm1999bin <- binNumAtLen(num.at.len = NLm1999$obs, len = NLm1999$length, bins = seq(0, 260, 5))
+NLm2000bin <- binNumAtLen(num.at.len = NLm2000$obs, len = NLm2000$length, bins = seq(0, 260, 5))
+NLm2001bin <- binNumAtLen(num.at.len = NLm2001$obs, len = NLm2001$length, bins = seq(0, 260, 5))
+NLm2002bin <- binNumAtLen(num.at.len = NLm2002$obs, len = NLm2002$length, bins = seq(0, 260, 5))
+NLm2003bin <- binNumAtLen(num.at.len = NLm2003$obs, len = NLm2003$length, bins = seq(0, 260, 5))
+NLm2004bin <- binNumAtLen(num.at.len = NLm2004$obs, len = NLm2004$length, bins = seq(0, 260, 5))
+NLm2005bin <- binNumAtLen(num.at.len = NLm2005$obs, len = NLm2005$length, bins = seq(0, 260, 5))
+NLm2006bin <- binNumAtLen(num.at.len = NLm2006$obs, len = NLm2006$length, bins = seq(0, 260, 5))
+NLm2007bin <- binNumAtLen(num.at.len = NLm2007$obs, len = NLm2007$length, bins = seq(0, 260, 5))
+NLm2008bin <- binNumAtLen(num.at.len = NLm2008$obs, len = NLm2008$length, bins = seq(0, 260, 5))
+NLm2009bin <- binNumAtLen(num.at.len = NLm2009$obs, len = NLm2009$length, bins = seq(0, 260, 5))
+NLm2010bin <- binNumAtLen(num.at.len = NLm2010$obs, len = NLm2010$length, bins = seq(0, 260, 5))
+NLm2011bin <- binNumAtLen(num.at.len = NLm2011$obs, len = NLm2011$length, bins = seq(0, 260, 5))
+NLm2012bin <- binNumAtLen(num.at.len = NLm2012$obs, len = NLm2012$length, bins = seq(0, 260, 5))
+NLm2013bin <- binNumAtLen(num.at.len = NLm2013$obs, len = NLm2013$length, bins = seq(0, 260, 5))
+NLm2014bin <- binNumAtLen(num.at.len = NLm2014$obs, len = NLm2014$length, bins = seq(0, 260, 5))
+NLm2015bin <- binNumAtLen(num.at.len = NLm2015$obs, len = NLm2015$length, bins = seq(0, 260, 5))
+NLm2016bin <- binNumAtLen(num.at.len = NLm2016$obs, len = NLm2016$length, bins = seq(0, 260, 5))
+NLm2017bin <- binNumAtLen(num.at.len = NLm2017$obs, len = NLm2017$length, bins = seq(0, 260, 5))
+NLm2018bin <- binNumAtLen(num.at.len = NLm2018$obs, len = NLm2018$length, bins = seq(0, 260, 5))
+NLm2019bin <- binNumAtLen(num.at.len = NLm2019$obs, len = NLm2019$length, bins = seq(0, 260, 5))
+
+NLm_binobs.tab <- data.frame(yr1996 = NLm1996bin, yr1997 = NLm1997bin, yr1998 = NLm1998bin, yr1999 = NLm1999bin, yr2000 = NLm2000bin, yr2001 = NLm2001bin, yr2002 = NLm2002bin, yr2003 = NLm2003bin, yr2004 = NLm2004bin, yr2005 = NLm2005bin, yr2006 = NLm2006bin, yr2007 = NLm2007bin, yr2008 = NLm2008bin, yr2009 = NLm2009bin, yr2010 = NLm2010bin, yr2011 = NLm2011bin, yr2012 = NLm2012bin, yr2013 = NLm2013bin, yr2014 = NLm2014bin, yr2015 = NLm2015bin, yr2016 = NLm2016bin, yr2017 = NLm2017bin, yr2018 = NLm2018bin, yr2019 = NLm2019bin)
+
+NLm_binobs.tab <- tibble::rownames_to_column(NLm_binobs.tab, "length")
+
+NLm_binobs.tab$length<-gsub("L"," ", as.character(NLm_binobs.tab$length))
+
+NLm_binobs.tab$length <- as.numeric(NLm_binobs.tab$length)
+
+NLm_binobs.tablong <- gather(NLm_binobs.tab, "year", "obs", -"length")
+NLm_binobs.tablong$year<-gsub("yr"," ", as.character(NLm_binobs.tablong$year))
+
+write.csv(NLm_binobs.tablong, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_m_LF_obs.csv", row.names = FALSE)
+
+#female+male+unsexed
+NL_n_mfu <- NLstrat_length_abundance_detail %>% filter(sex == "female+male+unsexed")
+NLmfu1996 <- NL_n_mfu %>% filter(survey.year == 1996)
+NLmfu1997 <- NL_n_mfu %>% filter(survey.year == 1997)
+NLmfu1998 <- NL_n_mfu %>% filter(survey.year == 1998)
+NLmfu1999 <- NL_n_mfu %>% filter(survey.year == 1999)
+NLmfu2000 <- NL_n_mfu %>% filter(survey.year == 2000)
+NLmfu2001 <- NL_n_mfu %>% filter(survey.year == 2001)
+NLmfu2002 <- NL_n_mfu %>% filter(survey.year == 2002)
+NLmfu2003 <- NL_n_mfu %>% filter(survey.year == 2003)
+NLmfu2004 <- NL_n_mfu %>% filter(survey.year == 2004)
+NLmfu2005 <- NL_n_mfu %>% filter(survey.year == 2005)
+NLmfu2006 <- NL_n_mfu %>% filter(survey.year == 2006)
+NLmfu2007 <- NL_n_mfu %>% filter(survey.year == 2007)
+NLmfu2008 <- NL_n_mfu %>% filter(survey.year == 2008)
+NLmfu2009 <- NL_n_mfu %>% filter(survey.year == 2009)
+NLmfu2010 <- NL_n_mfu %>% filter(survey.year == 2010)
+NLmfu2011 <- NL_n_mfu %>% filter(survey.year == 2011)
+NLmfu2012 <- NL_n_mfu %>% filter(survey.year == 2012)
+NLmfu2013 <- NL_n_mfu %>% filter(survey.year == 2013)
+NLmfu2014 <- NL_n_mfu %>% filter(survey.year == 2014)
+NLmfu2015 <- NL_n_mfu %>% filter(survey.year == 2015)
+NLmfu2016 <- NL_n_mfu %>% filter(survey.year == 2016)
+NLmfu2017 <- NL_n_mfu %>% filter(survey.year == 2017)
+NLmfu2018 <- NL_n_mfu %>% filter(survey.year == 2018)
+NLmfu2019 <- NL_n_mfu %>% filter(survey.year == 2019)
+
+NLmfu1996bin <- binNumAtLen(num.at.len = NLmfu1996$obs, len = NLmfu1996$length, bins = seq(0, 260, 5))
+NLmfu1997bin <- binNumAtLen(num.at.len = NLmfu1997$obs, len = NLmfu1997$length, bins = seq(0, 260, 5))
+NLmfu1998bin <- binNumAtLen(num.at.len = NLmfu1998$obs, len = NLmfu1998$length, bins = seq(0, 260, 5))
+NLmfu1999bin <- binNumAtLen(num.at.len = NLmfu1999$obs, len = NLmfu1999$length, bins = seq(0, 260, 5))
+NLmfu2000bin <- binNumAtLen(num.at.len = NLmfu2000$obs, len = NLmfu2000$length, bins = seq(0, 260, 5))
+NLmfu2001bin <- binNumAtLen(num.at.len = NLmfu2001$obs, len = NLmfu2001$length, bins = seq(0, 260, 5))
+NLmfu2002bin <- binNumAtLen(num.at.len = NLmfu2002$obs, len = NLmfu2002$length, bins = seq(0, 260, 5))
+NLmfu2003bin <- binNumAtLen(num.at.len = NLmfu2003$obs, len = NLmfu2003$length, bins = seq(0, 260, 5))
+NLmfu2004bin <- binNumAtLen(num.at.len = NLmfu2004$obs, len = NLmfu2004$length, bins = seq(0, 260, 5))
+NLmfu2005bin <- binNumAtLen(num.at.len = NLmfu2005$obs, len = NLmfu2005$length, bins = seq(0, 260, 5))
+NLmfu2006bin <- binNumAtLen(num.at.len = NLmfu2006$obs, len = NLmfu2006$length, bins = seq(0, 260, 5))
+NLmfu2007bin <- binNumAtLen(num.at.len = NLmfu2007$obs, len = NLmfu2007$length, bins = seq(0, 260, 5))
+NLmfu2008bin <- binNumAtLen(num.at.len = NLmfu2008$obs, len = NLmfu2008$length, bins = seq(0, 260, 5))
+NLmfu2009bin <- binNumAtLen(num.at.len = NLmfu2009$obs, len = NLmfu2009$length, bins = seq(0, 260, 5))
+NLmfu2010bin <- binNumAtLen(num.at.len = NLmfu2010$obs, len = NLmfu2010$length, bins = seq(0, 260, 5))
+NLmfu2011bin <- binNumAtLen(num.at.len = NLmfu2011$obs, len = NLmfu2011$length, bins = seq(0, 260, 5))
+NLmfu2012bin <- binNumAtLen(num.at.len = NLmfu2012$obs, len = NLmfu2012$length, bins = seq(0, 260, 5))
+NLmfu2013bin <- binNumAtLen(num.at.len = NLmfu2013$obs, len = NLmfu2013$length, bins = seq(0, 260, 5))
+NLmfu2014bin <- binNumAtLen(num.at.len = NLmfu2014$obs, len = NLmfu2014$length, bins = seq(0, 260, 5))
+NLmfu2015bin <- binNumAtLen(num.at.len = NLmfu2015$obs, len = NLmfu2015$length, bins = seq(0, 260, 5))
+NLmfu2016bin <- binNumAtLen(num.at.len = NLmfu2016$obs, len = NLmfu2016$length, bins = seq(0, 260, 5))
+NLmfu2017bin <- binNumAtLen(num.at.len = NLmfu2017$obs, len = NLmfu2017$length, bins = seq(0, 260, 5))
+NLmfu2018bin <- binNumAtLen(num.at.len = NLmfu2018$obs, len = NLmfu2018$length, bins = seq(0, 260, 5))
+NLmfu2019bin <- binNumAtLen(num.at.len = NLmfu2019$obs, len = NLmfu2019$length, bins = seq(0, 260, 5))
+
+NLmfu_binobs.tab <- data.frame(yr1996 = NLmfu1996bin, yr1997 = NLmfu1997bin, yr1998 = NLmfu1998bin, yr1999 = NLmfu1999bin, yr2000 = NLmfu2000bin, yr2001 = NLmfu2001bin, yr2002 = NLmfu2002bin, yr2003 = NLmfu2003bin, yr2004 = NLmfu2004bin, yr2005 = NLmfu2005bin, yr2006 = NLmfu2006bin, yr2007 = NLmfu2007bin, yr2008 = NLmfu2008bin, yr2009 = NLmfu2009bin, yr2010 = NLmfu2010bin, yr2011 = NLmfu2011bin, yr2012 = NLmfu2012bin, yr2013 = NLmfu2013bin, yr2014 = NLmfu2014bin, yr2015 = NLmfu2015bin, yr2016 = NLmfu2016bin, yr2017 = NLmfu2017bin, yr2018 = NLmfu2018bin, yr2019 = NLmfu2019bin)
+
+NLmfu_binobs.tab <- tibble::rownames_to_column(NLmfu_binobs.tab, "length")
+
+NLmfu_binobs.tab$length<-gsub("L"," ", as.character(NLmfu_binobs.tab$length))
+
+NLmfu_binobs.tab$length <- as.numeric(NLmfu_binobs.tab$length)
+
+NLmfu_binobs.tablong <- gather(NLmfu_binobs.tab, "year", "obs", -"length")
+NLmfu_binobs.tablong$year<-gsub("yr"," ", as.character(NLmfu_binobs.tablong$year))
+
+write.csv(NLmfu_binobs.tablong, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_mfu_LF_obs.csv", row.names = FALSE)
+
+#unsexed
+NL_n_u <- NLstrat_length_abundance_detail %>% filter(sex == "unsexed")
+NLu1996 <- NL_n_u %>% filter(survey.year == 1996)
+NLu1997 <- NL_n_u %>% filter(survey.year == 1997)
+NLu1998 <- NL_n_u %>% filter(survey.year == 1998)
+NLu1999 <- NL_n_u %>% filter(survey.year == 1999)
+NLu2000 <- NL_n_u %>% filter(survey.year == 2000)
+NLu2001 <- NL_n_u %>% filter(survey.year == 2001)
+NLu2002 <- NL_n_u %>% filter(survey.year == 2002)
+NLu2003 <- NL_n_u %>% filter(survey.year == 2003)
+NLu2004 <- NL_n_u %>% filter(survey.year == 2004)
+NLu2005 <- NL_n_u %>% filter(survey.year == 2005)
+NLu2006 <- NL_n_u %>% filter(survey.year == 2006)
+NLu2007 <- NL_n_u %>% filter(survey.year == 2007)
+NLu2008 <- NL_n_u %>% filter(survey.year == 2008)
+NLu2009 <- NL_n_u %>% filter(survey.year == 2009)
+NLu2010 <- NL_n_u %>% filter(survey.year == 2010)
+NLu2011 <- NL_n_u %>% filter(survey.year == 2011)
+NLu2012 <- NL_n_u %>% filter(survey.year == 2012)
+NLu2013 <- NL_n_u %>% filter(survey.year == 2013)
+NLu2014 <- NL_n_u %>% filter(survey.year == 2014)
+NLu2015 <- NL_n_u %>% filter(survey.year == 2015)
+NLu2016 <- NL_n_u %>% filter(survey.year == 2016)
+NLu2017 <- NL_n_u %>% filter(survey.year == 2017)
+NLu2018 <- NL_n_u %>% filter(survey.year == 2018)
+NLu2019 <- NL_n_u %>% filter(survey.year == 2019)
+
+NLu1996bin <- binNumAtLen(num.at.len = NLu1996$obs, len = NLu1996$length, bins = seq(0, 260, 5))
+NLu1997bin <- binNumAtLen(num.at.len = NLu1997$obs, len = NLu1997$length, bins = seq(0, 260, 5))
+NLu1998bin <- binNumAtLen(num.at.len = NLu1998$obs, len = NLu1998$length, bins = seq(0, 260, 5))
+NLu1999bin <- binNumAtLen(num.at.len = NLu1999$obs, len = NLu1999$length, bins = seq(0, 260, 5))
+NLu2000bin <- binNumAtLen(num.at.len = NLu2000$obs, len = NLu2000$length, bins = seq(0, 260, 5))
+NLu2001bin <- binNumAtLen(num.at.len = NLu2001$obs, len = NLu2001$length, bins = seq(0, 260, 5))
+NLu2002bin <- binNumAtLen(num.at.len = NLu2002$obs, len = NLu2002$length, bins = seq(0, 260, 5))
+NLu2003bin <- binNumAtLen(num.at.len = NLu2003$obs, len = NLu2003$length, bins = seq(0, 260, 5))
+NLu2004bin <- binNumAtLen(num.at.len = NLu2004$obs, len = NLu2004$length, bins = seq(0, 260, 5))
+NLu2005bin <- binNumAtLen(num.at.len = NLu2005$obs, len = NLu2005$length, bins = seq(0, 260, 5))
+NLu2006bin <- binNumAtLen(num.at.len = NLu2006$obs, len = NLu2006$length, bins = seq(0, 260, 5))
+NLu2007bin <- binNumAtLen(num.at.len = NLu2007$obs, len = NLu2007$length, bins = seq(0, 260, 5))
+NLu2008bin <- binNumAtLen(num.at.len = NLu2008$obs, len = NLu2008$length, bins = seq(0, 260, 5))
+NLu2009bin <- binNumAtLen(num.at.len = NLu2009$obs, len = NLu2009$length, bins = seq(0, 260, 5))
+NLu2010bin <- binNumAtLen(num.at.len = NLu2010$obs, len = NLu2010$length, bins = seq(0, 260, 5))
+NLu2011bin <- binNumAtLen(num.at.len = NLu2011$obs, len = NLu2011$length, bins = seq(0, 260, 5))
+NLu2012bin <- binNumAtLen(num.at.len = NLu2012$obs, len = NLu2012$length, bins = seq(0, 260, 5))
+NLu2013bin <- binNumAtLen(num.at.len = NLu2013$obs, len = NLu2013$length, bins = seq(0, 260, 5))
+NLu2014bin <- binNumAtLen(num.at.len = NLu2014$obs, len = NLu2014$length, bins = seq(0, 260, 5))
+NLu2015bin <- binNumAtLen(num.at.len = NLu2015$obs, len = NLu2015$length, bins = seq(0, 260, 5))
+NLu2016bin <- binNumAtLen(num.at.len = NLu2016$obs, len = NLu2016$length, bins = seq(0, 260, 5))
+NLu2017bin <- binNumAtLen(num.at.len = NLu2017$obs, len = NLu2017$length, bins = seq(0, 260, 5))
+NLu2018bin <- binNumAtLen(num.at.len = NLu2018$obs, len = NLu2018$length, bins = seq(0, 260, 5))
+NLu2019bin <- binNumAtLen(num.at.len = NLu2019$obs, len = NLu2019$length, bins = seq(0, 260, 5))
+
+NLu_binobs.tab <- data.frame(yr1996 = NLu1996bin, yr1997 = NLu1997bin, yr1998 = NLu1998bin, yr1999 = NLu1999bin, yr2000 = NLu2000bin, yr2001 = NLu2001bin, yr2002 = NLu2002bin, yr2003 = NLu2003bin, yr2004 = NLu2004bin, yr2005 = NLu2005bin, yr2006 = NLu2006bin, yr2007 = NLu2007bin, yr2008 = NLu2008bin, yr2009 = NLu2009bin, yr2010 = NLu2010bin, yr2011 = NLu2011bin, yr2012 = NLu2012bin, yr2013 = NLu2013bin, yr2014 = NLu2014bin, yr2015 = NLu2015bin, yr2016 = NLu2016bin, yr2017 = NLu2017bin, yr2018 = NLu2018bin, yr2019 = NLu2019bin)
+
+NLu_binobs.tab <- tibble::rownames_to_column(NLu_binobs.tab, "length")
+
+NLu_binobs.tab$length<-gsub("L"," ", as.character(NLu_binobs.tab$length))
+
+NLu_binobs.tab$length <- as.numeric(NLu_binobs.tab$length)
+
+NLu_binobs.tablong <- gather(NLu_binobs.tab, "year", "obs", -"length")
+NLu_binobs.tablong$year<-gsub("yr"," ", as.character(NLu_binobs.tablong$year))
+
+write.csv(NLu_binobs.tablong, "C:/Users/harperd/Documents/Halibut/GitDataInputs/NLsurvey_u_LF_obs.csv", row.names = FALSE)
 ```
 

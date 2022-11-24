@@ -1,0 +1,245 @@
+---
+title: "Mapping"
+author: "Brad"
+date: "6/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(devtools)
+
+# install_github("Maritimes/Mar.datawrangling")
+# install_github("Maritimes/Mar.fleets")
+
+ library(Mar.datawrangling)
+ #library(Mar.fleets)
+ library(tidyverse)
+ library(SpatialHub)
+ library(RColorBrewer)
+
+ library(PBSmapping)
+
+#install_github("BradHubley/SpatialHub")
+source(file.path(getwd(), "directories.r"))
+#datadir="C:/Users/hubleyb/Documents/Halibut/data"
+#wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+
+source(file.path(wd, "passwords.r")) 
+#ds_all <- Mar.datawrangling::load_datasources()
+devtools::load_all(".")
+
+# png(paste0(filen,".png"), width = wd, height = ht,units='in',pointsize=12, res=300,type='cairo')
+
+```
+
+# Fishery Grid plots from MARFIS
+
+
+## Update data from database 
+## Marfis from data.wrangling
+```{r }
+
+#get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+MARFISdataLL<-getMARFISdata(datadir,sp=130,gear=1)
+MARFISdataLL$CLASS <-NA
+MARFISdataLL$CLASS[MARFISdataLL$LOA<35]<-"LL35"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=35&MARFISdataLL$LOA<45]<-"LL35-45"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=45&MARFISdataLL$LOA<65]<-"LL45-65"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>65]<-"LL65"
+MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
+MARFISdataOT$CLASS <-"OT"
+
+MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
+```
+
+
+### Loop for annual plots
+```{r}
+yrs=2001:2021
+lvls=seq(0,7000,1000)
+xl=c(-69,-47)
+yl=c(40,48)
+
+for(y in yrs){
+ 
+  tmp<-subset(MARFISdata,YEAR==y)
+  catch.data <- na.omit(data.frame(EID=1:nrow(tmp),X=tmp$LONGITUDE, Y=tmp$LATITUDE, Z=tmp$RND_WEIGHT_KGS  ))
+  catch.grids <- SpatialHub::gridData(catch.data,FUN=sum,lvls=lvls,grid.size=20)
+  
+  #pdf(file.path(wd,'figures',paste0('marfisCatch',y,'.pdf')),width=10,height=7)
+    png(file.path(wd,'figures',paste0('marfisCatch',y,'.png')),width=9,height=5,units='in',pointsize=12, res=300,type='cairo')
+    
+  
+  SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", poly.lst=catch.grids)
+  SpatialHub::contLegend('bottomright', lvls=lvls/1000, Cont.data=catch.grids, title="MT",cex=0.8)
+  dev.off()
+
+}
+
+
+```
+
+# Survey distribution plots
+
+## Get Survey data from ISDB 
+
+```{r}
+
+ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,by.sex=F,add.portsampling=F,add.LF = F)
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=F, bins=bins, add.LF = F)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=F,bins=bins,by.sex=F,hook.data=F)
+RandomSurvey$STRAT <- as.numeric(substr(RandomSurvey$ASSIGNED_STRATUM_ID,2,3))
+
+
+
+write.csv(FixedSurvey,file.path(datadir,"FixedSurvey.csv"),row.names=F)
+write.csv(RandomSurvey,file.path(datadir,"RandomSurvey.csv"),row.names=F)
+write.csv(ComIndex,file.path(datadir,"ComIndex.csv"),row.names=F)
+
+FixedSurvey<-read.csv(file.path(datadir,"FixedSurvey.csv"))
+RandomSurvey<-read.csv(file.path(datadir,"RandomSurvey.csv"))
+ComIndex<-read.csv(file.path(datadir,"ComIndex.csv"))
+
+
+```
+
+Survey Strata
+```{r}
+
+    # Strata data
+    load(file.path(datadir,"Survey","SurveyStrata2022.RData"))
+    #strata = sort(c(1:5+.1,1:5+.2,1:5+.3))
+    strata = sort(c(1:5+.1,1:5+.2,1:5+.3,3:4+.4))
+    
+    #NAFO <- rgdal::readOGR("data/Divisions/Divisions.shp")
+    
+    # colours
+    cols = c(brewer.pal(3,"Blues"),
+             brewer.pal(3,"Reds"),
+             brewer.pal(3,"Purples"),
+             brewer.pal(6,"Purples")[6],
+             brewer.pal(3,"Greens"),
+             brewer.pal(6,"Greens")[6],
+             brewer.pal(3,"PuRd"))
+    #den=c(rep(0,9),30,rep(0,3),30,rep(0,3))
+    props=data.frame(PID=strata*10,col=cols)
+    #save(list=c("surveyPoly","surveyPolyLL","surveyStrataPoly","surveyStrataPolyLL","StrataAreas","props"),file=file.path(datadir,"Survey","SurveyStrata2022.RData"))
+
+xl=c(-69,-47)
+yl=c(40,48)    
+  Yrs = 2017:2021        
+  bioMap(xlim=xl, ylim=yl, poly.lst=list(surveyStrataPolyLL,props), plot.rivers=F, mapRes="MR", LT=T)
+  
+```
+
+# Overall
+```{r}
+
+    #BlackOutAreas
+    #load(file.path(datadir,"Survey","BlackOutAreas.RData"))
+    load(file.path(datadir,"Survey","SurveyStrata2022.RData"))
+
+sp="Cusk"
+xl=c(-68,-47)
+yl=c(41,48)    
+  Yrs = 2011:2021        
+  #i=Yrs
+  
+  FixedSurvey<-read.csv(file.path(datadir,paste0("FixedSurvey",sp,".csv")))
+  RandomSurvey<-read.csv(file.path(datadir,paste0("RandomSurvey",sp,".csv")))
+
+  
+for(i in Yrs){
+  
+  
+	# interpolate abundance
+		interp.data<-subset(RandomSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LATITUDE','total_target_species'))
+		if(i<2017)	interp.data<-subset(FixedSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LATITUDE','total_target_species'))
+#rs.data<-subset(RandomSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LAT1','EST_NUM_CAUGHT'))
+#fs.data<-subset(FixedSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LAT1','EST_NUM_CAUGHT'))
+#ci.data<-subset(ComIndex,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LAT1','EST_NUM_CAUGHT'))
+#interp.data<-rbind(rs.data,fs.data,ci.data)
+
+    interp.data<-	subset(interp.data,LATITUDE>yl[1]&LATITUDE<yl[2]&LONGITUDE>xl[1]&LONGITUDE<xl[2])	
+		hal.contours<-interpolation(interp.data,ticks='define',place=3,nstrata=5,str.min=0,interp.method='gstat',blank=T,blank.dist=0.8,res=0.1,smooth=F,idp=3.5)
+
+		# define contour lines
+		print(hal.contours$str.def)
+		lvls=c(1, 2, 5, 10, 20, 50, 100)
+
+	  cont.lst<-contourGen(hal.contours$image.dat,lvls,col="YlGn",colorAdj=1)
+	  Y<-ifelse(length(i)>1,paste(min(i),max(i),sep='-'),i)
+	  
+	  
+    png(file.path(wd,'figures',paste0('SurveyMap',Y,sp,'.png')),width=10,height=7,units='in',pointsize=12, res=300,type='cairo')
+                             
+    SpatialHub::bioMap(xlim = xl, ylim = yl,contours=cont.lst, mapRes="MR", title = paste(sp,Y),grid=1)
+    PBSmapping::addLines(subset(surveyPolyLL,SID==1),col=rgb(1,0,0,0.5))
+    points(LATITUDE~LONGITUDE,interp.data,pch=21,bg=rgb(1,1,0,1),cex=0.5)
+    contLegend('topleft',lvls=lvls,Cont.data = cont.lst[[2]], cex=0.8, title='# Fish / Set')
+
+#addPolys(BO1,density=20,col='black')
+#addPolys(BO2,density=20,col='black')
+
+dev.off()
+}
+
+  
+  
+```
+
+
+
+```{r}
+
+    #BlackOutAreas
+    load(file.path(datadir,"Survey","BlackOutAreas.RData"))
+
+xl=c(-68,-47)
+yl=c(41,48)    
+  Yrs = 2011:2021        
+  i=Yrs
+  
+#for(i in Yrs){
+  
+  
+	# interpolate abundance
+	#	interp.data<-subset(RandomSurvey,YEAR%in%i,c('FISHSET_ID','LONG1','LAT1','EST_NUM_CAUGHT'))
+	#	if(i<2017)	interp.data<-subset(FixedSurvey,YEAR%in%i,c('FISHSET_ID','LONG1','LAT1','EST_NUM_CAUGHT'))
+rs.data<-subset(RandomSurvey,YEAR%in%i,c('FISHSET_ID','LONG1','LAT1','EST_NUM_CAUGHT'))
+fs.data<-subset(FixedSurvey,YEAR%in%i,c('FISHSET_ID','LONG1','LAT1','EST_NUM_CAUGHT'))
+ci.data<-subset(ComIndex,YEAR%in%i,c('FISHSET_ID','LONG1','LAT1','EST_NUM_CAUGHT'))
+interp.data<-rbind(rs.data,fs.data,ci.data)
+
+    interp.data<-	subset(interp.data,LAT1>yl[1]&LAT1<yl[2]&LONG1>xl[1]&LONG1<xl[2])	
+		interp.data$EST_NUM_CAUGHT[is.na(interp.data$EST_NUM_CAUGHT)]<-0
+		hal.contours<-interpolation(interp.data,ticks='define',place=3,nstrata=5,str.min=0,interp.method='gstat',blank=T,blank.dist=0.8,res=0.1,smooth=F,idp=3.5)
+
+		# define contour lines
+		print(hal.contours$str.def)
+		lvls=c(1, 2, 5, 10, 20, 50, 100)
+
+	  cont.lst<-contourGen(hal.contours$image.dat,lvls,col="YlGn",colorAdj=1)
+	  Y<-ifelse(length(i)>1,paste(min(i),max(i),sep='-'),i)
+	  
+	  
+    png(file.path(wd,'figures',paste0('StratfiedRandomSurveyMap',Y,'.png')),width=10,height=7,units='in',pointsize=12, res=300,type='cairo')
+                             
+    SpatialHub::bioMap(xlim = xl, ylim = yl,contours=cont.lst, mapRes="MR", title = paste("Stratified Random Survey",Y),grid=1)
+    PBSmapping::addLines(subset(surveyPolyLL,SID==1),col=rgb(1,0,0,0.5))
+    points(LAT1~LONG1,interp.data,pch=21,bg=rgb(1,1,0,1),cex=0.5)
+    contLegend('topleft',lvls=lvls,Cont.data = cont.lst[[2]], cex=0.8, title='# Halibut / Set')
+
+addPolys(BO1,density=20,col='black')
+addPolys(BO2,density=20,col='black')
+
+dev.off()
+#}
+
+  
+  
+```
+

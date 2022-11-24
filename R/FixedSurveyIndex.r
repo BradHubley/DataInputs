@@ -1,3 +1,4 @@
+#' @export
 FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
 
   FSindexData <- FixedSurveyData(datadir=datadir, by.sex=F,adj.calc.wt=use.calc.wt,add.LF=use.calc.wt)
@@ -17,12 +18,13 @@ FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
   if(use.calc.wt)FSindexData$WPKH <-  FSindexData$calc_weight/(FSindexData$NUM_HOOK_HAUL/1000)
 
   Year<-sort(unique(FSindexData$YEAR))
+  n<-with(FSindexData,tapply(WPKH,YEAR,length))
   KgPKH<-with(FSindexData,tapply(WPKH,YEAR,mean))
   KgPKHse<-with(FSindexData,tapply(WPKH,YEAR,sd))
   NPKH<-with(FSindexData,tapply(NPKH,YEAR,mean))
   NPKHse<-with(FSindexData,tapply(NPKH,YEAR,sd))
 
-  out<-data.frame(Year=Year,KgPKH=KgPKH,KgPKHse=KgPKHse,NPKH=NPKH,NPKHse=NPKHse)
+  out<-data.frame(Year=Year,n=n,KgPKH=KgPKH,KgPKHse=KgPKHse,NPKH=NPKH,NPKHse=NPKHse)
   out<-subset(out,Year%in%yrs)
 
   if(old.model){
@@ -30,13 +32,7 @@ FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
     out<-makeOldFSIndex(FSindexData,do.plot=F)$index
   }
 
-  mean3_biomass <- NULL
-  for(i in 3:nrow(out)){
-    hold_mean <- mean(out[i:(i-2),2])
-    mean3_biomass <- c(mean3_biomass, hold_mean)
-  }
-
-  out$mean3_biomass <- c(rep(NA, 2), mean3_biomass)
+  out$mean3_biomass <- mavg(out$KgPKH)
 
 
   return(out)

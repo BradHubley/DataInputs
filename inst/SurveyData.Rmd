@@ -10,7 +10,7 @@ library(devtools)
 
 # install_github("Maritimes/Mar.datawrangling")
 # install_github("Maritimes/Mar.fleets")
-
+#install_github("Maritimes/Mar.utils")
  library(Mar.datawrangling)
  #library(Mar.fleets)
  library(tidyverse)
@@ -44,15 +44,11 @@ devtools::load_all(".")
 # get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 
-#get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
-
 # get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 
-# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISGEARSUCCESS"), usepkg = "roracle",                                     fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+#  get_data_custom(schema="isdb", data.dir = datadir, tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
-
-#get_data_custom(schema="isdb",data.dir=datadir,tables=c("ISGEARSUCCESS"),usepkg="roracle",fn.oracle.dsn="PTRAN",fn.oracle.username=uid,fn.oracle.password=pwd)
 
 
 ```
@@ -64,16 +60,43 @@ devtools::load_all(".")
 #HookOccupancyData<-PrepareDataHookModel(datadir=datadir)
 #HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 
+#sp=220 #dogfish
+#sp=15 #cusk
+#sp=30 #halibut
+sp=10 #cod
 
-RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=T,bins=bins,hook.data=T)
 
-FixedSurveyRaph<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, bins=bins,hook.data=T)
-RandomSurveyRaph<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F,hook.data=T)
+RandomSurveyRaph<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
+RandomSurveyRaph$STATION <- RandomSurveyRaph$ASSIGNED_STATION
+RandomSurveyRaph$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
 
-FixedSurveyRaph<-FixedSurveyData(datadir=datadir,by.sex=F,add.LF=F, bins=bins)
+colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","broken_hook","empty_baited","empty_unbaited","other_species","target_species","missing_hook","total_sampled","avg_weight")
 
+RandomSurvey <- RandomSurveyRaph[,colNames1]
+names(RandomSurveyRaph)
+
+FixedSurveyRaph<-FixedSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+FixedSurveyRaph$avg_weight<-FixedSurveyRaph$EST_COMBINED_WT / FixedSurveyRaph$total_target_species
+FixedSurveyRaph$DEPTH[FixedSurveyRaph$DEPTH==0]<-NA
+
+colNames2 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","avg_weight")
+
+FixedSurvey <- FixedSurveyRaph[,colNames2]
+
+write.csv(FixedSurvey,file.path(datadir,"FixedSurveyCod.csv"),row.names=F)
+write.csv(RandomSurvey,file.path(datadir,"RandomSurveyCod.csv"),row.names=F)
+
+FixedSurvey<-read.csv(file.path(datadir,"FixedSurvey.csv"))
+RandomSurvey<-read.csv(file.path(datadir,"RandomSurvey.csv"))
 
 ```
+
+```{r}
+FixedSurveyTest<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
+```
+
+
 # data checking random survey
 ```{r}
 RandomSurvey1<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=T,bins=bins,by.sex=F, LF.from = "ISFISHLENGTHS")
@@ -112,6 +135,7 @@ rs_l <- rs_l[!duplicated(rs_l$FISHSET_ID), ]
 write.csv(rs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_lengthissues.csv", row.names = FALSE)
 ```
 
+
 Making spreadsheet of data what needs to be fixed for Stratified Random Survey (whole time series)
 ```{r}
 #weight from both datasets (using ISFISH and ISFISHLENGTHS)
@@ -130,6 +154,7 @@ fs_l <- fs_l[!duplicated(fs_l$FISHSET_ID), ]
 
 write.csv(fs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/fixedsurvey_lengthissues.csv", row.names = FALSE)
 ```
+
 
 # data checking fixed survey
 ```{r}
@@ -218,7 +243,7 @@ yl=c(40,48)
 png(file.path(wd,'figures',"StratfiedRandomSurveyMap2020.png"), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
                          
 SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Stratified Random Survey",nafo=T)
-points(LAT1~LONG1,subset(RandomSurvey,YEAR==2020),pch=21,bg=rgb(1,1,0,1))
+points(LAT1~LONG1,subset(RandomSurvey,YEAR==2021),pch=21,bg=rgb(1,1,0,1))
 
 dev.off()
 
@@ -554,7 +579,7 @@ for(i in 1:7){
 
 ```{r}
 
-#HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021)
+HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021)
 
 #HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=2000:2021)
 
@@ -575,25 +600,6 @@ lines(NPKH-NPKHse*1.96~Year,HSRandom_Index,lty=2)
 
 ```
 
-## plot all survey indices used in model
-```{r}
-#RVinputs$Index
-png(file.path(wd,'figures',"Modelindices.png"), width =8, height = 8,units='in',pointsize=12, res=300,type='cairo')
-par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
-
-plot(NPT~year,RVinputs$Index, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT)*1.2), type='b',pch=16,xlim=c(1970,2020),xaxt='n')
-axis(1,lab=F)
-points(2018,RVinputs$Index$NPT[RVinputs$Index$year==2018],col='red',cex=2)
-plot(KgPKH~Year,subset(HSFixed_Index,Year<2021),type='b',pch=16,col='red',ylim=c(0,250),xlim=c(1970,2020), ylab="Kg / 1000 hooks")
-lines(KgPKH~Year,HSRandom_Index,type='b',pch=16,col='blue')
-lines(KgPKH+KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
-lines(KgPKH-KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
-
-
-dev.off()
-
-
-```
 
 ```{r}
 
@@ -604,6 +610,259 @@ dev.off()
 #  geom_line(aes(x = HSFixed_Index$Year, y = mean3_biomass), size = 1, colour = "red") +  xlim(1998, AY+1) +
 #  theme(panel.background = element_rect(fill = "white", colour = "black"), panel.grid = element_blank()) + 
 #  ylab("Kg per 1000 hooks") + xlab("Year")
+
+```
+
+```{r}
+xl=c(-55,-47)
+yl=c(42,46)    
+                         
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Stratified Random Survey",nafo=T)
+points(LAT1~LONG1,subset(RandomSurvey,YEAR==2019),pch=21,bg=rgb(1,0,0,1))
+points(LAT1~LONG1,subset(RandomSurvey,YEAR==2020),pch=21,bg=rgb(1,1,0,1))
+points(LAT1~LONG1,subset(RandomSurvey,YEAR==2021),pch=21,bg=rgb(0,1,0,1))
+
+
+```
+
+
+# look at sample size effect on SE
+```{r}
+Ns<-seq(150,250,25)
+SEs<-c()
+
+for(i in 1:length(Ns)){
+  
+ HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021,nadj=Ns[i]/150)
+  SEs[i]<-HSRandom_Index$KgPKHse[1]
+}
+
+1-SEs/SEs[1]
+
+
+ RSindexData <- RandomSurveyData(datadir=datadir, add.LF=F,by.sex=F)
+ n<-with(RSindexData,tapply(EST_NUM_CAUGHT,YEAR,length))
+ sd<-with(RSindexData,tapply(EST_NUM_CAUGHT,YEAR,sd))
+ se<-sd/sqrt(n)
+ niter=1000; yrs=2017:2021; sd100<-matrix(NA,niter,length(yrs))
+ for(j in 1:niter){
+   for(i in 1:length(yrs)){
+     x<-subset(RSindexData,YEAR==yrs[i])
+     x<-x[sample(1:nrow(x),100),]
+     sd100[j,i]<-sd(x$EST_NUM_CAUGHT)
+   }
+ }
+ se100<-colMeans(sd100)/sqrt(100)
+ se100
+ tabse<-cbind(seq(100,250,50),rbind(colMeans(sd100)/sqrt(100),sd/sqrt(n),sd/sqrt(200),sd/sqrt(250)))
+ write.csv(tabse,file.path(datadir,"Survey","RSse.csv"),row.names=F)
+ 
+ tabse<-read.csv(file.path(datadir,"Survey","RSse.csv"))
+
+```
+
+# a look at mean/variance in each strata
+```{r}
+RSindexData <- RandomSurveyData(datadir=datadir, add.LF=F,by.sex=F)
+RSindexData$X <- rowMeans(RSindexData[,c("LONG1", "LONG2", "LONG3", "LONG4")])
+RSindexData$Y <- rowMeans(RSindexData[,c("LAT1", "LAT2", "LAT3", "LAT4")])
+#RSindexData <- assignStrata(RSindexData)
+#RSindexData$ASSIGNED_STRATUM_ID[RSindexData$ASSIGNED_STRATUM_ID=="H33"&RSindexData$PID==34]<-"H34"
+#RSindexData$ASSIGNED_STRATUM_ID[RSindexData$ASSIGNED_STRATUM_ID=="H43"&RSindexData$PID==34]<-"H44"
+
+  RSindexData$STRAT <- as.numeric(substr(RSindexData$ASSIGNED_STRATUM_ID,2,3))
+  RSindexData$WPKH <-  RSindexData$EST_COMBINED_WT/(RSindexData$NUM_HOOK_HAUL/1000)
+  RSindexData$NPKH <-  RSindexData$EST_NUM_CAUGHT/(RSindexData$NUM_HOOK_HAUL/1000)
+  yrs<-2017:2021
+  RSw<-RSm<-RSv<-list()
+  for(i in 1:length(yrs)){
+    w<- with(subset(RSindexData,YEAR==yrs[i]),tapply(WPKH,STRAT,mean,na.rm=T))
+    m<- with(subset(RSindexData,YEAR==yrs[i]),tapply(NPKH,STRAT,mean,na.rm=T))
+    v<- with(subset(RSindexData,YEAR==yrs[i]),tapply(NPKH,STRAT,var,na.rm=T))
+    RSw[[i]]<- w
+    RSv[[i]]<- v
+    RSm[[i]]<- m
+    
+  }
+  
+  RSvtab<-do.call("rbind",RSv)
+  #round(colMeans(RSvtab))
+  
+  RSmtab<-do.call("rbind",RSm)
+  write.csv(round(RSmtab),file.path(datadir,"Survey","RSN.csv"),row.names=F)
+  stratN<-colMeans(RSmtab)
+  #saveRDS(stratN,file.path(datadir,"Survey","stratN.rds"))
+
+  
+  RSwtab<-do.call("rbind",RSw)
+ write.csv(round(RSwtab),file.path(datadir,"Survey","RSW.csv"),row.names=F)
+
+
+
+```
+
+
+# a look at mean/variance in each strata
+```{r}
+FSindexdata <- FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
+FSindexdata$X <- rowMeans(FSindexdata[,c("LONG1", "LONG2", "LONG3", "LONG4")])
+FSindexdata$Y <- rowMeans(FSindexdata[,c("LAT1", "LAT2", "LAT3", "LAT4")])
+FSindexdata <- assignStrata(FSindexdata)
+
+
+  FSindexdata$STRAT <- floor(FSindexdata$PID/10)
+  FSindexdata$WPKH <-  FSindexdata$EST_COMBINED_WT/(FSindexdata$NUM_HOOK_HAUL/1000)
+  FSindexdata$NPKH <-  FSindexdata$EST_NUM_CAUGHT/(FSindexdata$NUM_HOOK_HAUL/1000)
+  yrs<-2011:2021
+  FSw<-FSm<-FSv<-list()
+  for(i in 1:length(yrs)){
+    w<- with(subset(FSindexdata,YEAR==yrs[i]),tapply(WPKH,STRAT,mean))
+    m<- with(subset(FSindexdata,YEAR==yrs[i]),tapply(NPKH,STRAT,mean))
+    v<- with(subset(FSindexdata,YEAR==yrs[i]),tapply(NPKH,STRAT,var))
+    FSw[[i]]<- w
+    FSv[[i]]<- v
+    FSm[[i]]<- m
+    
+  }
+  
+  FSvtab<-do.call("rbind",FSv)
+  #round(colMeans(RSvtab))
+  
+  FSmtab<-do.call("rbind",FSm)
+  write.csv(round(FSmtab),file.path(datadir,"Survey","FSN.csv"),row.names=F)
+  round(colMeans(FSmtab))
+  
+  FSwtab<-do.call("rbind",FSw)
+  write.csv(round(FSwtab),file.path(datadir,"Survey","FSW.csv"),row.names=F)
+  colMeans(FSwtab)
+  
+
+
+```
+
+
+
+
+# a look at mean/variance in each strata
+```{r}
+CIindexdata <- CommercialIndexData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
+#CIindexdata$X <- rowMeans(CIindexdata[,c("LONG1", "LONG2", "LONG3", "LONG4")])
+#CIindexdata$Y <- rowMeans(CIindexdata[,c("LAT1", "LAT2", "LAT3", "LAT4")])
+#CIindexdata <- assignStrata(CIindexdata)
+#CIindexdata$STRAT <- floor(CIindexdata$PID/10)
+CIindexdata$STRAT <- NA
+CIindexdata$STRAT[substr(CIindexdata$NAFAREA_ID,1,2)=="4X"]<-1
+CIindexdata$STRAT[substr(CIindexdata$NAFAREA_ID,1,2)=="4W"]<-2
+CIindexdata$STRAT[substr(CIindexdata$NAFAREA_ID,1,2)=="4V"]<-3
+CIindexdata$STRAT[substr(CIindexdata$NAFAREA_ID,1,2)=="3P"]<-4
+CIindexdata$STRAT[substr(CIindexdata$NAFAREA_ID,1,2)%in%c("3N","3O")]<-5
+
+  CIindexdata$WPKH <-  CIindexdata$EST_COMBINED_WT/(CIindexdata$NUM_HOOK_HAUL/1000)
+  CIindexdata$NPKH <-  CIindexdata$EST_NUM_CAUGHT/(CIindexdata$NUM_HOOK_HAUL/1000)
+  yrs<-2011:2019
+  CIw<-CIm<-CIv<-list()
+  for(i in 1:length(yrs)){
+    w<- with(subset(CIindexdata,YEAR==yrs[i]),tapply(WPKH,STRAT,mean,na.rm=T))
+    m<- with(subset(CIindexdata,YEAR==yrs[i]),tapply(NPKH,STRAT,mean,na.rm=T))
+    v<- with(subset(CIindexdata,YEAR==yrs[i]),tapply(NPKH,STRAT,var,na.rm=T))
+    CIw[[i]]<- w
+    CIv[[i]]<- v
+    CIm[[i]]<- m
+    
+  }
+  
+  CIvtab<-do.call("rbind",CIv)
+  round(colMeans(CIvtab))
+  
+  CImtab<-do.call("rbind",CIm)
+  write.csv(round(CImtab),file.path(datadir,"Survey","CIN.csv"),row.names=F)
+  round(colMeans(CImtab))
+  
+  CIwtab<-do.call("rbind",CIw)
+  write.csv(round(CIwtab),file.path(datadir,"Survey","CIW.csv"),row.names=F)
+  colMeans(CIwtab)
+  
+
+
+```
+
+```{r}
+RSindexData <- RandomSurveyData(datadir=datadir, add.LF=F,by.sex=F)
+RSindexData$STRAT <- as.numeric(substr(RSindexData$ASSIGNED_STRATUM_ID,2,3))
+RSindexData$X <- rowMeans(RSindexData[,c("LONG1", "LONG2", "LONG3", "LONG4")])
+RSindexData$Y <- rowMeans(RSindexData[,c("LAT1", "LAT2", "LAT3", "LAT4")])
+
+    #load(file.path(datadir,"Survey","SurveyStrata.rdata"))
+    #polys<-surveyStrataPolyLL
+
+  
+out1<-assignStrata(RSindexData,coords=c("X","Y"))
+out1<-subset(out1,STRAT!=PID)
+nrow(out1)
+
+
+out2<-assignStrata(RSindexData, polys=surveyStrataPolyLL,coords=c("LONG2","LAT2"))
+out2<-subset(out2,STRAT!=PID)
+nrow(out2)
+
+
+out3<-assignStrata(RSindexData, polys=surveyStrataPolyLL,coords=c("LONG3","LAT3"))
+out3<-subset(out3,STRAT!=PID)
+nrow(out3)
+
+
+out4<-assignStrata(RSindexData, polys=surveyStrataPolyLL,coords=c("LONG4","LAT4"))
+out4<-subset(out4,STRAT!=PID)
+nrow(out4)
+
+
+```
+
+# plot stations
+```{r}
+
+    # map data
+    load(file.path(datadir,"Survey","SurveyStrata2022.RData"))
+    #strata = sort(c(1:5+.1,1:5+.2,1:5+.3))
+    strata = sort(c(1:5+.1,1:5+.2,1:5+.3,3:4+.4))
+    
+    #NAFO <- rgdal::readOGR("data/Divisions/Divisions.shp")
+    
+    # colours
+    cols = c(brewer.pal(3,"Blues"),
+             brewer.pal(3,"Reds"),
+             brewer.pal(3,"Purples"),
+             brewer.pal(6,"Purples")[6],
+             brewer.pal(3,"Greens"),
+             brewer.pal(6,"Greens")[6],
+             brewer.pal(3,"PuRd"))
+    #den=c(rep(0,9),30,rep(0,3),30,rep(0,3))
+    props=data.frame(PID=strata*10,col=cols)
+    
+    yrs<= 2017:2021
+    
+# which sets to plot
+for(y in yrs){
+sets<-subset(RSindexData,YEAR==y)$FISHSET_ID
+pdf(file.path(wd,'figures',paste0("SurveySets",y,".pdf")),height=9)
+
+for(i in 1:length(sets)){
+  
+  d<-subset(RSindexData,FISHSET_ID==sets[i])
+  y<-with(d,c(LAT1, LAT2, LAT3, LAT4))
+  x<-with(d,c(LONG1, LONG2, LONG3, LONG4))
+
+  bioMap(xlim=c(min(x)-0.1,max(x)+0.1), ylim=c(min(y)-0.1,max(y)+0.1), isobaths=seq(100,1000,10), poly.lst=list(surveyStrataPolyLL,props), plot.rivers=F, mapRes="UR", LT=T)
+  title(main=paste("Station #", d$STATION),sub=paste("Assigned Strata", d$STRAT), col.sub=props$col[props$PID==d$STRAT], cex.sub=0.9)
+  lines(x,y,type='o',pch=16)
+  points(x[1],y[1],pch=21,cex=1.5,bg='red')
+  points(d$X,d$Y,pch=21,cex=1.5,bg='yellow')
+  
+
+  }
+
+dev.off()
+}
 
 ```
 

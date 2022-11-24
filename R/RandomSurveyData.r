@@ -59,7 +59,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
 
   ##### Fish
 
-  totalfish <- isdb$ISCATCHES[,c("FISHSET_ID","CATCH_ID","EST_NUM_CAUGHT","EST_COMBINED_WT")]
+  totalfish <- isdb$ISCATCHES[,c("FISHSET_ID","CATCH_ID","SPECCD_ID","EST_NUM_CAUGHT","EST_COMBINED_WT")]
 
 
   ### join length frequency if desired
@@ -139,7 +139,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   HALIBUTSURVEY$STRATUM_ID <- HALIBUTSURVEY$ASSIGNED_STRATUM_ID
 
   if(hook.data==T){
-    hookData<-PrepareDataHookModel(datadir = datadir)
+    hookData<-PrepareDataHookModel(sp=sp, datadir = datadir)
     hooknames <- c("FISHSET_ID","LATITUDE","LONGITUDE","DEPTH","total_target_species","total_other_species", "total_sampled", "broken_hook", "empty_baited", "empty_unbaited", "other_species", "target_species", "missing_hook", "ASSIGNED_STATION", "ASSIGNED_STRATUM_ID")#
     HALIBUTSURVEY <-left_join(HALIBUTSURVEY,hookData[,hooknames])
   }
