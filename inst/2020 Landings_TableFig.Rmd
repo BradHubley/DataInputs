@@ -3,7 +3,9 @@ title: "Update"
 author: "Brad", Lingbo
 date: "Feb 23, 2022"
 output: html_document
-Highlights: Table 1 and Fig 3 in SAR2022. Select CDN landings  for both CDN landing and international landing in NAFO A zone 5; sum of MARFIS and NL landings for CDN landings in Zone 3
+Highlights: Table 1 and Fig 3 in SAR2022. Select CDN landings  for both CDN landing and international landing in NAFO A zone 5; sum of MARFIS and NL landings for CDN landings in Zone 3. 
+
+Table 1 and Fig 2 in stock status update 2022: 21A downloaded as Export.csv on Nov 22, 2022; MARFIS and NL landing(landingNL.csv) as Nov22, 2022; Previous 21A renamed as Export_2021.csv and previous NL landing as landingNL_2021.csv in documents-data file
 ---
 
 ## R Markdown
