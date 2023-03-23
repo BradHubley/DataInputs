@@ -1,0 +1,225 @@
+---
+title: "Update"
+author: "Brad", "Lingbo"
+date: "Feb 23, 2022"
+output: html_document
+Highlights: Table 1 and Fig 3 in SAR2022. Select CDN landings  for both CDN landing and international landing in NAFO A zone 5; sum of MARFIS and NL landings for CDN landings in Zone 3. 
+
+Table 1 and Fig 2 in stock status update 2022: 21A downloaded as Export.csv on Nov 22, 2022; MARFIS and NL landing(landingNL.csv) as Nov22, 2022; Previous 21A renamed as Export_2021.csv and previous NL landing as landingNL_2021.csv in documents-data file
+---
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Halibut Update
+
+This is the Halibut Update. the following section is the setup: load packages, set ay to the assessment year and specify the path of the data inputs d.
+
+bio.halibut is a R package specific for the halibut assessment. to install:
+devtools::install_github("BradHubley/bio.halibut")
+
+
+```{r setup, include=FALSE}
+
+#rm(list=ls())
+ds_all <- Mar.datawrangling::load_datasources()
+#knitr::opts_chunk$set(echo = TRUE)
+
+#options(stringsAsFactors = F)
+
+library(devtools)
+library(Mar.datawrangling)
+ library(ggplot2)
+#library(bio.halibut)
+library(tidyverse)
+devtools::load_all(".")
+#source("LandingFunctions.R")
+source(file.path(getwd(), "directories.r"))
+# source(file.path(wd, "passwords.r"))
+
+# wd ="C:/Users/LiLi/Documents"
+
+# NAFO divisions
+nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
+
+nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
+
+# assessment year
+ ay = 2022
+
+# annual TAC table
+TAC = data.frame(Year=1988:2022,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807))
+
+# 21B start year
+ystart =1960
+
+# 21A last year(assessment year)
+yend=2020
+
+width1=8
+height1=8
+height2=5
+```
+
+## Landings Data
+
+To get the landings data download STATLANT21A from here: https://www.nafo.int/Data/STATLANT. Select HAL - ATLANTIC HALIBUT as the species and save the .csv 
+
+Construct Table 1
+```{r landings NAFOA}
+
+# NAFO A data
+nafoForeign = get_21A(count="Foreign", yearstart = ystart, datadir=datadir)
+nafoCDN = get_21A(count="CDN", yearstart = ystart, datadir=datadir)
+
+nafoCDN3= nafoCDN %>%
+  filter(Division %in% nafodivs3NOPS)%>%
+  group_by(Year) %>%
+  summarize(Canada3NOPS=sum(CatchA))
+
+nafoCDN4= nafoCDN %>%
+  filter(Division %in% nafodivs4VWX5Z)%>%
+  group_by(Year) %>%
+  summarize(Canada4VWX5Z=sum(CatchA))
+
+# Foreign Landings 
+
+nafoForeign3 = nafoForeign %>%
+  filter(Division %in% nafodivs3NOPS)%>%
+  group_by(Year) %>%
+  summarize(Foreign3NOPS=sum(CatchA))
+
+nafoForeign4= nafoForeign %>%
+  filter(Division %in% nafodivs4VWX5Z)%>%
+  group_by(Year) %>%
+  summarize(Foreign4VWX5Z=sum(CatchA))
+
+Canada = merge(merge(data.frame(Year=1960:2020), nafoCDN3,all=T), nafoCDN4,all=T)
+Foreign  = merge(merge(data.frame(Year=1960:2020), nafoForeign3,all=T), nafoForeign4,all=T)
+Foreign[is.na(Foreign)] <- 0
+Canada[is.na(Canada)] <- 0
+Canada$CanadaTotal = Canada$Canada3NOPS+Canada$Canada4VWX5Z
+Foreign$ForeignTotal = Foreign$Foreign3NOPS+Foreign$Foreign4VWX5Z
+table1 = merge(Canada,Foreign,all=T)
+table1$GrandTotal = table1$CanadaTotal+table1$ForeignTotal
+
+table1 = merge(table1, TAC ,all=T)
+
+Yearavg= rep(c("1960-1969","1970-1979","1980-1989","1990-1999","2000-2009"),each=10)
+table11= subset(table1, Year<2010)
+table11= cbind(table11, Yearavg)%>%
+  group_by(as.factor(Yearavg))  %>%
+  summarise( Canada3NOPS=mean(Canada3NOPS),Canada4VWX5Z=mean(Canada4VWX5Z),
+             CanadaTotal=mean(CanadaTotal),Foreign3NOPS=mean(Foreign3NOPS),
+             Foreign4VWX5Z=mean(Foreign4VWX5Z),ForeignTotal=mean(ForeignTotal),
+             GrandTotal=mean(GrandTotal), TAC=mean(TAC)) %>%
+  rename(Year=1)
+
+table12= subset(table1, Year>=2010) %>%
+  mutate(Year=as.factor(Year))
+
+# Table 1 except  CDN landing in the last year
+
+table2=rbind(table11, table12)
+
+## 
+
+write.csv(table2,"update_table1_2020.csv",row.names = F)
+table2
+
+```
+
+### from MARFIS for recent data
+
+Canadian Maritimes Landings only
+
+
+```{r landings MARFIS}
+
+# MARFIS
+
+# get_data(db='marfis',data.dir=datadir,fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
+
+get_data(db='marfis',data.dir=datadir)
+SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]
+PRO_SPC_INFO = PRO_SPC_INFO  %>%
+    filter(!is.na(RND_WEIGHT_KGS) )
+self_filter()
+#PRO_SPC_INFO = PRO_SPC_INFO[PRO_SPC_INFO$YEAR %in% c(ay-1,ay),]
+
+marfis4VWX5Z = with(subset(PRO_SPC_INFO,NAFO_UNIT_AREA_ID%in%NAFO_UNIT_AREAS$AREA_ID[!grepl("3",NAFO_UNIT_AREAS$NAFO_AREA)]),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+marfis3NOPS = with(subset(PRO_SPC_INFO,NAFO_UNIT_AREA_ID%in%NAFO_UNIT_AREAS$AREA_ID[grepl("3",NAFO_UNIT_AREAS$NAFO_AREA)]),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+CanadaMar=merge(data.frame(Year=names(marfis4VWX5Z),'Canada4VWX5Z'=round(marfis4VWX5Z/1000)),data.frame(Year=names(marfis3NOPS),'Canada3NOPS'=round(marfis3NOPS/1000)),all=T)
+
+
+```
+
+### from NL landings
+
+NL landing data
+```{r  CDN landing for the year of ay}
+
+# landing NL 
+  landNL = read.csv(file.path(datadir,"landingNL.csv"))
+  unique(landNL$Gear.Name)
+  landNL = landNL   %>%
+    mutate(Catch1 = Landed.RW/1000 )  %>%
+    rename (Year = 1, Division = 6) %>%          
+    dplyr::select(Year,Division, Catch1 ) %>%
+    group_by(Year) %>%
+    summarise(Catch = sum(Catch1)) 
+  
+  
+  Canadaland=merge( CanadaMar, landNL,by="Year", all=T )%>%
+    replace(is.na(.), 0)  %>%
+    mutate(Canada3NOPS=round(Canada3NOPS+Catch ) )%>%
+    select(Year,Canada3NOPS, Canada4VWX5Z )%>%
+    mutate(CanadaTotal = round(Canada3NOPS+Canada4VWX5Z)  )
+
+  # CDN landings of the year of ay in zone 3 and 4
+  Canadaay= subset(Canadaland, Year==ay)
+
+Canadaay
+```
+
+
+### PLot Figure 2
+
+```{r, echo=F}
+
+plm = rbind(table1$CanadaTotal,table1$ForeignTotal,c(rep(NA,62),Canadaay$CanadaTotal))
+plm[is.na(plm)]<-0
+
+png(file.path(wd,"figures","Fig2 fishery.png"), width = width1, height = height2,units='in',pointsize=12, res=300,type='cairo')
+
+par(las=1,mar=c(5, 5, 4, 2))
+
+barplot(plm,ylim=c(0,5600),col=c('#377eb8','#d53e4f','#377eb8'),border=NA,density=c(NA,NA,40))
+
+ mtext("Landings (t)",2,line=3.5,cex=1.5,las=0)
+ axis(1,at=seq(0.7,73,1.2),lab=F,tck=-0.01)
+ axis(1,at=seq(0.7,75,12),lab=seq(1960,ay,10))
+ lines(seq(0.7,76.2,1.2),table1$TAC,col='#7fbc41',lwd=4)
+# grid(ny=NULL,nx=NA)
+ legend('topright',c("Canada","Foreign","TAC"),fill=c('#377eb8','#d53e4f',NA),col=c(NA,NA,'#7fbc41'),lwd=c(NA,NA,4),border=NA,inset=c(0.2,0.1),bg='white',box.lty=0)
+ dev.off()
+ 
+ getwd()
+
+ 
+```
+
+
+## landings
+
+```{r}
+table2$GrandTotal[table2$Year==2020]/table2$GrandTotal[table2$Year==2019]
+table2$ForeignTotal[table2$Year==2020]/table2$ForeignTotal[table2$Year==2019]
+table2$Canada3NOPS[table2$Year==2020]/table2$Canada3NOPS[table2$Year==2019]
+
+```
+

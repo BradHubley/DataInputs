@@ -192,7 +192,7 @@ Landings_t<-read.csv(file.path(scaldir,"nafoSISCAL.csv"))
 
 #Fishery Catch Composition
 ```{r}
-CCyrs=1978:2021
+CCyrs=1978:2022
 
  nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PS", "3U")
  nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
@@ -282,7 +282,7 @@ Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
 
 OT3<-revNAL(list(OTNafo3_males,OTNafo3_females,OTNafo3_unsexed))
 LL3<-revNAL(list(LLNafo3_males,LLNafo3_females,LLNafo3_unsexed))
-YrsObs = 1991:2020 
+YrsObs = 1991:2022 
 
 BarPlotLF(OT3[which(names(OT3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
 
@@ -294,9 +294,9 @@ BarPlotLF(LL3[which(names(LL3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"
 # Put it all together
 ```{r}
 
-save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2021cw.rdata"))
+save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2022.rdata"))
 
-load(file=file.path(scaldir,"SCALmodeldata2021cw.rdata"))
+load(file=file.path(scaldir,"SCALmodeldata2022.rdata"))
 
 ```
 
@@ -306,9 +306,9 @@ load(file=file.path(scaldir,"SCALmodeldata2021cw.rdata"))
 
 BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2020,path=file.path(wd,'figures'),filen='NSRVSurvey',inches=0.3,graphic='png')
 BubblePlotLF(list(NLRV_Lengths),bins=bins,yrs=1996:2019,path=file.path(wd,'figures'),filen='NLRVSurvey',inches=0.3,graphic='png')
-BubblePlotLF(HSFixed_Lengths,bins=bins,yrs=2000:2021,path=file.path(wd,'figures'),filen='FixedSurvey',inches=0.3,graphic='png')
-BubblePlotLF(HSRandom_Lengths,bins=bins,yrs=2017:2021,path=file.path(wd,'figures'),filen='RandomSurvey',inches=0.3,graphic='png')
-BubblePlotLF(Fishery_Lengths,bins=bins,yrs=1978:2021,path=file.path(wd,'figures'),filen='Commercial',inches=0.3,graphic='png')
+BubblePlotLF(HSFixed_Lengths,bins=bins,yrs=2000:2022,path=file.path(wd,'figures'),filen='FixedSurvey',inches=0.3,graphic='png')
+BubblePlotLF(HSRandom_Lengths,bins=bins,yrs=2017:2022,path=file.path(wd,'figures'),filen='RandomSurvey',inches=0.3,graphic='png')
+BubblePlotLF(Fishery_Lengths,bins=bins,yrs=1978:2022,path=file.path(wd,'figures'),filen='Commercial',inches=0.3,graphic='png')
 
 
 ```
@@ -318,7 +318,7 @@ BubblePlotLF(Fishery_Lengths,bins=bins,yrs=1978:2021,path=file.path(wd,'figures'
 combinedLengths<-list(Fishery_Lengths$LLNafo3_combined,Fishery_Lengths$LLNafo4_combined,Fishery_Lengths$OTNafo3_combined,Fishery_Lengths$OTNafo4_combined,NSRV_Lengths$NSRV_combined,NLRV_Lengths$NLRV_combined,HSFixed_Lengths$HSFixed_combined,HSRandom_Lengths$HSRandom_combined)
 names(combinedLengths)<-c("LL_NAFO3","LL_NAFO4","OT_NAFO3","OT_NAFO4","RV_4VWX","RV_3NOP","HS_Fixed","HS_Random")
 
-BubblePannelPlotLF(combinedLengths,bins=bins,yrs=1970:2021,path=file.path(wd,'figures'),filen='Combined',inches=0.1,graphic='png',ht=11,wd=8)
+BubblePannelPlotLF(combinedLengths,bins=bins,yrs=1970:2022,path=file.path(wd,'figures'),filen='Combined',inches=0.1,graphic='png',ht=11,wd=8)
 
 ```
 
