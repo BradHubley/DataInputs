@@ -2,13 +2,19 @@
 reStratify <- function(sets,strata,lines=F){
 
 
+  sets$EID<-sets$FISHSET_ID
+
   if(lines==T){
-    events$X<-with(events,apply(cbind(X1,X2),1,mean))
-    events$Y<-with(events,apply(cbind(Y1,Y2),1,mean))
+    sets$Y<-with(sets,apply(cbind(LAT1,LAT2),1,mean))
+    sets$X<-with(sets,apply(cbind(LONG1,LONG2),1,mean))
+  } else{
+    sets$Y<-sets$LAT1
+    sets$X<-sets$LONG1
+
   }
 
-  key<-findPolys(events,polys)
-  events<-merge(events,key[c('EID','SID')],all=T)
+  key<-findPolys(sets,polys)
+  sets<-merge(sets,key[c('EID','SID')],all=T)
 
-  return(events)
+  return(sets)
 }

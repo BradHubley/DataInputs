@@ -7,16 +7,18 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=
   load(file.path(datadir,"Survey","SurveyStrata.rdata")) # check this to make sure it's up to date
   areas<- StrataAreas$area
   strata<-StrataAreas$PID
+  polys<-surveyStrataPolyLL
 
   load(file.path(datadir,"Survey","SurveyStrata2022.rdata")) # check this to make sure it's up to date
   areas2<- StrataAreas$area
   strata2<-StrataAreas$PID
+  polys2<-surveyStrataPolyLL
 
 
 
   RSindexData<- subset(RSindexData,YEAR%in%yrs)
 
-  if (restratify)RSindexData<-reStratify(RSindexData,strata2)
+  if (restratify)RSindexData<-reStratify(RSindexData,polys2)
 
 
   RSindexData$EST_NUM_CAUGHT[is.na(RSindexData$EST_NUM_CAUGHT)]<-0

@@ -63,6 +63,7 @@ NSRV_Index$NPT[NSRV_Index$year==2021]<-NA
 
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
   HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+  with(subset(HSRandom_Index,Year==Current.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
 
 ```
 
@@ -111,6 +112,7 @@ dev.off()
  with(HSRandom_Index2,lines(Year,KgPKH,lwd=2,col=2))
  with(HSRandom_Index2,lines(Year,mean3_biomass,lty=2,col=2))
  
+ # Q-adjusted
  plot(KgPKH/0.002~Year,HSRandom_Index,ylim=c(0,60000),type='l',lwd=2,ylab="Biomass")
  with(HSRandom_Index,lines(Year,mean3_biomass/0.002,lty=2))
  with(HSRandom_Index2,lines(Year,KgPKH/0.0019,lwd=2,col=2))

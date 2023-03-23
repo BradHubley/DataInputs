@@ -9,6 +9,7 @@ output: html_document
 library(ROracle)
 library(devtools)
 library(tidyverse)
+library(Mar.datawrangling)
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
 
@@ -31,7 +32,7 @@ MARFISdataCusk$NAFO2[MARFISdataCusk$NAFO%in%c("4X","5Z","5Y")]<-"4X5YZ"
 MARFISdataCusk$NAFO2[MARFISdataCusk$NAFO%in%c("4VN","4VS","4W")]<-"4VW"
 
 yrs1<-2007:2022
-table1<- MARFISdataCusk %>% filter(YEAR%in%yrs1&!is.na(NAFO2)) %>% group_by(YEAR,NAFO2) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = NAFO2,values_from = Landings) %>% tibble()
+table1<- MARFISdataCusk %>% filter(YEAR%in%yrs1&!is.na(NAFO2)) %>% group_by(YEAR,NAFO2,) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = NAFO2,values_from = Landings) %>% tibble()
 
 table1
 
@@ -96,6 +97,24 @@ abline(h=LRP,lty=5,col='red4',lwd=3)
 lines(y,GM3,lwd=2,col='royalblue')
 
 legend('topleft',c("Halibut Survey Biomass Index", "USR","LRP","3-yr mean"),pch=c(18,NA,NA,NA),lty = c(NA,2,5,1),lwd=c(NA,1,3,2),col=c("deepskyblue","green4","red4","royalblue"),bty='n',cex=0.8)
+
+dev.off()
+```
+
+## Plot Index (French)
+```{r}
+png(file.path(datadir,'Cusk',"IndexFr.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+
+
+USR= 26.6
+LRP= 13.3
+plot(y,B,ylim=c(0,45),pch=18,col='deepskyblue',ylab="CPUE (Kg/1000 hameçons)", xlab='')
+arrows(y,B-1.96*Bse,y,B+1.96*Bse,col='deepskyblue',code=3,angle=90,length=0.02)
+abline(h=USR,lty=2,col='green4')
+abline(h=LRP,lty=5,col='red4',lwd=3)
+lines(y,GM3,lwd=2,col='royalblue')
+
+legend('topleft',c("Indice de biomasse du relevé sur le flétan", "PRS","PRL","Moyenne sur 3 ans"),pch=c(18,NA,NA,NA),lty = c(NA,2,5,1),lwd=c(NA,1,3,2),col=c("deepskyblue","green4","red4","royalblue"),bty='n',cex=0.8)
 
 dev.off()
 ```

@@ -39,7 +39,7 @@ getMARFISdata <- function(datadir,sp=130,gear){
   marfis$NAFO_UNIT_AREAS$NAFO[marfis$NAFO_UNIT_AREAS$NAFO_AREA%in%nafo5Y] = "5Y"
   marfis$NAFO_UNIT_AREAS$NAFO[marfis$NAFO_UNIT_AREAS$NAFO_AREA%in%nafo5Z] = "5Z"
 
-  colm.names<-c("YEAR","NAFO_UNIT_AREA_ID","RND_WEIGHT_KGS","LATITUDE","LONGITUDE","VR_NUMBER_FISHING","DATE_FISHED","TRIP_ID","SPECIES_CODE")
+  colm.names<-c("YEAR","NAFO_UNIT_AREA_ID","RND_WEIGHT_KGS","LATITUDE","LONGITUDE","VR_NUMBER_FISHING","DATE_FISHED","TRIP_ID","SPECIES_CODE","GEAR_CODE")
 
   MarfisData = left_join(marfis$PRO_SPC_INFO[,colm.names],marfis$NAFO_UNIT_AREAS[,c("NAFO","AREA_ID")],by=c("NAFO_UNIT_AREA_ID"="AREA_ID")) %>%
     left_join(.,marfis$VESSELS[,c("LOA","VR_NUMBER")],by=c("VR_NUMBER_FISHING"="VR_NUMBER"))

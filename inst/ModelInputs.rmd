@@ -5,6 +5,8 @@ date: "8/17/2021"
 output: html_document
 ---
 
+## Use this script to update data for assessment model, check final year as you go through each chunk
+
 ```{r setup, include=FALSE}
 library(ROracle)
 library(devtools)
@@ -42,7 +44,7 @@ bins=seq(0,260,5)
 #get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 
-# get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+#  Mar.datawrangling::get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 
 ```
@@ -78,7 +80,7 @@ BiologicalParameters$bins<-bins
 
 ```{r}
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2021, raw=T)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2022, raw=T)
 RVinputs$NSRV_unsexed<-RVinputs$NSRV_combined-(RVinputs$NSRV_males+RVinputs$NSRV_females) # unsexed
 NSRV_Index<-RVinputs$Index
 NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,
@@ -86,7 +88,7 @@ NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,
                    NSRV_combined=RVinputs$NSRV_combined,
                    NSRV_unsexed=RVinputs$NSRV_unsexed)
 
-#BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2020,path=file.path(wd,'figures'),filen='RVSurvey',inches=0.3)
+#BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2022,path=file.path(wd,'figures'),filen='RVSurvey',inches=0.3)
 ```
 
 #NL RV Survey
@@ -136,8 +138,8 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
 
 #Halibut Survey Catch Composition
 ```{r}
-  Yrs1 = 2000:2021        
-  Yrs2 = 2017:2021        
+  Yrs1 = 2000:2022        
+  Yrs2 = 2017:2022        
 
   FixedSurvey <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=T)
   RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
@@ -172,8 +174,8 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
    #                          Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
    #                          se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
   
-  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2021)
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2021,use.calc.weight = T)
+  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022,use.calc.weight = F)
 
 
 ```
