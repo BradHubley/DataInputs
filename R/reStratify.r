@@ -13,8 +13,8 @@ reStratify <- function(sets,strata,lines=F){
 
   }
 
-  key<-findPolys(sets,polys)
-  sets<-merge(sets,key[c('EID','SID')],all=T)
+  key<-findPolys(sets,strata)
+  sets<-merge(sets,key,all=T)
 
   return(sets)
 }

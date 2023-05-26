@@ -1,0 +1,66 @@
+---
+title: "Canada-France Negotiations"
+author: "Brad"
+date: "2023-05-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(devtools)
+
+# install_github("Maritimes/Mar.datawrangling")
+#install_github("BradHubley/SpatialHub")
+
+library(Mar.datawrangling)
+ library(SpatialHub)
+
+source(file.path(getwd(), "directories.r"))
+#datadir="C:/Users/hubleyb/Documents/Halibut/data"
+#wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+
+source(file.path(wd, "passwords.r")) 
+ds_all <- Mar.datawrangling::load_datasources()
+devtools::load_all(".")
+
+# source(calcAreaFrance.r)
+# png(paste0(filen,".png"), width = wd, height = ht,units='in',pointsize=12, res=300,type='cairo')
+
+```
+
+## calc stratified survey estimate for whole stock area and just for St.Pierre Michelon(SPM) EEZ
+```{r}
+
+# source(calcAreaFrance.r) #script that calculates strata areas inside SPM EEZ and saves them as SPMareas.csv
+
+ HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate' ,France=F)
+ HSRandom_Index_SPM<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', France=T)
+
+
+ 
+ # total allowable catch for 3NOPs4VWX5Zc 
+ TAC<-c(3621,4164,4789,5507,5445,4807)
+ 
+ # what TAC should be for SPM if proportional to stratified survey biomass estimate
+ round(HSRandom_Index_SPM$B/HSRandom_Index$B * TAC)
+
+
+```
+
+# a plot
+```{r}
+png(file.path(wd,'figures',"StratifiedSurveyBiomassCanadaFrance.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+ 
+ plot(B/10^6~Year,HSRandom_Index,type='b',pch=15,col='red',ylim=c(0,60), ylab="Stratified Biomass  (kt)")
+  lines((B+Bse)/10^6~Year,HSRandom_Index,lty=2,col='red')
+  lines((B-Bse)/10^6~Year,HSRandom_Index,lty=2,col='red')
+legend('bottomright',c("3NOPs4VWX5Zc","St.Pierre Michelon EEZ"),pch=15:16,col=c('red','blue'))
+ plot(B/10^6~Year,HSRandom_Index_SPM,type='b',pch=16,col='blue',ylim=c(0,1.5), ylab="Stratified Biomass  (kt)")
+  lines((B+Bse)/10^6~Year,HSRandom_Index_SPM,lty=2,col='blue')
+  lines((B-Bse)/10^6~Year,HSRandom_Index_SPM,lty=2,col='blue')
+
+```
+
+
