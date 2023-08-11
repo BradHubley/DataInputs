@@ -62,8 +62,8 @@ devtools::load_all(".")
 
 #sp=220 #dogfish
 #sp=15 #cusk
-#sp=30 #halibut
-sp=10 #cod
+sp=30 #halibut
+#sp=10 #cod
 
 
 RandomSurveyRaph<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
@@ -84,11 +84,11 @@ colNames2 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","
 
 FixedSurvey <- FixedSurveyRaph[,colNames2]
 
-write.csv(FixedSurvey,file.path(datadir,"FixedSurveyCod.csv"),row.names=F)
-write.csv(RandomSurvey,file.path(datadir,"RandomSurveyCod.csv"),row.names=F)
+write.csv(FixedSurvey,file.path(datadir,"FixedSurveyHalibut.csv"),row.names=F)
+write.csv(RandomSurvey,file.path(datadir,"RandomSurveyHalibut.csv"),row.names=F)
 
-FixedSurvey<-read.csv(file.path(datadir,"FixedSurvey.csv"))
-RandomSurvey<-read.csv(file.path(datadir,"RandomSurvey.csv"))
+FixedSurvey<-read.csv(file.path(datadir,"FixedSurveyHalibut.csv"))
+RandomSurvey<-read.csv(file.path(datadir,"RandomSurveyHalibut.csv"))
 
 ```
 

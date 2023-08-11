@@ -43,6 +43,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=
   B<-c()
   Nse<-c()
   Bse<-c()
+  Nti<-list()
 
 
   print(paste("Year", "N/KH", "Kg/KH"))
@@ -53,16 +54,20 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',nadj=
     # Stratified mean and variance
     n<-with(subset(RSindexData,YEAR==yrs[i]),tapply(STATION,STRAT,length))*nadj
     Nh<-with(subset(RSindexData,YEAR==yrs[i]),tapply(NPKH,STRAT,mean))
+    Nt<-with(subset(RSindexData,YEAR==yrs[i]),tapply(NPKH,STRAT,sum))
     NVh<-with(subset(RSindexData,YEAR==yrs[i]),tapply(NPKH,STRAT,var))
     Bh<-with(subset(RSindexData,YEAR==yrs[i]),tapply(WPKH,STRAT,mean))
     BVh<-with(subset(RSindexData,YEAR==yrs[i]),tapply(WPKH,STRAT,var))
     sets[i]<-sum(n)
     N[i]<-sum(Nh*areas)
     Nse[i]<-sqrt(sum(NVh/n*areas^2))
+    Nti[[i]]<-Nt
     B[i]<-sum(Bh*areas)
     Bse[i]<-sqrt(sum(BVh/n*areas^2))
     print(paste(yrs[i],round(N[i]/sum(areas),2),round(B[i]/sum(areas))))
   }
+#browser()
+  save(Nti,file="Nti.rdata")
 
   sN<-with(RSindexData,tapply(STATION,YEAR,length))
   sKgPKH<-with(RSindexData,tapply(WPKH,YEAR,mean))

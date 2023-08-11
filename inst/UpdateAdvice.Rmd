@@ -118,6 +118,12 @@ dev.off()
  with(HSRandom_Index2,lines(Year,KgPKH/0.0019,lwd=2,col=2))
  with(HSRandom_Index2,lines(Year,mean3_biomass/0.0019,lty=2,col=2))
  
+ # Q-adjusted
+ plot(KgPKH/4.6~Year,HSFixed_Index,ylim=c(0,60),type='l',lwd=2,ylab="Biomas (kt)",las=1)
+ #with(HSFixed_Index,lines(Year,mean3_biomass/0.0046,lty=2))
+ with(HSRandom_Index,lines(Year,KgPKH/2,lwd=2,col=2))
+# with(HSRandom_Index,lines(Year,mean3_biomass/0.002,lty=2,col=2))
+ 
  
  
 ```
