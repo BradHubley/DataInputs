@@ -1,0 +1,1214 @@
+---
+title: "Survey Sets Per Day"
+output: html_document
+date: '2022-06-15'
+---
+
+---packages and data directory set up
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+ library(Mar.datawrangling)
+ library(tidyverse)
+ library(lubridate)
+ library(stringr)
+
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+source(file.path(wd, "passwords.r"))
+```
+
+Pulling the data
+```{r}
+sets_sr <- RandomSurveyData(sp=30, datadir, add.gear=T, add.LF=F, by.sex=F, hook.data=F)
+sets_sr <- sets_sr %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+
+sets_fs <- FixedSurveyData(sp=30, datadir, add.gear=T, add.LF=F, by.sex=F,correct.splitsets=T)
+sets_fs <- sets_fs %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+  filter(YEAR < 2022)
+sets_fs_10yr <- sets_fs %>% filter(YEAR > 2010)
+
+sets_ci <- CommercialIndexData(sp=30, datadir, add.gear=T, add.LF=F,by.sex=T, add.portsampling=F)
+sets_ci <- sets_ci %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+sets_ci_10yr <- sets_ci %>% filter(YEAR > 2010)
+```
+
+Starting with SR sets, getting # sets per day by each trip, by year, by NAFO...
+```{r}
+#creating smonth, emonth, Sday, and eday columns
+sets_sr <- sets_sr %>%
+  mutate(SMONTH = substr(DATE_TIME1, 6, 7)) %>%
+  mutate(SDAY = substr(DATE_TIME1, 9,10)) %>% 
+  mutate(EMONTH = substr(DATE_TIME4, 6, 7)) %>% 
+  mutate(EDAY = substr(DATE_TIME4, 9, 10))
+
+#sets spanning 2 days
+sets_sr$SDAY <- as.numeric(sets_sr$SDAY)
+sets_sr$EDAY <- as.numeric(sets_sr$EDAY)
+sets_sr <- sets_sr %>%
+  mutate(DAYDIFF  =  (sets_sr$SDAY - sets_sr$EDAY))
+
+daydiff <- sets_sr %>% select(DATE_TIME1, DATE_TIME4, DAYDIFF)
+#number of sets/day per trip
+SRsets_day_trip <- sets_sr %>%
+  group_by(YEAR, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+SRsets_day_year <- SRsets_day_trip %>%
+  group_by(YEAR) %>%
+  summarize(mean = mean(n), MAX = max(n), MIN = min(n), STDEV = sd(n))
+#write.csv(SRsets_day_year, "C:/Users/harperd/Documents/Halibut/Survey/SetsPerDayStratifiedRandomAverage.csv")
+
+SRsets_day_NAFO <- sets_sr %>%
+  group_by(YEAR, NAFO, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+SRsets_day_NAFO <-SRsets_day_NAFO %>%
+  group_by(NAFO, YEAR) %>%
+  summarize(mean=round(mean(n), 2))
+SRsets_day_NAFO2 <- spread(SRsets_day_NAFO, NAFO, mean)
+
+
+##making summary at the strata level rather than NAFO level
+SRsets_day_strata <- sets_sr %>%
+  mutate(STRATA = 
+           ifelse(NAFO %in% c("4X", "5Z", "5Y"), 1,
+                  ifelse(NAFO %in% c("4W"), 2,
+                         ifelse(NAFO %in% c("4V"), 3,
+                                ifelse(NAFO %in% c("3P"), 4,
+                                       ifelse(NAFO %in% c("3N", "3O"), 5, "Error"))))))
+
+SRsets_day_strata <- SRsets_day_strata %>%
+  group_by(YEAR, STRATA, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+  
+SRsets_day_strata <- SRsets_day_strata %>%
+  group_by(STRATA, YEAR) %>%
+  summarize(mean = round(mean(n), 2))
+SRsets_day_strata2 <- spread(SRsets_day_strata, STRATA, mean)
+```
+
+looking at # sets per day by on each trip, by year, by NAFO for Fixed Station Survey
+```{r}
+#creating smonth, emonth, Sday, and eday columns
+sets_fs_10yr <- sets_fs_10yr %>%
+  mutate(SMONTH = substr(DATE_TIME1, 6, 7)) %>%
+  mutate(SDAY = substr(DATE_TIME1, 9,10)) %>% 
+  mutate(EMONTH = substr(DATE_TIME4, 6, 7)) %>% 
+  mutate(EDAY = substr(DATE_TIME4, 9, 10))
+
+#sets spaning 2 days
+sets_fs_10yr$SDAY <- as.numeric(sets_fs_10yr$SDAY)
+sets_fs_10yr$EDAY <- as.numeric(sets_fs_10yr$EDAY)
+sets_fs_10yr <- sets_fs_10yr %>%
+  mutate(DAYDIFF  =  (sets_fs_10yr$SDAY - sets_fs_10yr$EDAY))
+
+daydiff <- sets_fs_10yr %>% select(DATE_TIME1, DATE_TIME4, DAYDIFF)
+#number of sets/day per trip
+FSsets_day_trip <- sets_fs_10yr %>%
+  group_by(YEAR, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+FSsets_day_year <- FSsets_day_trip %>%
+  group_by(YEAR) %>%
+  summarize(mean = mean(n), MAX = max(n), MIN = min(n), STDEV = sd(n))
+write.csv(FSsets_day_year, "C:/Users/harperd/Documents/Halibut/Survey/SetsPerDayFixedStationAverage.csv")
+
+FSsets_day_NAFO <- sets_fs_10yr %>%
+  group_by(YEAR, NAFO, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+FSsets_day_NAFO <-FSsets_day_NAFO %>%
+  group_by(NAFO, YEAR) %>%
+  summarize(mean=round(mean(n), 2))
+FSsets_day_NAFO2 <- spread(FSsets_day_NAFO, NAFO, mean)
+
+##making summary at the strata level rather than NAFO level
+FSsets_day_strata <- sets_fs_10yr %>%
+  mutate(STRATA = 
+           ifelse(NAFO %in% c("4X", "5Z", "5Y"), 1,
+                  ifelse(NAFO %in% c("4W"), 2,
+                         ifelse(NAFO %in% c("4V"), 3,
+                                ifelse(NAFO %in% c("3P"), 4,
+                                       ifelse(NAFO %in% c("3N", "3O"), 5, "Error"))))))
+
+FSsets_day_strata <- FSsets_day_strata %>%
+  group_by(YEAR, STRATA, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+  
+FSsets_day_strata <- FSsets_day_strata %>%
+  group_by(STRATA, YEAR) %>%
+  summarize(mean = round(mean(n), 2))
+FSsets_day_strata2 <- spread(FSsets_day_strata, STRATA, mean)
+```
+
+looking at # sets per day by on each trip, by year, by NAFO for Commercial Index (Biological Sampling) Sets
+```{r}
+#creating smonth, emonth, Sday, and eday columns
+sets_ci_10yr <- sets_ci_10yr %>%
+  mutate(SMONTH = substr(DATE_TIME1, 6, 7)) %>%
+  mutate(SDAY = substr(DATE_TIME1, 9,10)) 
+
+#fixing date for set 100350634
+sets_ci_10yr <- sets_ci_10yr %>%
+  mutate(SMONTH = case_when(FISHSET_ID %in% 100350634 ~ '07',
+                        TRUE ~ as.character (SMONTH))) %>%
+    mutate(SDAY = case_when(FISHSET_ID %in% 100350634 ~ '04',
+                        TRUE ~ as.character (SDAY)))
+
+#number of sets/day per trip ... lots of times where there are more than 10 sets a day (hard to believe...look further into this)
+CIsets_day_trip <- sets_ci_10yr %>%
+  group_by(YEAR, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+CIsets_day_year <- CIsets_day_trip %>%
+  group_by(YEAR) %>%
+  summarize(mean = mean(n), MAX = max(n), MIN = min(n), STDEV = sd(n))
+write.csv(CIsets_day_year, "C:/Users/harperd/Documents/Halibut/Survey/SetsPerDayCommercialIndexAverage.csv")
+
+CIsets_day_NAFO <- sets_ci_10yr %>%
+  group_by(YEAR, NAFO, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+CIsets_day_NAFO <-CIsets_day_NAFO %>%
+  group_by(NAFO, YEAR) %>%
+  summarize(mean=round(mean(n), 2))
+CIsets_day_NAFO2 <- spread(CIsets_day_NAFO, NAFO, mean)
+
+##making summary at the strata level rather than NAFO level (added 4T to strata 3 and 4R to strata 4)
+CIsets_day_strata <- sets_ci_10yr %>%
+  mutate(STRATA = 
+           ifelse(NAFO %in% c("4X", "5Z", "5Y"), 1,
+                  ifelse(NAFO %in% c("4W"), 2,
+                         ifelse(NAFO %in% c("4V", "4T"), 3,
+                                ifelse(NAFO %in% c("3P", "4R"), 4,
+                                       ifelse(NAFO %in% c("3N", "3O"), 5, "Error"))))))
+
+CIsets_day_strata <- CIsets_day_strata %>%
+  group_by(YEAR, STRATA, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+  
+CIsets_day_strata <- CIsets_day_strata %>%
+  group_by(STRATA, YEAR) %>%
+  summarize(mean = round(mean(n), 2))
+CIsets_day_strata2 <- spread(CIsets_day_strata, STRATA, mean) ##9 stations in 2018 where there was no position info recorded (in "Error" column)
+```
+
+Overall sets per day (fixed, stratified random, commercial index)
+```{r}
+CIsets_day_trip$SMONTH <- as.numeric(CIsets_day_trip$SMONTH)
+CIsets_day_trip$SDAY <- as.numeric(CIsets_day_trip$SDAY)
+FSsets_day_trip$SMONTH <- as.numeric(FSsets_day_trip$SMONTH)
+FSsets_day_trip$SDAY <- as.numeric(FSsets_day_trip$SDAY)
+SRsets_day_trip$SMONTH <- as.numeric(SRsets_day_trip$SMONTH)
+SRsets_day_trip$SDAY <- as.numeric(SRsets_day_trip$SDAY)
+
+overall_sets = merge(x = CIsets_day_trip, y = FSsets_day_trip, by = c("YEAR","TRIP", "SDAY", "SMONTH") ,
+                                   all = TRUE)
+overall_sets = merge(x = overall_sets, y = SRsets_day_trip, by = c("YEAR", "TRIP", "SDAY", "SMONTH") , all = TRUE)
+
+#overall sets per day by trip (basically overall sets any vessel did on any given day)
+overall_sets <- overall_sets %>%
+    rowwise() %>% 
+    mutate(NUM_SETS = sum(n.x, n.y, n, na.rm = TRUE)) %>%
+    rename(CI = n.x, FS = n.y, SR = n)
+write.csv(overall_sets, "C:/Users/harperd/Documents/Halibut/Survey/SetsPerDayOverall.csv")
+
+
+#average over each year
+OAsets_day_year <- overall_sets %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(NUM_SETS), MAX = max(NUM_SETS), MIN = min(NUM_SETS), STDEV = sd(NUM_SETS))
+write.csv(OAsets_day_year, "C:/Users/harperd/Documents/Halibut/Survey/SetsPerDayOverallAverage.csv")
+
+#number by NAFO
+CIsets_day_NAFO3 <- sets_ci_10yr %>%
+  group_by(YEAR, NAFO, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+FSsets_day_NAFO3 <- sets_fs_10yr %>%
+  group_by(YEAR, NAFO, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+SRsets_day_NAFO3 <- sets_sr %>%
+  group_by(YEAR, NAFO, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+overall_sets_NAFO = merge(x = CIsets_day_NAFO3, y = FSsets_day_NAFO3, by = c("YEAR","NAFO", "TRIP", "SDAY", "SMONTH") ,
+                                   all = TRUE)
+overall_sets_NAFO = merge(x = overall_sets_NAFO, y = SRsets_day_NAFO3, by = c("YEAR", "NAFO", "TRIP", "SDAY", "SMONTH") , all = TRUE)
+
+overall_sets_NAFO <- overall_sets_NAFO %>%
+    rowwise() %>% 
+    mutate(NUM_SETS = sum(n.x, n.y, n, na.rm = TRUE)) %>%
+    rename(CI = n.x, FS = n.y, SR = n)
+
+
+#average by NAFO
+OAsets_NAFO <-overall_sets_NAFO %>%
+  group_by(NAFO, YEAR) %>%
+  summarize(mean=round(mean(NUM_SETS), 2))
+OAsets_NAFO2 <- spread(OAsets_NAFO, NAFO, mean) ##some NL CI sets without NAFO
+```
+
+Checking vessel size
+```{r}
+#Stratified random vessels
+##looked like Fishin' Fionnatic length might be the wrong units. Online it says the boat is 15m long
+SRvess <- sets_sr %>%
+  select(VESS_ID, VESSEL_NAME, CFV)
+
+SRvess <- SRvess[!duplicated(SRvess$VESS_ID), ]
+
+SRvess <- SRvess %>% left_join(ISVESSELS, by = "VESS_ID")
+
+#Fixed Station vessels
+##again the Fishin' Fionnatic is in ft not m so it's wrong
+FSvess <- sets_fs %>%
+  select(VESS_ID, VESSEL_NAME, CFV)
+
+FSvess <- FSvess[!duplicated(FSvess$VESS_ID), ]
+
+FSvess <- FSvess %>% left_join(ISVESSELS, by = "VESS_ID")
+```
+
+Getting trip length info
+```{r}
+SRtrips <- sets_sr %>%
+  select(TRIP, NAFO, YEAR) %>%
+  distinct(TRIP, NAFO, YEAR) ##tricky to present this data by NAFO since many trips span multiple NAFO areas
+
+SRtrips <- SRtrips %>%
+  left_join(ISTRIPS, by = "TRIP")
+SRtrips <- SRtrips %>%
+  select(TRIP, NAFO, BOARD_DATE, LANDING_DATE, YEAR)
+
+diffs <- difftime(SRtrips$LANDING_DATE,SRtrips$BOARD_DATE,units="days")
+
+SRtrips <- cbind(SRtrips, diffs) ##some trips have board and land dates exactly the same...need to find more about these trips...
+
+#increasing the day counts by 1 so be inclusive of start and end date (so no zero trips)
+SRtrips <- SRtrips %>% 
+  mutate(DAYS = substr(diffs, 1, 2))
+
+SRtrips$DAYS <- as.numeric(SRtrips$DAYS)
+
+SRtrips <- SRtrips %>%
+  mutate(DAYS = DAYS+1)
+
+##how to deal with trips in multiple NAFOs
+SRtrips_multizone <- SRtrips %>%
+  count(TRIP)
+
+SRtrips_multizone %>% count(n) ##there are 4 trips that span 3 NAFO zones, 30 trips that span 2 NAFO zones
+
+##average length of trip by year
+SRtrip_length_year <- SRtrips %>%
+  group_by(YEAR) %>%
+  summarize(mean_days = mean(DAYS))
+
+#number of trips per year
+SR_numtrips <- SRtrips %>%
+  select(TRIP, YEAR) %>%
+  distinct(TRIP, YEAR) %>%
+  group_by(YEAR) %>%
+  summarize(n_trips = n())     ###The length of trips has been increasing since 2017 but the number of trips has decreased. Interested to see trends by NAFO
+
+
+#number of trips per NAFO per year
+SR_trips_year <- SRtrips %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n_trips = n())
+SR_trips_year_wide <- spread(SR_trips_year, NAFO, n_trips)
+
+#duration of trips by nafo by year
+SRtrip_length_nafo <- SRtrips %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(mean_days = round(mean(DAYS), 2))
+SRtrip_length_nafo_wide <- spread(SRtrip_length_nafo, NAFO, mean_days) ##not necessarily right because some trips are in multiple NAFOs
+```
+
+Looking into the number of days with sets (by year and area)
+```{r}
+#getting number of days with sets for each trip
+SRsets_day_NAFOyr <- sets_sr %>%
+  group_by(YEAR, NAFO, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n()) ##comparing this with SRsets_day_trip there are cases where sets were completed on the same day in different NAFO
+
+SRsetdays_multizone <- SRsets_day_NAFOyr %>%
+  group_by(TRIP, SDAY, SMONTH) %>%
+  summarize(n = n()) ##4 trips where there are sets in multiple NAFOs
+
+##ignoring NAFO to start...mean set days per trip by year
+SRsetdays_trip <- SRsets_day_trip %>%
+  group_by(TRIP, YEAR) %>%
+  summarize(SETDAYS = n())
+
+SR_avsetdays <- SRsetdays_trip %>%
+  group_by(YEAR) %>%
+  summarize(meansetdays = mean(SETDAYS))
+
+##mean set days by NAFO...ignoring that trips cover 2 NAFOs
+SR_setdays_nafo <- SRsets_day_NAFOyr %>%
+  group_by(TRIP, NAFO, YEAR) %>%
+  summarize(SETDAYS = n())
+
+SR_avsetdays_nafo <- SR_setdays_nafo %>%
+  group_by(NAFO, YEAR) %>%
+  summarize(meansetdays = round(mean(SETDAYS), 2))
+SR_avsetdays_nafo_wide <- spread(SR_avsetdays_nafo, NAFO, meansetdays)
+```
+
+Looking into trip duration and days with sets overall...important since on many trips there are fixed, stratified random, and commercial index (a combination of these often)
+```{r}
+overall_sets2 = merge(x = CIsets_day_NAFO3, y = FSsets_day_NAFO3, by = c("YEAR","TRIP", "SDAY", "SMONTH", "NAFO") ,
+                                   all = TRUE)
+overall_sets2 = merge(x = overall_sets2, y = SRsets_day_NAFO3, by = c("YEAR", "TRIP", "SDAY", "SMONTH", "NAFO") , all = TRUE)
+
+#overall sets per day by trip (basically overall sets any vessel did on any given day)
+overall_sets2 <- overall_sets2 %>%
+    rowwise() %>% 
+    mutate(NUM_SETS = sum(n.x, n.y, n, na.rm = TRUE)) %>%
+    rename(CI = n.x, FS = n.y, SR = n)
+
+##ignoring NAFO to start...mean set days per trip by year
+OAsetdays_trip <- overall_sets %>%
+  group_by(TRIP, YEAR) %>%
+  summarize(SETDAYS = n())
+
+OA_avsetdays <- OAsetdays_trip %>%
+  group_by(YEAR) %>%
+  summarize(meansetdays = mean(SETDAYS), maxsetdays = max(SETDAYS), minsetdays = min(SETDAYS), STDEV = sd(SETDAYS)) #SETDAYS means the number of days in a trip where there was a set/sets done
+
+##mean set days by NAFO...ignoring that trips cover 2 NAFOs or more
+OA_setdays_nafo <- overall_sets2 %>%
+  group_by(TRIP, NAFO, YEAR) %>%
+  summarize(SETDAYS = n())
+
+OA_avsetdays_nafo <- OA_setdays_nafo %>%
+  group_by(NAFO, YEAR) %>%
+  summarize(meansetdays = round(mean(SETDAYS), 2))
+OA_avsetdays_nafo_wide <- spread(OA_avsetdays_nafo, NAFO, meansetdays)
+
+#finding where there are sets in multiple NAFO on a given day
+OAsetdays_multizone <- overall_sets_NAFO %>%
+  group_by(TRIP, SDAY, SMONTH) %>%
+  summarize(n = n()) ##70 days overall where sets on a given day in diff NAFO
+FSsetdays_multizone <- FSsets_day_NAFO3 %>%
+  group_by(TRIP, SDAY, SMONTH) %>%
+  summarize(n = n()) ##19 times where there are sets in multiple NAFOs for a given day for FS exclusively
+CIsetdays_multizone <- CIsets_day_NAFO3 %>%
+  group_by(TRIP, SDAY, SMONTH) %>%
+  summarize(n = n()) ##37 days where there are sets in multiple NAFOs for CI exclusively
+
+#creating similar NAFO table as above but with the number of days for trips overall (including all FS, SR, CI)
+FStrips <- sets_fs %>%
+  select(TRIP, NAFO, YEAR) %>%
+  distinct(TRIP, NAFO, YEAR) ##tricky to present this data by NAFO since many trips span multiple NAFO areas
+CItrips <- sets_ci %>%
+  select(TRIP, NAFO, YEAR) %>%
+  distinct(TRIP, NAFO, YEAR)
+
+FStrips <- FStrips %>%
+  left_join(ISTRIPS, by = "TRIP")
+FStrips <- FStrips %>%
+  select(TRIP, NAFO, BOARD_DATE, LANDING_DATE, YEAR) %>%
+  filter(YEAR > 2010)
+
+diffsFS <- difftime(FStrips$LANDING_DATE,FStrips$BOARD_DATE,units="days")
+
+FStrips <- cbind(FStrips, diffsFS) ##some trips have board and land dates exactly the same...need to find more about these trips...
+
+CItrips <- CItrips %>%
+  left_join(ISTRIPS, by = "TRIP")
+CItrips <- CItrips %>%
+  select(TRIP, NAFO, BOARD_DATE, LANDING_DATE, YEAR) %>%
+  filter(YEAR > 2010)
+
+diffsCI <- difftime(CItrips$LANDING_DATE,CItrips$BOARD_DATE,units="days")
+
+CItrips <- cbind(CItrips, diffsCI)
+
+
+#increasing the day counts by 1 so be inclusive of start and end date (so no zero trips)
+FStrips <- FStrips %>% 
+  mutate(DAYS = substr(diffsFS, 1, 2)) %>%
+  rename(diffs = diffsFS)
+
+CItrips <- CItrips %>% 
+  mutate(DAYS = substr(diffsCI, 1, 2)) %>%
+  rename(diffs = diffsCI)
+
+FStrips$DAYS <- as.numeric(FStrips$DAYS)
+CItrips$DAYS <- as.numeric(CItrips$DAYS)
+
+FStrips <- FStrips %>%
+  mutate(DAYS = DAYS+1)
+CItrips <- CItrips %>%
+  mutate(DAYS = DAYS+1)
+
+##bringing SR, FS, and CI trips together and removing duplicate rows
+surveytripsOA <- rbind(SRtrips, FStrips, CItrips)
+surveytripsOA <- surveytripsOA %>%
+  distinct(TRIP, YEAR, NAFO, BOARD_DATE, LANDING_DATE, DAYS)
+
+surveytripsOA_nonafo <- surveytripsOA %>%
+  group_by(YEAR, TRIP) %>%
+  summarize(DAYS = max(DAYS))
+
+##how to deal with trips in multiple NAFOs
+OAtrips_multizone <- surveytripsOA %>%
+  count(TRIP)
+
+OAtrips_multizone %>% count(n) ##there are 4 trips that span 4 NAFO zones, 15 trips that span 3 NAFO zones, 84 trips that span 2 NAFO zones (of 747 trips)
+
+##average length of trip by year
+OAtrip_length_year <- surveytripsOA_nonafo %>%
+  group_by(YEAR) %>%
+  summarize(mean_days = mean(DAYS), max_days = max(DAYS), min_days = min(DAYS), STDEV = sd(DAYS))
+
+#number of trips per year
+OA_numtrips <- surveytripsOA %>%
+  select(TRIP, YEAR) %>%
+  distinct(TRIP, YEAR) %>%
+  group_by(YEAR) %>%
+  summarize(n_trips = n())     ###The length of trips has been increasing since 2017 but the number of trips has decreased. 2020 no CI so sig lower
+
+
+#number of trips per NAFO per year
+OA_trips_year <- surveytripsOA %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n_trips = n())
+OA_trips_year_wide <- spread(OA_trips_year, NAFO, n_trips)
+
+#duration of trips by nafo by year
+OAtrip_length_nafo <- surveytripsOA %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(mean_days = round(mean(DAYS), 2))
+OAtrip_length_nafo_wide <- spread(OAtrip_length_nafo, NAFO, mean_days) ##not necessarily right because some trips are in multiple NAFOs
+
+#looking at the proportion of each trip that has days with sets
+OVsetdays_tripday <- cbind(OA_avsetdays_nafo_wide[1],round(OA_avsetdays_nafo_wide[-1]/OAtrip_length_nafo_wide[-1],2))
+
+####figuring out where sets days is higher in 4X than the number of days in trips
+setdays4x <- OA_setdays_nafo %>%
+  filter(NAFO == "4X")
+tripdays4x <- surveytripsOA %>%
+  filter(NAFO == "4X")
+
+SetTrip4x <- setdays4x %>% 
+  left_join(tripdays4x, by = "TRIP")
+SetTrip4x <- SetTrip4x %>% 
+  filter(YEAR.x %in% c(2011, 2012, 2013, 2014)) %>%
+  mutate(DISCREP = DAYS-SETDAYS)
+
+SetTripALL <- OA_setdays_nafo %>% 
+  left_join(surveytripsOA, by = c("TRIP", "YEAR", "NAFO"))
+SetTripALL <- SetTripALL %>% 
+  mutate(DISCREP = DAYS-SETDAYS)
+
+##looking at the overall trip length per year without commercial index trips where dates were wrong (only single date included for trips)
+SetTripALL2 <- OAsetdays_trip %>% 
+  left_join(surveytripsOA_nonafo, by = c("TRIP", "YEAR"))
+SetTripALL2 <- SetTripALL2 %>% 
+  mutate(DISCREP = DAYS-SETDAYS)
+
+
+OAtrip_OR <- SetTripALL2 %>%
+  filter(DISCREP > -1)
+
+OAtriplength_OR_yr <- OAtrip_OR %>%
+  group_by(YEAR) %>%
+  summarize(mean_days = mean(DAYS), max_days = max(DAYS), min_days = min(DAYS), STDEV = sd(DAYS))
+```
+Looking into bait. Asked for mean weight of bait per hook for SR and FS (should be consistent, atleast since SR started as part of compliance). Also looking for the info for CI...likely not available
+```{r}
+sets_ci_bait <- sets_ci_10yr %>% drop_na(AVERAGE_BAIT_WEIGHT_IN_GRAMS) ##only 55 sets of 6,543 that have bait weights for CI, also very little bait species info from quick glance at the data
+
+sets_fs_bait <- sets_fs_10yr %>% drop_na(AVERAGE_BAIT_WEIGHT_IN_GRAMS) ##only 100 of 1,856 with bait weights. Mostly herring, some mackerel
+
+sets_sr_bait <- sets_sr %>% drop_na(AVERAGE_BAIT_WEIGHT_IN_GRAMS) ##only 429 sets of 731 with bait weights, looks like weights started in 2019. All herring.
+
+#bait weight averages and range for SR
+mean(sets_sr_bait$AVERAGE_BAIT_WEIGHT_IN_GRAMS) #157.4033g
+range(sets_sr_bait$AVERAGE_BAIT_WEIGHT_IN_GRAMS) #126g-201g (compliance rules state 125g-200g)
+
+##looking at bait type for FS, mostly herring or combos including herring (like Mackerel and Herring or Squid, Mackerel and Herring. But major majority herring)
+```
+
+Looking into the average number of hooks for the CI
+```{r}
+sets_ci_10yr %>% count(NUM_HOOK_HAUL) #165 sets of 6,543 that don't have number of hooks recorded (1,000 most common = mode)
+
+mean(sets_ci_10yr$NUM_HOOK_HAUL, na.rm=TRUE) #average number of hooks per set is 821.2
+
+range(sets_ci_10yr$NUM_HOOK_HAUL, na.rm=TRUE) #range in number of hooks from 4 to 4,400...data a bit messy, could be cases where all hooks from a trip are recorded together or the number of hooks recorded wrong...?
+```
+
+Looking at the number of participants by NAFO?
+```{r}
+SRpart_yr <- sets_sr %>%
+  select(VESS_ID, VESSEL_NAME, YEAR, NAFO) %>%
+  distinct(VESS_ID, VESSEL_NAME, YEAR, NAFO)
+
+FSpart_yr <- sets_fs_10yr %>%
+  select(VESS_ID, VESSEL_NAME, YEAR, NAFO) %>%
+  distinct(VESS_ID, VESSEL_NAME, YEAR, NAFO)
+
+OApart_yr <- rbind(SRpart_yr, FSpart_yr)
+
+OApart_yr_NAFO <- OApart_yr %>% 
+  distinct(VESS_ID, VESSEL_NAME, YEAR, NAFO)
+
+#Number of participants per year
+OApart_yr_count <- OApart_yr %>%
+  distinct(VESS_ID, VESSEL_NAME, YEAR) %>%
+  group_by(YEAR) %>%
+  summarize(n=n())
+
+#Number of participants that enter each NAFO
+OApart_yr_NAFO_count <- OApart_yr_NAFO %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(n=n())
+OApart_yr_NAFO_count_wide <- spread(OApart_yr_NAFO_count, NAFO, n)
+```
+
+
+Looking at the number of stations per participant
+```{r}
+##average sets per year SR
+SR_setspart <- sets_sr %>%
+  select(FISHSET_ID, VESSEL_NAME, VESS_ID, YEAR, NAFO)
+
+SR_setspart_NAFO <- SR_setspart %>%
+  group_by(YEAR, VESSEL_NAME, NAFO) %>%
+  summarize(n_sets =n())
+
+SR_setspart_yr <- SR_setspart %>%
+  group_by(YEAR, VESSEL_NAME) %>%
+  summarize(n_sets =n())
+
+SR_avsetspart_yr <- SR_setspart_yr %>%
+  group_by(YEAR) %>%
+  summarize(AV_SETS = mean(n_sets), MAX_SETS = max(n_sets), MIN_SETS = min(n_sets), STDEV = sd(n_sets))
+
+##average sets per year FS
+FS_setspart <- sets_fs_10yr %>%
+  select(FISHSET_ID, VESSEL_NAME, VESS_ID, YEAR, NAFO)
+
+FS_setspart_NAFO <- FS_setspart %>%
+  group_by(YEAR, VESSEL_NAME, NAFO) %>%
+  summarize(n_sets =n())
+
+FS_setspart_yr <- FS_setspart %>%
+  group_by(YEAR, VESSEL_NAME) %>%
+  summarize(n_sets =n())
+
+FS_avsetspart_yr <- FS_setspart_yr %>%
+  group_by(YEAR) %>%
+  summarize(AV_SETS = mean(n_sets), MAX_SETS = max(n_sets), MIN_SETS = min(n_sets), STDEV = sd(n_sets))
+
+##average sets per year CI
+CI_setspart <- sets_ci_10yr %>%
+  select(FISHSET_ID, VESSEL_NAME, VESS_ID, YEAR, NAFO)
+
+CI_setspart_NAFO <- CI_setspart %>%
+  group_by(YEAR, VESSEL_NAME, NAFO) %>%
+  summarize(n_sets =n())
+
+CI_setspart_yr <- CI_setspart %>%
+  group_by(YEAR, VESSEL_NAME) %>%
+  summarize(n_sets =n())
+
+CI_avsetspart_yr <- CI_setspart_yr %>%
+  group_by(YEAR) %>%
+  summarize(AV_SETS = mean(n_sets), MAX_SETS = max(n_sets), MIN_SETS = min(n_sets), STDEV = sd(n_sets))
+
+##average sets per year OVERALL
+OA_setspart <- rbind(SR_setspart_yr, FS_setspart_yr, CI_setspart_yr)
+ 
+OA_setspart_yr <- OA_setspart %>%
+  group_by(YEAR, VESSEL_NAME) %>%
+  summarize(n_sets = sum(n_sets))
+
+OA_avsetspart_yr <- OA_setspart_yr %>%
+  group_by(YEAR) %>%
+  summarize(AV_SETS = mean(n_sets), MAX_SETS = max(n_sets), MIN_SETS = min(n_sets), STDEV = sd(n_sets)) 
+
+write.csv(OA_avsetspart_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_overallsetspervessel_10yrs.csv")
+write.csv(SR_avsetspart_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_SRsetspervessel.csv")
+write.csv(FS_avsetspart_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_FSsetspervessel_10yrs.csv")
+write.csv(CI_avsetspart_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_CIsetspervessel_10yrs.csv")
+write.csv(OA_numtrips, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_overallnumbertrips_10yrs.csv")
+write.csv(OAtrip_length_year, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_overalltriplength_10yrs.csv")
+write.csv(OAtriplength_OR_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_overalltriplength_OR_10yrs.csv")
+write.csv(CIonlytriplength_OR_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_CItriplength_OR_10yrs.csv")
+write.csv(Mixedtriplength_OR_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_Mixedtriplength_OR_10yrs.csv")
+write.csv(OA_avsetdays, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_overalldayswithsets_10yrs.csv")
+write.csv(OAsetdays_OR, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_overalldayswithsets__OR_10yrs.csv")
+write.csv(CIonlysetdays_OR_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_CIonlydayswithsets__OR_10yrs.csv")
+write.csv(Mixedsetdays_OR_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_Mixeddayswithsets__OR_10yrs.csv")
+write.csv(SRsets_day_strata2, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_SRsetsperday_strata.csv")
+write.csv(FSsets_day_strata2, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_FSsetsperday_strata_10yr.csv")
+write.csv(CIsets_day_strata2, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_CIsetsperday_strata_10yr.csv")
+write.csv(OApart_yr_count, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_participants_10yr.csv")
+write.csv(OAsets_day_year, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_SetsPerDayOverall.csv")
+write.csv(CIsets_day_year_OR, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayCommercialIndexAverage_OR.csv")
+write.csv(SRsets_day_year_OR, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayStratifiedRandomAverage_OR.csv")
+write.csv(OAsetsdayyearOR, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayOverallAverage_OR.csv")
+write.csv(CIonlysetsday_yr, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayCIonly.csv")
+write.csv(MixedsetsdayOA, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayMixedtrips_overall.csv")
+write.csv(Mixedsetsday_test2, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayMixedtrips_propTYPE.csv")
+write.csv(MixedsetsdayFS, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayMixedtrips_FS.csv")
+write.csv(MixedsetsdaySR, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayMixedtrips_SR.csv")
+write.csv(MixedsetsdayCI, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayMixedtrips_CI.csv")
+write.csv(Mixedtrips_avpart, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_numbermixedtrips_vessel_10yrs.csv")
+write.csv(CIonlytrip_avpart, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_numberCItrips_vessel_10yrs.csv")
+write.csv(SRwt, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_avStratifiedRandomSetWT.csv")
+write.csv(FSwt, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_avFixedStationSetWT.csv")
+write.csv(Mixedtrips_avpartQ, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_numbermixedtrips_vessel_10yrs_quartiles.csv")
+write.csv(CIonlytrip_avpartQ, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_numberCItrips_vessel_10yrs_quartiles.csv")
+write.csv(Mixedtriplength_OR_yrQ, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_Mixedtriplength_OR_10yrs_quartiles.csv")
+write.csv(CIonlytriplength_OR_yrQ, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_CItriplength_OR_10yrs_quartiles.csv")
+write.csv(Mixedsetdays_OR_yrQ, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_Mixeddayswithsets_OR_10yrs_quartiles.csv")
+write.csv(CIonlysetdays_OR_yrQ, "C:/Users/harperd/Documents/Halibut/Data Requests/HalSurvey_CIonlydayswithsets_OR_10yrs_quartiles.csv")
+write.csv(MixedsetsdayOAQ, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayMixedtrips_overall_quartiles.csv")
+write.csv(CIonlysetsday_yrQ, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayCIonly_quartiles.csv")
+
+```
+
+Working on new data request for Devan: looking for recalculations of trip duration and number of set days with the CI trips where duration doesn't make sense removed
+```{r}
+##first to recalculate number of set days overall, taking out the CI outliers
+OAsets_day_year_OR <- OAtrip_OR %>%
+  left_join(overall_sets, by = c("TRIP", "YEAR")) %>%
+  group_by(YEAR, TRIP, SDAY, SMONTH) %>%
+  summarize(SETDAYS = max(SETDAYS), NUM_SETS = max(NUM_SETS))
+
+OAsetsdayyearOR <- OAsets_day_year_OR %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(NUM_SETS), MAX = max(NUM_SETS), MIN = min(NUM_SETS), STDEV = sd(NUM_SETS))
+
+
+##checking that the data removed was correct ##yes all good (475+2080 = 2,555)
+OAsets_day_year_OR2 <- OAsets_day_year_OR %>% select(-"SETDAYS")
+overall_sets_test <- overall_sets %>% select(-"CI", -"SR", -"FS")
+OANotInOAOR <- sqldf('SELECT * FROM overall_sets_test EXCEPT SELECT * FROM OAsets_day_year_OR2')
+
+##looking at the number of sets per day for CI (when removing those trips where the duration doesn't make sense)
+CI_OR <- OANotInOAOR %>%
+  filter(TRIP != "S19-0705")
+
+CIsets_day_trip_OR <- CIsets_day_trip %>%
+  filter(!TRIP %in% c(CI_OR$TRIP))
+
+CIsets_day_year_OR <- CIsets_day_trip_OR %>%
+  group_by(YEAR) %>%
+  summarize(mean = mean(n), MAX = max(n), MIN = min(n), STDEV = sd(n))
+write.csv(CIsets_day_year_OR, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayCommercialIndexAverage_OR.csv")
+
+##looking at the number of sets per day for SR (when removing those trips where the duration doesn't make sense...one SR trip in 2019 was removed)
+SRsets_day_trip_OR <- sets_sr %>%
+  filter(TRIP != "S19-0705") %>%
+  group_by(YEAR, TRIP, SDAY, SMONTH) %>%
+  summarize(n=n())
+
+SRsets_day_year_OR <- SRsets_day_trip_OR %>%
+  group_by(YEAR) %>%
+  summarize(mean = mean(n), MAX = max(n), MIN = min(n), STDEV = sd(n))
+write.csv(SRsets_day_year_OR, "C:/Users/harperd/Documents/Halibut/Data Requests/SetsPerDayStratifiedRandomAverage_OR.csv")
+
+##recalculating the number of set days with the CI outliers (+ 1 SR) removed
+OAsetdays_OR <- OAtrip_OR %>% 
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETDAYS), MAX = max(SETDAYS), MIN = min(SETDAYS), STDEV = sd(SETDAYS))
+
+```
+
+
+*************Important note! When doing summaries not using NAFO at all, use overall_sets 
+
+
+Should we instead be looking at that with all CI only trips removed?
+```{r}
+##first to find the trips that are only CI, looking for trips where the only set cd is setcd = 10
+SRtrips2 <- sets_sr %>%
+  select(TRIP, YEAR, SETCD_ID) %>%
+  group_by(TRIP, YEAR) %>%
+  summarize(TYPE = min(SETCD_ID))
+
+FStrips2 <- sets_fs_10yr %>%
+  select(TRIP, YEAR, SETCD_ID) %>%
+  group_by(TRIP, YEAR) %>%
+  summarize(TYPE = min(SETCD_ID))
+
+CItrips2 <- sets_ci_10yr %>%
+  select(TRIP, YEAR, SETCD_ID) %>%
+  group_by(TRIP, YEAR) %>%
+  summarize(TYPE = min(SETCD_ID))
+
+overall_trips = merge(x = SRtrips2, y = FStrips2, by = c("YEAR","TRIP", "TYPE") ,
+                                   all = TRUE)
+overall_trips = merge(x = overall_trips, y = CItrips2, by = c("YEAR", "TRIP", "TYPE") , all = TRUE)
+
+overall_trips <- overall_trips %>%
+  group_by(YEAR, TRIP) %>%
+  summarize(TYPE = min(TYPE))
+
+##removing trips where CI dates are wrong
+overall_tripsOR <- OAtrip_OR %>%
+  left_join(overall_trips) %>%
+  select(YEAR, TRIP, TYPE, SETDAYS, DAYS, DISCREP)
+
+##trips where the smallest setcd is 10 means that there were only CI sets on that trip and removing the CI trips with weird dates
+CIonlytrips <- overall_tripsOR %>% 
+  filter(TYPE == 10)
+Mixedtrips <- overall_tripsOR %>%
+  filter(TYPE != 10)
+```
+
+Using Mixedtrips and CIonly trips to look at trip duration (where CI with weird dates are removed)
+```{r}
+CIonlytriplength_OR_yr <- CIonlytrips %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(DAYS), MAX = max(DAYS), MIN = min(DAYS), STDEV = sd(DAYS))
+
+CIonlytriplength_OR_yrQ <- CIonlytrips %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(DAYS))) %>%
+  unnest_wider(q) %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+
+Mixedtriplength_OR_yr <- Mixedtrips %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(DAYS), MAX = max(DAYS), MIN = min(DAYS), STDEV = sd(DAYS))
+
+Mixedtriplength_OR_yrQ <- Mixedtrips %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(DAYS))) %>% 
+  unnest_wider(q) %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+```
+
+Using Mixedtrips and CIonly to look at number of set days (where CI with weird dates are removed)
+```{r}
+CIonlysetdays_OR_yr <- CIonlytrips %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETDAYS), MAX = max(SETDAYS), MIN = min(SETDAYS), STDEV = sd(SETDAYS))
+
+CIonlysetdays_OR_yrQ <- CIonlytrips %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(SETDAYS))) %>%
+  unnest_wider(q) %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+
+Mixedsetdays_OR_yr <- Mixedtrips %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETDAYS), MAX = max(SETDAYS), MIN = min(SETDAYS), STDEV = sd(SETDAYS))
+
+Mixedsetdays_OR_yrQ <- Mixedtrips %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(SETDAYS))) %>%
+  unnest_wider(q) %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+```
+
+Getting the sets per day by set type for each trip type (CIonly and Mixed) along with weights?
+```{r}
+SRsets2 <- sets_sr %>%
+ select(YEAR, TRIP, SETCD_ID, SDAY, SMONTH, VESSEL_NAME)
+SRsets2$SMONTH <- as.numeric(SRsets2$SMONTH)
+
+FSsets2 <- sets_fs_10yr %>%
+ select(YEAR, TRIP, SETCD_ID, SDAY, SMONTH, VESSEL_NAME)
+FSsets2$SMONTH <- as.numeric(FSsets2$SMONTH)
+
+CIsets2 <- sets_ci_10yr %>%
+ select(YEAR, TRIP, SETCD_ID, SDAY, SMONTH, VESSEL_NAME)
+CIsets2$SMONTH <- as.numeric(CIsets2$SMONTH)
+CIsets2$SDAY <- as.numeric(CIsets2$SDAY)
+
+sets = merge(x = SRsets2, y = FSsets2, by = c("YEAR","TRIP", "SETCD_ID", "SDAY", "SMONTH", "VESSEL_NAME") ,
+                                   all = TRUE)
+sets = merge(x = sets, y = CIsets2, by = c("YEAR", "TRIP", "SETCD_ID", "SDAY", "SMONTH", "VESSEL_NAME") , all = TRUE)
+
+##removing trips where CI dates are wrong
+setsOR <- OAtrip_OR %>%
+  left_join(sets) %>%
+  select(YEAR, TRIP, SETCD_ID, SDAY, SMONTH, VESSEL_NAME)
+
+
+#splitting into 2 table, one of CI only trips and the over of Mixed trips
+CIonlysets <- CIonlytrips %>%
+  left_join(setsOR) %>%
+  select(YEAR, TRIP, SETCD_ID, SDAY, SMONTH, VESSEL_NAME)
+Mixedsets <- Mixedtrips %>%
+  left_join(setsOR) %>%
+  select(YEAR, TRIP, SETCD_ID, SDAY, SMONTH, VESSEL_NAME)
+
+##sets per day per 
+CIonlysets_trip <- CIonlysets %>%
+  group_by(YEAR, TRIP, SETCD_ID, SDAY, SMONTH) %>%
+  summarize(SETS = n())
+
+CIonlysetsday_yr <- CIonlysets_trip %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETS), MAX = max(SETS), MIN = min(SETS), STDEV = sd(SETS))
+
+CIonlysetsday_yrQ <- CIonlysets_trip %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(SETS))) %>%
+  unnest_wider(q) %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+
+##sets per day for mixed trips: overall, fixed, sr, ci
+Mixedsets_trip <- Mixedsets %>%
+  group_by(YEAR, TRIP, SETCD_ID, SDAY, SMONTH) %>%
+  summarize(SETS=n())
+  
+
+MixedsetsdayFS <- Mixedsets_trip %>%
+  filter(SETCD_ID == 4) %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETS), MAX = max(SETS), MIN = min(SETS), STDEV = sd(SETS))
+
+MixedsetsdaySR <- Mixedsets_trip %>%
+  filter(SETCD_ID == 5) %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETS), MAX = max(SETS), MIN = min(SETS), STDEV = sd(SETS))
+
+MixedsetsdayCI <- Mixedsets_trip %>%
+  filter(SETCD_ID == 10) %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETS), MAX = max(SETS), MIN = min(SETS), STDEV = sd(SETS))
+
+MixedsetsdayOA <- Mixedsets_trip %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(SETS), MAX = max(SETS), MIN = min(SETS), STDEV = sd(SETS))
+
+MixedsetsdayOAQ <- Mixedsets_trip %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(SETS))) %>%
+  unnest_wider(q) %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+
+##figuring out sets per day of different set types but including all trips in given years (rather than like above where only trips that have those set types are included in the summaries...)...I can't figure this out...mean number of sets per day is sum(sets per day for all days)/number of set days. So to "include zeros" without actually adding in zeros, I just did sum(sets per day for all days with sets of that type)/all days with sets/trip in that year
+Mixedsets_yr <- Mixedsets_trip %>%
+  group_by(YEAR) %>%
+  summarize(SETDAYS = n())
+
+Mixedsetsday_test <- Mixedsets_trip %>%
+  group_by(YEAR, SETCD_ID) %>%
+  summarize(SETS = sum(SETS))
+
+Mixedsetsday_test <- Mixedsets_yr %>%
+  left_join(Mixedsetsday_test, by = "YEAR")
+
+Mixedsetsday_test <- Mixedsetsday_test %>%
+  mutate(SETS_DAY = SETS/SETDAYS) %>%
+  select(-"SETS", -"SETDAYS")
+Mixedsetsday_test2 <- spread(Mixedsetsday_test, SETCD_ID, SETS_DAY)
+
+# Mixedsets_trip2 <- Mixedsets_trip %>%
+#   group_by(YEAR, SETCD_ID) %>%
+#   summarize(q = list(quantile(SETS))) %>%
+#   unnest_wider(q)
+
+```
+
+Looking at the number of trips in CIonly and Mixed over time
+```{r}
+Mixedtrips_count <- Mixedtrips %>%
+  distinct(YEAR, TRIP) %>%
+  group_by(YEAR) %>%
+  summarize(TRIPS = n())
+CIonlytrips_count <- CIonlytrips %>%
+  distinct(YEAR, TRIP) %>%
+  group_by(YEAR) %>%
+  summarize(TRIPS = n())
+```
+
+Number of trips per season per type for each participant (average annually)
+```{r}
+Mixedtrips2 <- Mixedsets %>%
+  group_by(YEAR, TRIP, VESSEL_NAME) %>%
+  summarize(n=n())
+
+Mixedtrips_part <- Mixedtrips2 %>%
+  group_by(YEAR, VESSEL_NAME) %>%
+  summarize(n=n())
+
+Mixedtrips_avpart <- Mixedtrips_part %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(n), MAX = max(n), MIN = min(n), STDEV = sd(n))
+
+Mixedtrips_avpartQ <- Mixedtrips_part %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(n))) %>%
+  unnest_wider(q)  %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+
+CIonlytrips2 <-CIonlysets %>%
+  group_by(YEAR, TRIP, VESSEL_NAME) %>%
+  summarize(n=n())
+
+CIonlytrip_part <- CIonlytrips2 %>%
+  group_by(YEAR, VESSEL_NAME) %>%
+  summarize(n=n()) 
+
+CIonlytrip_avpart <- CIonlytrip_part %>%
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(n), MAX = max(n), MIN = min(n), STDEV = sd(n))
+
+CIonlytrip_avpartQ <- CIonlytrip_part %>%
+  group_by(YEAR) %>%
+  summarize(q = list(quantile(n))) %>%
+  unnest_wider(q)  %>%
+  select(-"0%", -"100%") %>%
+  rename(Q1 = "25%", MEDIAN = "50%", Q3 = "75%")
+```
+
+Average weights per set type (fixed and stratified random) per year (for overall, and for Mixed...should be the same so only doing overall)
+```{r}
+SRwt <- sets_sr %>% 
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(EST_COMBINED_WT), MAX = max(EST_COMBINED_WT), MIN = min(EST_COMBINED_WT))
+
+FSwt <- sets_fs_10yr %>% 
+  group_by(YEAR) %>%
+  summarize(MEAN = mean(EST_COMBINED_WT), MAX = max(EST_COMBINED_WT), MIN = min(EST_COMBINED_WT))
+```
+Getting the number of participants that fished mixed and CIonly sets each year
+```{r}
+CIonlytrip_part_yr <- CIonlytrip_part %>%
+  group_by(YEAR) %>%
+  summarize(NUM_PART = n())
+
+Mixedtrip_part_yr <- Mixedtrips_part %>%
+  group_by(YEAR) %>%
+  summarize(NUM_PART = n())
+```
+
+Kris Vascatto looking for annual number of halibut caught in the stratified random survey by strata, and number of stations per strata each year
+```{r}
+sets_sr %>% filter(EST_NUM_CAUGHT == 0) %>% filter(EST_COMBINED_WT != 0)
+sets_sr %>% filter(EST_COMBINED_WT == 0) %>% filter(EST_NUM_CAUGHT != 0)
+
+SRhal_yr_strata <- sets_sr %>%
+  group_by(YEAR, STRATUM_ID) %>%
+  summarize(ABUNDANCE = sum(EST_NUM_CAUGHT), STATIONS = n())
+
+write.csv(SRhal_yr_strata, "C:/Users/harperd/Documents/Halibut/Data Requests/SR Survey stations and abundance by strata.csv")
+
+write.csv(StrataAreas_old, "C:/Users/harperd/Documents/Halibut/Data Requests/SR Survey Areas until 2021.csv")
+```
+
+Getting how many stations by each coordinator (NS vs NL) since 2017
+```{r}
+dat <- bind_rows(sets_sr, sets_fs)
+
+dat <- dat %>% 
+  filter(DATE_TIME1 >=as.Date("2017-01-01"))
+
+dat <- dat %>% 
+  mutate(PROVINCE = substr(TRIP, 1,1))
+
+sets_province <- dat %>% 
+  group_by(YEAR, PROVINCE) %>%
+  summarize(STATIONS = n()) 
+
+sets_province2 <- spread(sets_province, PROVINCE, STATIONS) %>%
+  rename(NS = J, NL = S)
+
+sets_sr_province <- sets_sr %>%
+  mutate(PROVINCE = substr(TRIP, 1,1))
+
+sets_sr_province <- sets_sr_province %>%
+  group_by(YEAR, PROVINCE) %>%
+  summarize(STATIONS = n())
+
+sets_sr_province2 <- spread(sets_sr_province, PROVINCE, STATIONS) %>%
+  rename(NS = J, NL = S)
+```
+
+Looking for dogfish...
+```{r}
+sets_SRdogfish <- RandomSurveyData(sp=220, datadir, add.gear=T, add.LF=T, by.sex=F, hook.data=F)
+sets_SRdogfish <- sets_SRdogfish %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2)) %>%
+  mutate(NAFO = replace(NAFO, NAFO %in% c("5Y", "5Z", "4X"), "4X+5"))
+
+sets_FSdogfish <- FixedSurveyData(sp=220, datadir, add.gear=T, add.LF=F, by.sex=F,correct.splitsets=T)
+sets_FSdogfish <- sets_FSdogfish %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2)) %>%
+  mutate(NAFO = replace(NAFO, NAFO %in% c("5Y", "5Z", "4X"), "4X+5"))
+
+load(file.path(datadir,"Survey","HSFixed100Stations.rdata"))
+sets_FSdogfish<- subset(sets_FSdogfish,STATION%in%stations100)
+
+dogfishNAFO_FS <- sets_FSdogfish %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(CPUE = round(sum(EST_COMBINED_WT)/sum(NUM_HOOK_HAUL/1000), 2))
+dogfishNAFO_FS_wide <- spread(dogfishNAFO_FS, NAFO, CPUE)
+
+  summarize(mean=round(mean(NUM_SETS), 2))
+
+dogfishNAFO_SR <- sets_SRdogfish %>%
+  group_by(YEAR, NAFO) %>%
+  summarize(CPUE = round(sum(EST_COMBINED_WT)/sum(NUM_HOOK_HAUL/1000), 2))
+dogfishNAFO_SR_wide <- spread(dogfishNAFO_SR, NAFO, CPUE)
+
+write.csv(dogfishNAFO_FS_wide, "C:/Users/harperd/Documents/Halibut/Data Requests/FS_dogfishindex_NAFO.csv")
+write.csv(dogfishNAFO_SR_wide, "C:/Users/harperd/Documents/Halibut/Data Requests/SR_dogfishindex_NAFO.csv")
+
+```
+
+Bruce and NS Coordinators' request for completion stats for the Stratified Random Survey (2017-2022)
+```{r}
+RandomSurveyData(sp=30, datadir, add.gear=T, add.LF=F, by.sex=F, hook.data=F)
+datSR <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/RandomHalibutSurveyData_LF.csv")
+
+vesselorg <- read.csv("C:/Users/harperd/Documents/Halibut/Survey/SurveyVesselsOrganizations.csv")
+
+datSRstations <- datSR %>%
+  select(YEAR, STATION, VESSEL_NAME, TRIP)
+
+datSRstations <- datSRstations %>%
+  left_join(vesselorg, by = "VESSEL_NAME")
+
+SRcompletion <- datSRstations %>%
+  group_by(YEAR, ORG) %>%
+  summarize(STATIONS = n())
+
+SRcompletion2 <- spread(SRcompletion, ORG, STATIONS)
+
+SRassigned <- read.csv("C:/Users/harperd/Documents/Halibut/Survey/SR_assignment_all.csv")
+
+SRassigned <- SRassigned %>%
+  left_join(vesselorg, by = "VESSEL_NAME")
+
+SRassigned <- within(SRassigned, ORG[VESSEL_NAME == 'NFLD'] <- 'FFAW')
+
+SRassignedSums <- SRassigned %>%
+  group_by(YEAR, ORG) %>%
+  summarize(STATIONS = n())
+
+SRassignedSums2 <- spread(SRassignedSums, ORG, STATIONS)
+
+testy <- datSR %>% 
+  filter(YEAR == 2018) %>%
+  select(DATE_TIME4, TRIP, VESSEL_NAME, STATION)
+```
+
+Determine how many commercial index sets per year observed at-sea vs port sampled
+```{r}
+datCI <-CommercialIndexData(sp=30,datadir,add.gear=F,add.LF=F,bins=seq(5,260,5),by.sex=F, add.portsampling=F)
+
+datCI_NL <- datCI %>% mutate(PROVINCE = substr(TRIP, 1,1))
+
+datCI_NL <- datCI_NL %>% filter(PROVINCE == "S")
+
+datCI_NL <- datCI_NL %>% group_by(TRIPCD_ID, YEAR) %>% summarize(n = n())
+
+datCI_NL2 <- spread(datCI_NL, TRIPCD_ID, n)
+
+
+##now checking by coordinator group (FFAW, SCQG, ESPFA)
+datCI_new <- datCI %>% 
+  filter(YEAR > 2016) %>%
+  select(YEAR, VESSEL_NAME, TRIP, TRIPCD_ID)
+
+datCI_coord <- datCI_new %>%
+  left_join(vesselorg, by = "VESSEL_NAME")
+
+datCI_coord <- datCI_coord %>%
+  group_by(TRIPCD_ID, YEAR, ORG) %>%
+  summarize(n=n())
+
+datCI_coord2 <- spread(datCI_coord, TRIPCD_ID, n) %>%
+  rename(ASO = "7057", PORT_SAMPLED = "7058")
+
+datCI_FFAW <- datCI_coord2 %>%
+  filter(ORG == "FFAW")
+
+datCI_ESFPA <- datCI_coord2 %>%
+  filter(ORG == "ESFPA")
+
+
+datCI_SCQG <- datCI_coord2 %>%
+  filter(ORG == "SCQG")
+
+write.csv(datCI_FFAW, "C:/Users/harperd/Documents/Halibut/Data Requests/FFAW_CI_observed_annually.csv")
+write.csv(datCI_ESFPA, "C:/Users/harperd/Documents/Halibut/Data Requests/ESFPA_CI_observed_annually.csv")
+write.csv(datCI_SCQG, "C:/Users/harperd/Documents/Halibut/Data Requests/SCQG_CI_observed_annually.csv")
+
+```
+Catch
+```{r}
+srcatch <- sets_sr %>%
+  group_by(YEAR) %>%
+  summarize(catch = sum(EST_COMBINED_WT), STATIONS = n())
+
+fscatch <- sets_fs %>%
+  group_by(YEAR) %>%
+  summarize(catch = sum(EST_COMBINED_WT), STATIONS = n())
+
+bscatch <- sets_ci %>%
+  group_by(YEAR) %>%
+  summarize(catch = sum(EST_COMBINED_WT, na.rm = TRUE), STATIONS = n())
+
+##looking at CI catch (there discards would not be tagging...)
+CIhal <- ISFISHSETS %>%
+  filter(SETCD_ID == 10)
+CIhalcatch <- CIhal %>%
+  left_join(ISCATCHES, by = "FISHSET_ID")
+CIhalcatch <- CIhalcatch %>%
+  filter(SPECCD_ID == 30)
+
+```
+
+Looking for large dogfish in survey (NOAA question August 2023)
+```{r}
+sets_SRdogfish <- RandomSurveyData(sp=220, datadir, add.gear=T, add.LF=T, by.sex=F, hook.data=F)
+sets_SRdogfish <- sets_SRdogfish %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2)) %>%
+  mutate(NAFO = replace(NAFO, NAFO %in% c("5Y", "5Z", "4X"), "4X+5"))
+
+sets_FSdogfish <- FixedSurveyData(sp=220, datadir, add.gear=T, add.LF=T, by.sex=F,correct.splitsets=T)
+sets_FSdogfish <- sets_FSdogfish %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2)) %>%
+  mutate(NAFO = replace(NAFO, NAFO %in% c("5Y", "5Z", "4X"), "4X+5"))
+
+sets_CIdogfish <-CommercialIndexData(sp=220,datadir,add.gear=F,add.LF=T,bins=seq(5,260,5),by.sex=F, add.portsampling=F)
+sets_CIdogfish <- sets_CIdogfish %>%
+  mutate(NAFO = substr(NAFAREA_ID, 1, 2)) %>%
+  mutate(NAFO = replace(NAFO, NAFO %in% c("5Y", "5Z", "4X"), "4X+5"))
+
+##looks like no length data from pulling the length frequency tables, so I'm going to just look in the ISDB for more
+haltrips <- ISTRIPS %>%
+  filter(TRIPCD_ID %in% c(7057, 7058))
+
+halsets <- haltrips %>%
+  left_join(ISFISHSETS, by = "TRIP_ID")
+
+halcatches <- halsets %>%
+  left_join(ISCATCHES, by = "FISHSET_ID")
+
+dogfishcatches <- halcatches %>%
+  filter(SPECCD_ID == 220)
+
+dogfish_fishinfo <- dogfishcatches %>%
+  left_join(ISFISH, by = "CATCH_ID")
+
+dogfish_fishinfo <- dogfish_fishinfo %>%
+  select("TRIP_ID", "TRIP", "TRIPCD_ID", "SETCD_ID", "SET_NO", "CATCH_ID", "FISH_ID", "EST_NUM_CAUGHT", "EST_COMBINED_WT", "TOTAL_NUM_KEPT", "TOTAL_NUM_DISCARD", "FISH_NO", "FISH_LENGTH", "FISH_WEIGHT")
+```
