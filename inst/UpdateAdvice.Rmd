@@ -21,7 +21,7 @@ bins=seq(0,260,5)
 # labelled by upper bound
 
 
-Current.Year <- 2022
+Current.Year <- 2023
 
 
 ```
@@ -109,8 +109,8 @@ dev.off()
 ```{r}
  plot(KgPKH~Year,HSRandom_Index,ylim=c(0,150),type='l',lwd=2)
  with(HSRandom_Index,lines(Year,mean3_biomass,lty=2))
- with(HSRandom_Index2,lines(Year,KgPKH,lwd=2,col=2))
- with(HSRandom_Index2,lines(Year,mean3_biomass,lty=2,col=2))
+ with(HSRandom_Index1,lines(Year,KgPKH,lwd=2,col=2))
+ with(HSRandom_Index1,lines(Year,mean3_biomass,lty=2,col=2))
  
  # Q-adjusted
  plot(KgPKH/0.002~Year,HSRandom_Index,ylim=c(0,60000),type='l',lwd=2,ylab="Biomass")

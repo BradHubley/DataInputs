@@ -1,5 +1,5 @@
 #' @export
-BubblePannelPlotLF<-function(LF,bins,yrs,log.trans=F,filen='',prop=F,LS=81,window=NULL,graphic='pdf',wd=11,ht=8,path=file.path(wd,'figures'),label,...){
+BubblePannelPlotLF<-function(LF,bins,yrs,log.trans=F,filen='',prop=F,LS=81,window=NULL,graphic='pdf',wd=11,ht=8,path=file.path(wd,'figures'),lang='en',label,...){
 
   xl<-range(yrs)
   mids<-bins[-1]-diff(bins)/2
@@ -30,6 +30,7 @@ BubblePannelPlotLF<-function(LF,bins,yrs,log.trans=F,filen='',prop=F,LS=81,windo
 
     text(xl[1],max(mids),label[i],cex=1,pos=4)
   }
-  mtext("Length (cm)",2,3,outer=T,las=0)
+  if(lang=='fr') mtext("Longueur (en cm)",2,3,outer=T,las=0)
+  else mtext("Length (cm)",2,3,outer=T,las=0)
   if(graphic!='R')dev.off()
 }

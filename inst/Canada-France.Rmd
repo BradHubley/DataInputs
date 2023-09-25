@@ -13,6 +13,7 @@ library(devtools)
 
 library(Mar.datawrangling)
  library(SpatialHub)
+library(PBSmapping)
 
 source(file.path(getwd(), "directories.r"))
 #datadir="C:/Users/hubleyb/Documents/Halibut/data"
@@ -65,6 +66,9 @@ yrs<-unique(RandomSurveySets$YEAR)
  
  # what TAC should be for SPM if proportional to stratified survey biomass estimate
  round(HSRandom_Index_SPM$B/HSRandom_Index$B * TAC)
+ 
+ library(mratios)
+ ttestratio(HSRandom_Index_SPM$B,HSRandom_Index$B)
 
 
 ```
