@@ -9,6 +9,6 @@ HCR<-function(RS,q=0.002,Fmsy=0.087,Bmsy=27310){
   #TAC = B*u
 
 
-  return(TAC)
+  return(list(TAC,f))
 
 }

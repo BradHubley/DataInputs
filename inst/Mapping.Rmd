@@ -111,6 +111,8 @@ Survey Strata
 
     # Strata data
     load(file.path(datadir,"Survey","SurveyStrata2022.RData"))
+    load(file.path(datadir,"Survey","BlackOutAreas.RData"))
+
     #strata = sort(c(1:5+.1,1:5+.2,1:5+.3))
     strata = sort(c(1:5+.1,1:5+.2,1:5+.3,3:4+.4))
     
@@ -130,8 +132,19 @@ Survey Strata
 
 xl=c(-69,-47)
 yl=c(40,48)    
-  Yrs = 2017:2021        
-  bioMap(xlim=xl, ylim=yl, poly.lst=list(surveyStrataPolyLL,props), plot.rivers=F, mapRes="MR", LT=T)
+  Yrs = 2017:2023
+  for(y in Yrs){
+    png(file.path(wd,'figures',paste0("StratfiedRandomSurveyMap",y,".png")), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
+
+    bioMap(xlim=xl, ylim=yl, poly.lst=list(surveyStrataPolyLL,props), plot.rivers=F, mapRes="MR", LT=T)
+    addPolys(BO1,density=20,col=rgb(0,0,0,0.5))
+    addPolys(BO2,density=20,col=rgb(0,0,0,0.5))
+
+    #points
+    points(LAT1~LONG1,subset(RandomSurvey,YEAR==y),pch=21,bg=rgb(1,1,0,1))
+    
+    dev.off()
+  }
   
 ```
 

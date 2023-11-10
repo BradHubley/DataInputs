@@ -10,6 +10,7 @@ output: html_document
 library(ROracle)
 library(devtools)
 library(tidyverse)
+library(PBSmapping)
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
 
@@ -72,7 +73,9 @@ BarPlotLF(nsrvl[which(names(nsrvl)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(
 ```{r}
 
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year)
+  HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F)
+  
   with(subset(HSRandom_Index,Year==Current.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
 
 ```
@@ -116,10 +119,18 @@ dev.off()
 ```
 
 ```{r}
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+  HSRandom_Index1<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+
+```
+
+
+
+```{r}
  plot(KgPKH~Year,HSRandom_Index,ylim=c(0,150),type='l',lwd=2)
  with(HSRandom_Index,lines(Year,mean3_biomass,lty=2))
- with(HSRandom_Index1,lines(Year,KgPKH,lwd=2,col=2))
- with(HSRandom_Index1,lines(Year,mean3_biomass,lty=2,col=2))
+ with(HSRandom_Index2,lines(Year,KgPKH,lwd=2,col=2))
+ with(HSRandom_Index2,lines(Year,mean3_biomass,lty=2,col=2))
  
  # Q-adjusted
  plot(KgPKH/0.002~Year,HSRandom_Index,ylim=c(0,60000),type='l',lwd=2,ylab="Biomass")

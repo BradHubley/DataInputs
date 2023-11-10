@@ -12,9 +12,8 @@ reStratify <- function(sets,strata,lines=F){
     sets$X<-sets$LONG1
 
   }
-
   key<-findPolys(sets,strata)
-  sets<-merge(sets,key,all=T)
+  sets<-merge(sets,subset(key,!duplicated(EID)),all=T)
 
   return(sets)
 }
