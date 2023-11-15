@@ -15,7 +15,7 @@ library(devtools)
  #library(Mar.fleets)
  library(tidyverse)
  library(SpatialHub)
-library(PBSmapping)
+library(PBSmappingb)
  library(RColorBrewer)
 
 #install_github("BradHubley/SpatialHub")
@@ -45,7 +45,7 @@ devtools::load_all(".")
 # get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
 
 
-# get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+#get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle",  fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
 
 
 #  get_data_custom(schema="isdb", data.dir = datadir, tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
@@ -236,16 +236,15 @@ dev.off()
 
 ## Map Random stations
 ```{r}
-yr=2023
 xl=c(-69,-47)
 yl=c(40,48)    
 #stations_100 <- read.csv(file.path(wd,'data',"FixedStation100.csv"))
-RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=F,bins=bins,by.sex=F,hook.data=F)
+
   #pdf(file.path(wd,'figures','StratfiedRandomSurveyMap2020.pdf'),width=10,height=7)
-png(file.path(wd,'figures',paste0("StratfiedRandomSurveyMap",yr,"2020.png")), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
+png(file.path(wd,'figures',"StratfiedRandomSurveyMap2020.png"), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
                          
-SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = paste("Stratified Random Survey",yr),nafo=T)
-points(LAT1~LONG1,subset(RandomSurvey,YEAR==yr),pch=21,bg=rgb(1,1,0,1))
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Stratified Random Survey",nafo=T)
+points(LAT1~LONG1,subset(RandomSurvey,YEAR==2021),pch=21,bg=rgb(1,1,0,1))
 
 dev.off()
 
