@@ -1,5 +1,5 @@
 #' @export
-StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30,nadj=1,use.calc.weight=F,restratify=F, France=F, select.strata, ZeroStrata=T){
+StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30,nadj=1,use.calc.weight=F,restratify=F, France=F, select.strata, ZeroStrata=T, combine.strata=NULL){
 
   RSindexData <- RandomSurveyData(sp=sp,datadir=datadir, add.LF=T,by.sex=F, LF.from = "ISFISH")
   RSindexData$STRAT <- as.numeric(substr(RSindexData$ASSIGNED_STRATUM_ID,2,3)) # make strata.id numeric
@@ -24,16 +24,6 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   }
 
 
-  # bit to deal with missing sets in 52 (in 2023 )
-  if(0){
-    areas$area[areas$PID==52]<-areas$area[areas$PID==52]+areas$area[areas$PID==53]
-    areas<-areas[-nrow(areas),]
-    areas2$area[areas2$PID==52]<-areas2$area[areas2$PID==52]+areas2$area[areas2$PID==53]
-    areas2<-areas2[-nrow(areas2),]
-    RSindexData$STRAT[RSindexData$STRAT==53] <- 52
-
-  }
-
   # to calculate index for St. Pierre and Michelon EEZ (keyhole, baguette)
   if(France){
     load(file.path(datadir,"Survey","SurveyStrata.rdata"))
@@ -50,11 +40,31 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
     #load(file.path(datadir,"Survey","SurveyStrataBOpre2022.rdata")) # these strata were introduced in 2023
     # if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
     #areas3<- data.frame(StrataAreas)
+    if(ZeroStrata){
+      load(file.path(datadir,"Survey","SurveyStrataBOpre2022.rdata")) # these strata were introduced in 2023
+      # if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
+      areas3<- data.frame(StrataAreas)
+    }
 
     RSindexData<-reStratify(RSindexData,surveyStrataPolyLL,lines=T)
     RSindexData$STRAT<-RSindexData$PID
     areas<-areas2<-areas3 # make all the same
   }
+
+  # wrote this bit to deal with missing sets in 52 (in 2023 )
+  # combine.strata =c(52,53), can use for combining other strata too
+  if(!is.null(combine.strata)){
+
+    areas$area[areas$PID==combine.strata[1]]<-sum(areas$area[areas$PID%in%combine.strata])
+    areas<-areas[!areas$PID%in%combine.strata[-1],]
+    areas2$area[areas2$PID==combine.strata[1]]<-sum(areas2$area[areas2$PID%in%combine.strata])
+    areas2<-areas2[!areas2$PID%in%combine.strata[-1],]
+    areas3$area[areas3$PID==combine.strata[1]]<-sum(areas3$area[areas3$PID%in%combine.strata])
+    areas3<-areas3[!areas3$PID%in%combine.strata[-1],]
+    RSindexData$STRAT[RSindexData$STRAT%in%combine.strata] <- combine.strata[1]
+
+  }
+
 
   # address NAs
   RSindexData$EST_NUM_CAUGHT[is.na(RSindexData$EST_NUM_CAUGHT)]<-0
@@ -82,9 +92,10 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
       areas<-areas3 # new strata areas in 2022
       if(ZeroStrata){
         RSindexData$STRAT[RSindexData$YEAR==2023&RSindexData$STRAT%in%c(45,54)] <- 60
-      }else{
+      }
+      if(!ZeroStrata&&!restratify){
         RSindexData<-reStratify(RSindexData,surveyStrataPolyLL,lines=T)
-        RSindexData$STRAT[RSindexData$STRAT%in%c(45,54)]<-RSindexData$PID[RSindexData$STRAT%in%c(45,54)]
+        RSindexData$STRAT[RSindexData$YEAR==2023&RSindexData$STRAT%in%c(45,54)]<-RSindexData$PID[RSindexData$YEAR==2023&RSindexData$STRAT%in%c(45,54)]
       }
       RSindexData$STRAT[RSindexData$YEAR==2023&RSindexData$STRAT==53] <- 52
       #browser()
