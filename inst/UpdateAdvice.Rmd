@@ -72,9 +72,24 @@ BarPlotLF(nsrvl[which(names(nsrvl)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(
 
 ```{r}
 
+  # old fixed station index, discontinued in 2023
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
+
+  # stratified random index as designed
   HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year)
-  HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F)
+  
+  # stratified random index without zero strata
+  HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, 
+                                               ZeroStrata=F, restratify=F)
+  
+   # stratified random index without zero strata and combining 52 and 53 for all years 
+  HSRandom_Index4<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, 
+                                               ZeroStrata=F,  restratify=F, combine.strata=52:53)
+  
+  # stratified random index with zero strata restratified and combining 52 and 53 for all years 
+  HSRandom_Index5<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, 
+                                               ZeroStrata=T, restratify=T, combine.strata=52:53)
+  
   
   with(subset(HSRandom_Index,Year==Current.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
 
@@ -127,10 +142,10 @@ dev.off()
 
 
 ```{r}
- plot(KgPKH~Year,HSRandom_Index,ylim=c(0,150),type='l',lwd=2)
- with(HSRandom_Index,lines(Year,mean3_biomass,lty=2))
- with(HSRandom_Index2,lines(Year,KgPKH,lwd=2,col=2))
- with(HSRandom_Index2,lines(Year,mean3_biomass,lty=2,col=2))
+ plot(KgPKH~Year,HSRandom_Index4,ylim=c(0,150),type='l',lwd=2)
+ with(HSRandom_Index4,lines(Year,mean3_biomass,lty=2))
+ with(HSRandom_Index5,lines(Year,KgPKH,lwd=2,col=2))
+ with(HSRandom_Index5,lines(Year,mean3_biomass,lty=2,col=2))
  
  # Q-adjusted
  plot(KgPKH/0.002~Year,HSRandom_Index,ylim=c(0,60000),type='l',lwd=2,ylab="Biomass")
