@@ -1,12 +1,16 @@
 #' @export
 
-prepRVdata<-function(RVdata,years, bins, pal=F,raw=F){
+prepRVdata<-function(RVdata,years,strat, bins, pal=F,raw=F){
 
   options(warn = -1)
   ##edit of rv data
   RVdata[[1]]$year<-lubridate::year(RVdata[[1]]$SDATE)
   RVdata[[2]]$year<-lubridate::year(RVdata[[2]]$SDATE)
   if(missing(years))years<-sort(unique(RVdata[[2]]$year))
+  if(missing(strat))strat<-sort(unique(RVdata[[2]]$STRAT))
+
+  RVdata[[1]]<-subset(RVdata[[1]],STRAT%in%strat)
+  RVdata[[2]]<-subset(RVdata[[2]],STRAT%in%strat)
 
 
   N<-c()
