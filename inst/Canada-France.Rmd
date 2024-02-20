@@ -56,8 +56,8 @@ yrs<-unique(RandomSurveySets$YEAR)
 
 # source(calcAreaFrance.r) #script that calculates strata areas inside SPM EEZ and saves them as SPMareas.csv
 
- HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate' ,France=F)
- HSRandom_Index_SPM<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', France=T)
+ HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate')
+ HSRandom_Index_SPM<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', AltArea="France")
 
 
  
@@ -87,5 +87,66 @@ legend('bottomright',c("3NOPs4VWX5Zc","St.Pierre and Miquelon EEZ"),pch=15:16,co
   lines((B-Bse)/10^6~Year,HSRandom_Index_SPM,lty=2,col='blue')
 
 ```
+
+
+
+### again for the NRA
+# Stratified Random Survey
+```{r}
+
+load(file.path(datadir,"Survey","SurveyStrata2022.RData"))
+RandomSurveySets<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
+yrs<-unique(RandomSurveySets$YEAR)
+
+ bioMap(xlim=c(-53,-47), ylim=c(42,47),poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F, isobaths = NULL,mapRes="MR",LT=T)
+ for(i in 1:length(yrs)){
+   with(subset(RandomSurveySets,YEAR==yrs[i]),points(LONG1,LAT1,pch=21,bg=i+1))
+   
+ }
+ 
+ legend("bottomright",legend=yrs,pch=21,pt.bg=1:length(yrs)+1)
+
+
+```
+
+
+
+## calc stratified survey estimate for whole stock area and just for St.Pierre Michelon(SPM) EEZ
+```{r}
+
+# source(calcAreaFrance.r) #script that calculates strata areas inside SPM EEZ and saves them as SPMareas.csv
+
+ HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate' )
+ HSRandom_Index_NRA<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', AltArea="NRA")
+
+
+ 
+ # total allowable catch for 3NOPs4VWX5Zc 
+ TAC<-c(3621,4164,4789,5507,5445,4807)
+ 
+ # what TAC should be for SPM if proportional to stratified survey biomass estimate
+ round(HSRandom_Index_NRA$B/HSRandom_Index$B * TAC)
+ 
+ library(mratios)
+ ttestratio(HSRandom_Index_NRA$B,HSRandom_Index$B)
+
+
+```
+
+# a plot
+```{r}
+png(file.path(wd,'figures',"StratifiedSurveyBiomassCanadaFranceNRA.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+ 
+ plot(B/10^6~Year,HSRandom_Index,type='b',pch=15,col='red',ylim=c(0,60), ylab="Stratified Biomass  (kt)")
+  lines((B+Bse)/10^6~Year,HSRandom_Index,lty=2,col='red')
+  lines((B-Bse)/10^6~Year,HSRandom_Index,lty=2,col='red')
+legend('bottomright',c("3NOPs4VWX5Zc","NRA"),pch=15:16,col=c('red','blue'))
+ plot(B/10^6~Year,HSRandom_Index_NRA,type='b',pch=16,col='blue',ylim=c(0,10), ylab="Stratified Biomass  (kt)")
+  lines((B+Bse)/10^6~Year,HSRandom_Index_NRA,lty=2,col='blue')
+  lines((B-Bse)/10^6~Year,HSRandom_Index_NRA,lty=2,col='blue')
+
+```
+
 
 

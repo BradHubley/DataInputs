@@ -62,8 +62,8 @@ devtools::load_all(".")
 #HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 
 #sp=220 #dogfish
-#sp=15 #cusk
-sp=30 #halibut
+sp=15 #cusk
+#sp=30 #halibut
 #sp=10 #cod
 
 
@@ -81,10 +81,17 @@ FixedSurveyRaph<-FixedSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.d
 FixedSurveyRaph$avg_weight<-FixedSurveyRaph$EST_COMBINED_WT / FixedSurveyRaph$total_target_species
 FixedSurveyRaph$DEPTH[FixedSurveyRaph$DEPTH==0]<-NA
 
+ # strata for fixed
+ load(file.path(datadir,"Survey","SurveyStrata.rdata")) # These are the original strata (2017-2021)
+ FixedSurveyRaph<-reStratify(FixedSurveyRaph,surveyStrataPolyLL,lines=T)
+ FixedSurveyRaph$STRATUM_ID<-paste0("H",FixedSurveyRaph$PID)
+
 colNames2 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","avg_weight")
 
 FixedSurvey <- FixedSurveyRaph[,colNames2]
 
+
+#write.csv(FixedSurvey,file.path(datadir,"FixedSurveyCusk2.csv"),row.names=F)
 write.csv(FixedSurvey,file.path(datadir,"FixedSurveyHalibut.csv"),row.names=F)
 write.csv(RandomSurvey,file.path(datadir,"RandomSurveyHalibut.csv"),row.names=F)
 
@@ -242,7 +249,7 @@ yl=c(40,48)
 #stations_100 <- read.csv(file.path(wd,'data',"FixedStation100.csv"))
 RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=F,bins=bins,by.sex=F,hook.data=F)
   #pdf(file.path(wd,'figures','StratfiedRandomSurveyMap2020.pdf'),width=10,height=7)
-png(file.path(wd,'figures',paste0("StratfiedRandomSurveyMap",yr,"2020.png")), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
+png(file.path(wd,'figures',paste0("StratfiedRandomSurveyMap",yr,".png")), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
                          
 SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = paste("Stratified Random Survey",yr),nafo=T)
 points(LAT1~LONG1,subset(RandomSurvey,YEAR==yr),pch=21,bg=rgb(1,1,0,1))

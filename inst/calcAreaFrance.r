@@ -12,3 +12,18 @@ attr(spmStrata,"projection")<-"LL"
 spmAreas<-calcArea(spmStrata,1)
 
 write.csv(spmAreas,file.path(datadir,"Survey","SPMareas.csv"),row.names = F)
+
+
+
+
+############## NRA
+
+nra<-clipPolys(subset(EEZ,PID==2),xlim=c(-55,-45),ylim=c(42,47))
+nraStrata<-joinPolys(subset(surveyStrataPolyLL,PID%in%51:53),nra,operation="DIFF")
+
+attr(nraStrata,"projection")<-"LL"
+
+nraAreas<-calcArea(nraStrata,1)
+
+write.csv(nraAreas,file.path(datadir,"Survey","NRAareas.csv"),row.names = F)
+
