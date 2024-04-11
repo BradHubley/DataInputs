@@ -10,11 +10,11 @@ library(devtools)
 #install_github("Maritimes/Mar.datawrangling")
 #1
  library(Mar.datawrangling)
- library(Mar.fleets)
+ #library(Mar.fleets)
  library(tidyverse)
 library(CircStats)
 library(lubridate)
-library(rgdal)
+#library(rgdal)
 #install_github("BradHubley/SpatialHub")
 library(SpatialHub)
 
