@@ -18,13 +18,13 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
   nafo.80.89 <- read.csv(file.path(datadir,"NAFO21B-80-89.txt"), header = TRUE)
   nafo.90.99 <- read.csv(file.path(datadir,"NAFO21B-90-99.txt"), header = TRUE)
   nafo.00.09 <- read.csv(file.path(datadir,"NAFO21B-2000-09.txt"), header = TRUE)
-  nafo.10.16 <- read.csv(file.path(datadir,"NAFO-21B-2010-16.txt"), header = TRUE)
+  nafo.10.18 <- read.csv(file.path(datadir,"NAFO-21B-2010-18.txt"), header = TRUE)
   names(nafo.00.09)[9]<-"Catches"
-  names(nafo.10.16)[9]<-"Catches"
-  names(nafo.10.16)[3]<-"GearCode"
-  names(nafo.10.16)[6]<-"Divcode"
-  names(nafo.10.16)[7]<-"Code"
-  sort(unique(nafo.10.16$Divcode))
+  names(nafo.10.18)[9]<-"Catches"
+  names(nafo.10.18)[3]<-"GearCode"
+  names(nafo.10.18)[6]<-"Divcode"
+  names(nafo.10.18)[7]<-"Code"
+  sort(unique(nafo.10.18$Divcode))
 
   division <- read.csv(file.path(datadir,"divisions.txt"), header = F)
   colnames(division)=c("Divcode", "Div")
@@ -35,12 +35,13 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
   divCAN<-division$Divcode[division$Div%in%c("3N","3O","3P","3PS","3NK","4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")]
 
   #get gear and divsion data for the landing
-  nafoall<-rbind(nafo.70.79, nafo.80.89, nafo.90.99, nafo.00.09, nafo.10.16)
+  nafoall<-rbind(nafo.70.79, nafo.80.89, nafo.90.99, nafo.00.09, nafo.10.18)
   nafoall = merge(nafoall, division)
   nafoall = merge(nafoall, gear)
 
   # estimate annual catch as a sum of monthly catch
-  nafoall$total<-rowSums(nafoall[,10:21])
+  #nafoall$total<-rowSums(nafoall[,10:21])
+  nafoall$total<-rowSums(apply(nafoall[,10:21],2,as.numeric),na.rm=T) # did this to deal with some bad data in NAFO-21B-2010-18.txt
 
   #filter divisions; zone 5 includes CDN landings only in "5ZC","5ZE","5Y"
   nafoAH5 = nafoall   %>%

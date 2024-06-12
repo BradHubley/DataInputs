@@ -94,7 +94,7 @@ newDesign
 ```{r}
 
 # map
-NAFO <- rgdal::readOGR(file.path(datadir,"Mapping","NAFODivisions","Divisions.shp"))
+NAFO <- sf::st_read(file.path(datadir,"Mapping","NAFODivisions","Divisions.shp"))
 
 cols = c(brewer.pal(3,"Blues"),brewer.pal(3,"Reds"),brewer.pal(3,"Purples"),brewer.pal(3,"Greens"),brewer.pal(3,"PuRd"))
 props=data.frame(Allocation,col=cols,border=NA)
