@@ -104,6 +104,32 @@ RandomSurvey<-read.csv(file.path(datadir,"RandomSurveyHalibut.csv"))
 FixedSurveyTest<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
 ```
 
+# data request
+```{r}
+
+#species of interest
+sp<-c(10, #cod
+      15, #cusk
+      30, #halibut
+      220)#dogfish
+
+HLLRS<-list()#HalibutLongLineRandomSurvey     
+
+for(i in 1:legth(sp)){
+  
+}
+RS<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
+RS$STATION <- RandomSurveyRaph$ASSIGNED_STATION
+RS$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
+
+colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","broken_hook","empty_baited","empty_unbaited","other_species","target_species","missing_hook","total_sampled","avg_weight")
+
+HLLRS[[i]] <- RandomSurveyRaph[,colNames1]
+names(RandomSurveyRaph)
+
+```
+
+
 
 # data checking random survey
 ```{r}

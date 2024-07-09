@@ -41,6 +41,16 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   }
 
 
+  # to calculate index for 3Ps
+  if(AltArea=='3Ps'){
+    load(file.path(datadir,"Survey","SurveyStrata.rdata"))
+    RSindexData<-reStratify(RSindexData,subset(surveyStrataPolyLL,PID%in%c(41:43)))
+    RSindexData$STRAT<-RSindexData$PID
+    RSindexData<-subset(RSindexData,NAFAREA_ID=='3Ps')
+    areas<-areas2<-areas3<-read.csv(file.path(datadir,"Survey","NAFO3PSareas.csv"))
+  }
+
+
   RSindexData<- subset(RSindexData,YEAR%in%yrs)
 
   # restratify index to use new strata for whole timeseries

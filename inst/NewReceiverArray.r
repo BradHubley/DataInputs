@@ -8,12 +8,12 @@ library(Mar.datawrangling)
 #library(Mar.fleets)
 library(tidyverse)
 library(SpatialHub)
-library(RColorBrewer)
 
 library(PBSmapping)
 library(sf)
 library(marmap)
 library(geosphere)
+library(raster)
 
 #install_github("BradHubley/SpatialHub")
 source(file.path(getwd(), "directories.r"))
@@ -46,7 +46,8 @@ GEBCOdata <- readGEBCO.bathy(file.path(datadir,"Mapping","GEBCO","gebco_2023_Atl
 bathy<-NOAAdata
 bathy<-GEBCOdata
 
-
+GreenBox1<-raster(file.path(datadir,"Mapping","GreenBox_EasternCanyons","SF_GreenBox.tif"))
+GreenBox2<-raster(file.path(datadir,"Mapping","GreenBox_EasternCanyons","Greenbox_hillshade.tif"))
 
 # MARFISDATA
 marfis <- new.env()
@@ -69,29 +70,41 @@ rm(marfis)
 n=6
 
 # site A: shelf edge in 3O near EEZ boundary
-pol<-clugenr::points_on_line(c(-51.8, 43.45), c(1, 0.7), seq(0, 0.01188*n, length.out = n))
+brucepoints<-data.frame(X=c(-5141.14512,-5147.67162),Y=c(4327.79996,4326.51414))
+brucepoints$X<-convertDecDeg(brucepoints$X)
+brucepoints$Y<-convertDecDeg(brucepoints$Y)
+
+pol<-clugenr::points_on_line(c(-51.78602, 43.44403), c(1, 0.25), seq(0, 0.0156*n, length.out = n))
 
 A<-data.frame(X=pol[,1],Y=pol[,2])
+A$LAT.DDMM<-convertDecDeg(A$Y,'deg.min')
+A$LON.DDMM<-convertDecDeg(A$X,'deg.min')
 
-bioMap(xlim=c(-52.3,-51.3),ylim=c(43.2,43.7),isobaths =NULL)
+png(file.path(wd,'figures',"ReceiversA.png"), width =6, height = 6,units='in',pointsize=9, res=300,type='cairo')
+bioMap(xlim=c(-51.9,-51.6),ylim=c(43.4,43.55),isobaths =NULL)
 plot(bathy,add =T,deepest.isobath = -1000,shallowest.isobath = -50, step=50,col=rgb(0,0,1,0.1))
 plot(bathy,add =T,deepest.isobath = -500,shallowest.isobath = -100, step=400,col='darkblue')
 plot(bathy,add =T,deepest.isobath = -200,shallowest.isobath = -200, step=0,col='darkblue',lty=2)
+plot(st_geometry(NAFO),add=T)
 points(Y~X,A,bg='red',pch=21)
-with(subset(MarfisData,YEAR>2020 ),points(LONGITUDE, LATITUDE ,pch=16, cex=0.1,col=rgb(0,0,0,0.2)) )
-
+#with(subset(MarfisData,YEAR>2020 ),points(LONGITUDE, LATITUDE ,pch=16, cex=0.1,col=rgb(0,0,0,0.2)) )
+dev.off()
 
 
 # site B: shelf edge on boundary of 3Ps and 3O
 B<-data.frame(X=rep(-54.5,n+1),Y=seq(45.0,by=0.014373,length.out=n+1))
+B$LAT.DDMM<-convertDecDeg(B$Y,'deg.min')
+B$LON.DDMM<-convertDecDeg(B$X,'deg.min')
 
+png(file.path(wd,'figures',"ReceiversB.png"), width =6, height = 6,units='in',pointsize=9, res=300,type='cairo')
 bioMap(xlim=c(-55,-54),ylim=c(44.8,45.3),isobaths =NULL)
 plot(bathy,add =T,deepest.isobath = -1000,shallowest.isobath = -50, step=50,col=rgb(0,0,1,0.1))
 plot(bathy,add =T,deepest.isobath = -500,shallowest.isobath = -100, step=400,col='darkblue')
 plot(bathy,add =T,deepest.isobath = -200,shallowest.isobath = -200, step=0,col='darkblue',lty=2)
 plot(st_geometry(NAFO),add=T)
 points(Y~X,B,bg='red',pch=21)
-with(subset(MarfisData,YEAR>2020 ),points(LONGITUDE, LATITUDE ,pch=16, cex=0.1,col=rgb(0,0,0,0.2)) )
+#with(subset(MarfisData,YEAR>2020 ),points(LONGITUDE, LATITUDE ,pch=16, cex=0.1,col=rgb(0,0,0,0.2)) )
+dev.off()
 
 
 
@@ -104,19 +117,21 @@ C<-data.frame(X=c(pol[1:2,1],pol2[1:4,1]),Y=c(pol[1:2,2],pol2[1:4,2]))
 #C<-data.frame(X=pol3[,1],Y=pol3[,2])
 
 
+png(file.path(wd,'figures',"ReceiversC.png"), width =6, height = 6,units='in',pointsize=9, res=300,type='cairo')
 bioMap(xlim=c(-57.4,-56.9),ylim=c(44.3,44.55),isobaths =NULL)
 plot(bathy,add =T,deepest.isobath = -1000,shallowest.isobath = -50, step=50,col=rgb(0,0,1,0.1))
 plot(bathy,add =T,deepest.isobath = -500,shallowest.isobath = -100, step=400,col='darkblue')
-plot(bathy,add =T,deepest.isobath = -200,shallowest.isobath = -200, step=0,col='darkblue',lty=2)
+#plot(bathy,add =T,deepest.isobath = -200,shallowest.isobath = -200, step=0,col='darkblue',lty=2)
 plot(st_geometry(NAFO),add=T)
 plot(st_geometry(Lophelia),add=T,border='purple')
 plot(st_geometry(EasternCanyons),add=T,border='green')
 points(Y~X,C,bg='red',pch=21)
-with(subset(MarfisData,YEAR>2020 ),points(LONGITUDE, LATITUDE ,pch=16, cex=0.1,col=rgb(0,0,0,0.2)) )
+#with(subset(MarfisData,YEAR>2020 ),points(LONGITUDE, LATITUDE ,pch=16, cex=0.1,col=rgb(0,0,0,0.2)) )
+dev.off()
 
 # check distance
-x<-A
-#x<-B
+#x<-A
+x<-B
 #x<-C
 
 d<-c()

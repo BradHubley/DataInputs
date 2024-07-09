@@ -111,7 +111,7 @@ yrs<-unique(RandomSurveySets$YEAR)
 
 
 
-## calc stratified survey estimate for whole stock area and just for St.Pierre Michelon(SPM) EEZ
+## calc stratified survey estimate for whole stock area and just for NRA
 ```{r}
 
 # source(calcAreaFrance.r) #script that calculates strata areas inside SPM EEZ and saves them as SPMareas.csv
@@ -149,4 +149,16 @@ legend('bottomright',c("3NOPs4VWX5Zc","NRA"),pch=15:16,col=c('red','blue'))
 ```
 
 
+```{r}
+HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate')
+load("~/Halibut/git/DataInputs/inst/Nti.rdata")
+
+B3Ps<-c()
+for(i in 1:6){
+  B3Ps<-with(subset(Nti[[i]],PID%in%(41:44)),sum(Bh*area))
+}
+
+B3Ps/HSRandom_Index$B
+HSRandom_Index_SPM$B/B3Ps
+```
 
