@@ -117,15 +117,18 @@ HLLRS<-list()#HalibutLongLineRandomSurvey
 
 for(i in 1:legth(sp)){
   
+  
+  RS<-RandomSurveyData(sp=sp[i],datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
+  RS$STATION <- RS$ASSIGNED_STATION
+  RS$DEPTH[RS$DEPTH==0]<-NA
+  
+  colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","SPECCD_ID","EST_NUM_CAUGHT", "EST_COMBINED_WT")
+  
+HLLRS[[i]] <- RS[,colNames1]
+#write.csv(HLLRS[[i]],paste0("HalibutLongLineSurveySp",sp[i],".csv"))
 }
-RS<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
-RS$STATION <- RandomSurveyRaph$ASSIGNED_STATION
-RS$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
+names(HLLRS)<-sp
 
-colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","broken_hook","empty_baited","empty_unbaited","other_species","target_species","missing_hook","total_sampled","avg_weight")
-
-HLLRS[[i]] <- RandomSurveyRaph[,colNames1]
-names(RandomSurveyRaph)
 
 ```
 

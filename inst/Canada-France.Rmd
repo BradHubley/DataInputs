@@ -161,4 +161,22 @@ for(i in 1:6){
 B3Ps/HSRandom_Index$B
 HSRandom_Index_SPM$B/B3Ps
 ```
+## what % of Landings in the NRA
+```{r}
+x<-c(-55,-45)
+y<-c(42,47)
+
+MARFISdata<-getMARFISdata(datadir,sp=130)
+MARFISdata<-subset(MARFISdata,YEAR>2020)
+EEZ3NO<-clipPolys(subset(EEZ,PID==2),xlim=x,ylim=y)
+MARFISdata3NO<-subset(MARFISdata,LATITUDE<y[2]&LATITUDE>y[1]&LONGITUDE<x[2]&LONGITUDE>x[1])
+MARFISdata3NO$EID<-1:nrow(MARFISdata3NO)
+key<-findPolys(with(MARFISdata3NO,data.frame(EID,X=LONGITUDE,Y=LATITUDE)),EEZ3NO)
+
+MARFISdataNRA<-subset(MARFISdata3NO,!EID%in%key$EID)
+
+ sum(MARFISdataNRA$RND_WEIGHT_KGS)/sum(MARFISdata$RND_WEIGHT_KGS[!is.na(MARFISdata$LATITUDE)],na.rm=T)*100
+ 
+ 
+```
 
