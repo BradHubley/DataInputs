@@ -1,7 +1,7 @@
 ---
-title: "Canada-France Negotiations"
+title: "Canada-US Negotiations"
 author: "Brad"
-date: "2023-05-26"
+date: "2024-10-21"
 output: html_document
 ---
 
@@ -31,6 +31,11 @@ devtools::load_all(".")
 
 ```
 
+```{r}
+CanUSProp<-read.csv(file.path(datadir,"Regional_Proportions 1.csv"))
+
+with(CanUSProp,tapply(Proportion,Index_Region,mean))
+```
 
 # Stratified Random Survey
 ```{r}
@@ -52,26 +57,40 @@ yrs<-unique(RandomSurveySets$YEAR)
 
 
 
-## calc stratified survey estimate for whole stock area and just for St.Pierre Michelon(SPM) EEZ
+## calc stratified survey estimate for whole stock area and just Scotian Shelf
 ```{r}
 
 # source(calcAreaFrance.r) #script that calculates strata areas inside SPM EEZ and saves them as SPMareas.csv
 
  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate')
- HSRandom_Index_SPM<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', AltArea="France")
-
-
- 
- # total allowable catch for 3NOPs4VWX5Zc 
- TAC<-c(3621,4164,4789,5507,5445,4807)
- 
- # what TAC should be for SPM if proportional to stratified survey biomass estimate
- round(HSRandom_Index_SPM$B/HSRandom_Index$B * TAC)
+ HSRandom_Index_SSS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', select.strata=c(11, 12, 13, 21, 22, 23, 31, 32, 33, 34))
+HSRandom_Index_3NOP<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', select.strata=c(41, 42, 43, 44, 51, 52, 53))
+ HSRandom_Index_NRA<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', AltArea="NRA")
  
  library(mratios)
- ttestratio(HSRandom_Index_SPM$B,HSRandom_Index$B)
+pSS<- ttestratio(HSRandom_Index_SSS$N,HSRandom_Index$N)
+pNRA<- ttestratio(HSRandom_Index_NRA$B,HSRandom_Index$B)
+p3NOP<- ttestratio(HSRandom_Index_3NOP$B - HSRandom_Index_NRA$B,HSRandom_Index$B)
+pUS<-ttestratio(CanUSProp$Index_Estimate[CanUSProp$Index_Region=="USA"],CanUSProp$Total_Estimate[CanUSProp$Index_Region=="USA"])
+pCan<-ttestratio(CanUSProp$Index_Estimate[CanUSProp$Index_Region=="Canada"],CanUSProp$Total_Estimate[CanUSProp$Index_Region=="Canada"])
+
+pCan<-ttestratio(CanUSProp$Index_Estimate[CanUSProp$Index_Region=="Canada"],CanUSProp$Total_Estimate[CanUSProp$Index_Region=="Canada"])
 
 
+pCan$estimate[3]
+pCan$conf.int
+
+pUS$estimate[3]
+pUS$conf.int
+
+pSS$estimate[3]
+pSS$conf.int
+
+pNRA$estimate[3]
+pNRA$conf.int
+
+p3NOP$estimate[3]
+p3NOP$conf.int
 ```
 
 # a plot

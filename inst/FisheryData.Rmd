@@ -94,6 +94,55 @@ write.csv(table2,file.path(datadir,"MARFIS_nafo_month_2019-2021.csv"),row.names=
 
 
 
+# Make Tables by month and quater
+
+```{r }
+yrs1<-2018:2020
+yrs2<-2021:2023
+
+MARFISdata$MONTH<-month(MARFISdata$DATE_FISHED)
+MARFISdata$QUARTER<-quarter(MARFISdata$DATE_FISHED)
+
+table1<- MARFISdata %>% filter(YEAR%in%yrs1&NAFO=='3PS') %>% group_by(MONTH) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
+
+
+table2<- MARFISdata %>% filter(YEAR%in%yrs2&NAFO=='3PS') %>% group_by(MONTH) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
+
+write.csv(table1,file.path(datadir,paste0("MARFIS_nafo3PS_month_",range(yrs1)[1],'-',range(yrs1)[2],".csv")),row.names=F)
+write.csv(table2,file.path(datadir,paste0("MARFIS_nafo3PS_month_",range(yrs2)[1],'-',range(yrs2)[2],".csv")),row.names=F)
+
+
+table1<- MARFISdata %>% filter(YEAR%in%yrs1&NAFO=='3PS') %>% group_by(QUARTER) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
+
+
+table2<- MARFISdata %>% filter(YEAR%in%yrs2&NAFO=='3PS') %>% group_by(QUARTER) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
+
+write.csv(table1,file.path(datadir,paste0("MARFIS_nafo3PS_quarter_",range(yrs1)[1],'-',range(yrs1)[2],".csv")),row.names=F)
+write.csv(table2,file.path(datadir,paste0("MARFIS_nafo3PS_quarter_",range(yrs2)[1],'-',range(yrs2)[2],".csv")),row.names=F)
+
+with(subset(MARFISdata,!is.na(QUARTER)&!is.na(RND_WEIGHT_KGS)&NAFO=='3PS'),tapply(YEAR,RND_WEIGHT_KGS))
+
+plot1<-MARFISdata %>%
+  filter(NAFO=='3PS'&!is.na(QUARTER)) %>%
+  group_by(YEAR,QUARTER) %>%
+  summarize(CPUE_KgPSet = mean(RND_WEIGHT_KGS, na.rm = TRUE)) %>% 
+  ggplot(aes(x=YEAR,y=CPUE_KgPSet)) + geom_line() + facet_wrap(~QUARTER)
+
+
+
+plot2<-MARFISdata %>%
+  filter(NAFO=='3PS'&!is.na(QUARTER)) %>%
+  group_by(YEAR,MONTH) %>%
+  summarize(CPUE_KgPSet = mean(RND_WEIGHT_KGS, na.rm = TRUE)) %>% 
+  ggplot(aes(x=YEAR,y=CPUE_KgPSet)) + geom_line() + facet_wrap(~MONTH)
+
+
+
+
+```
+
+
+
 
 # plot annual
 ```{r}

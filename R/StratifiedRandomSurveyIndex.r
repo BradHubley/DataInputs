@@ -6,20 +6,20 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   if(!missing(select.strata))RSindexData<-subset(RSindexData,STRAT%in%select.strata)
 
   load(file.path(datadir,"Survey","SurveyStrata.rdata")) # These are the original strata (2017-2021)
-  #if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
+  if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
   areas<- data.frame(StrataAreas)
 
   load(file.path(datadir,"Survey","SurveyStrata2022.rdata")) # these strata were introduced in 2022
-  # if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
+   if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
   areas2<- data.frame(StrataAreas)
 
   load(file.path(datadir,"Survey","SurveyStrata2023.rdata")) # these strata were introduced in 2023
-  # if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
+   if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
   areas3<- data.frame(StrataAreas)
 
   if(!ZeroStrata){
     load(file.path(datadir,"Survey","SurveyStrata2023NoBO.rdata")) # these strata were introduced in 2023
-    # if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
+     if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
     areas3<- data.frame(StrataAreas)
   }
 
@@ -50,9 +50,10 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
     areas<-areas2<-areas3<-read.csv(file.path(datadir,"Survey","NAFO3PSareas.csv"))
   }
 
+  if(missing(select.strata))select.strata<-unique(RSindexData$STRAT)
 
-  RSindexData<- subset(RSindexData,YEAR%in%yrs)
-
+  RSindexData<- subset(RSindexData,YEAR%in%yrs&STRAT%in%select.strata)
+#browser()
   # restratify index to use new strata for whole timeseries
   if (restratify){
     #load(file.path(datadir,"Survey","SurveyStrataBOpre2022.rdata")) # these strata were introduced in 2023

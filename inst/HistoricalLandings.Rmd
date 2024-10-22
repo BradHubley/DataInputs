@@ -74,6 +74,13 @@ with(subset(HL2,Region=="NL"), lines(Year,tons,col=5))
 legend('topleft',c("NS","NB","QC","NL"),col=2:5,lty=1)
 
 
+with(subset(HL2,Region=="NS"), plot(Year,tons,type='l',ylab="Débarquements (t)",xlab="Année",las=1,col=2))
+with(subset(HL2,Region=="NB"), lines(Year,tons,col=3))
+with(subset(HL2,Region=="QC"), lines(Year,tons,col=4))
+with(subset(HL2,Region=="NL"), lines(Year,tons,col=5))
+legend('topleft',c("NS","NB","QC","NL"),col=2:5,lty=1)
+
+
 ```
 
 PLot time series comparison

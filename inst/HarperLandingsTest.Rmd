@@ -71,7 +71,7 @@ height2=5
 
 ## Landings Data
 
-To get the landings data download STATLANT21A from here: https://www.nafo.int/Data/STATLANT. Select HAL - ATLANTIC HALIBUT as the species and save the .csv 
+To get the landings data download STATLANT21A from here: https://www.nafo.int/Data/STATLANT-21A Select HAL - ATLANTIC HALIBUT as the species and save the .csv 
 
 Construct Table 1
 ```{r landings NAFOA}

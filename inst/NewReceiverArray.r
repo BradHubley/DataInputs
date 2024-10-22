@@ -114,6 +114,8 @@ pol2<-clugenr::points_on_line(pol[3,], c(0.85, -1), seq(0, 0.01024*n, length.out
 #pol3<-clugenr::points_on_line(c(-57.215, 44.498), c(1, -0.57), seq(0, 0.01312*n, length.out = n))
 
 C<-data.frame(X=c(pol[1:2,1],pol2[1:4,1]),Y=c(pol[1:2,2],pol2[1:4,2]))
+C$LAT.DDMM<-convertDecDeg(C$Y,'deg.min')
+C$LON.DDMM<-convertDecDeg(C$X,'deg.min')
 #C<-data.frame(X=pol3[,1],Y=pol3[,2])
 
 
@@ -124,7 +126,7 @@ plot(bathy,add =T,deepest.isobath = -500,shallowest.isobath = -100, step=400,col
 #plot(bathy,add =T,deepest.isobath = -200,shallowest.isobath = -200, step=0,col='darkblue',lty=2)
 plot(st_geometry(NAFO),add=T)
 plot(st_geometry(Lophelia),add=T,border='purple')
-plot(st_geometry(EasternCanyons),add=T,border='green')
+plot(st_geometry(EasternCanyons),add=T,border='purple')
 points(Y~X,C,bg='red',pch=21)
 #with(subset(MarfisData,YEAR>2020 ),points(LONGITUDE, LATITUDE ,pch=16, cex=0.1,col=rgb(0,0,0,0.2)) )
 dev.off()
@@ -139,6 +141,15 @@ for(i in 1:(n-1)){
   d[i]<-distm (c(x$X[i], x$Y[i]), c(x$X[i+1], x$Y[i+1]), fun = distHaversine)
 }
 d
+
+
+########################################
+
+
+
+
+
+
 
 # final map
 bioMap(xlim=c(-58,-50.5),ylim=c(43,46),isobaths =NULL)

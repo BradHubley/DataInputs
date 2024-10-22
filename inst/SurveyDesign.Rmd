@@ -102,7 +102,7 @@ props=data.frame(Allocation,col=cols,border=NA)
 #pdf("SurveyDesign.pdf", width = 11, height = 7)
 bioMap(xlim=c(-68,-47),ylim=c(41,49),poly.lst = list(surveyStrataPolyLL,props),plot.rivers=F,isobaths = NULL,mapRes="MR",LT=)
 plot(NAFO,add=T)
-text(coordinates(NAFO)[,1], coordinates(NAFO)[,2],NAFO$ZONE)
+text(st_coordinates(NAFO)[,1], st_coordinates(NAFO)[,2],NAFO$ZONE)
 
 points(lat.DecDeg~lat.DecDeg,newDesign)
 #dev.off()
