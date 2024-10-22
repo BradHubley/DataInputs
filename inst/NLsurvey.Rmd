@@ -443,6 +443,50 @@ E<-ggplot(NL_LFoverall) +
 overall <- ggarrange(Y, E, C1, C2, ncol = 1, nrow = 4)
 
 overall <- annotate_figure(overall, left = "Numbers at Length", bottom = "Length Bin Midpoint")
+
+#french version
+C2fr<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Campelen2)) +
+   xlim(0, 200)+
+   labs(title = "Relevé par navire de recherche dans les divisions 3NOP, 
+        2014-2019 combiné")+
+   xlab("") + ylab("")+
+   theme_classic()
+   
+C1fr<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Campelen1)) +
+   xlim(0, 200)+
+   labs(title = "Relevé par navire de recherche dans les divisions 3NOP, 
+        1996-2013 combiné")+
+   xlab("") + ylab("")+
+   theme_classic()
+
+Yfr<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Yankee)) +
+   xlim(0, 200)+
+   labs(title = "Relevé par navire de recherche dans les divisions 3NOP, 
+        1973-1982 combiné")+
+   xlab("") + ylab("")+
+   theme_classic()
+
+Efr<-ggplot(NL_LFoverall) +
+   geom_col(aes(length, Engel)) +
+   xlim(0, 200)+
+   labs(title = "3NOP RV Survey 1983-1991, 1994, and 1995 Combined")+
+   labs(title = "Relevé par navire de recherche dans les divisions 3NOP, 
+        1983-1991, 1994, et 1995 combiné")+
+   xlab("") + ylab("")+
+   theme_classic()
+
+overallfr <- ggarrange(Yfr, Efr, C1fr, C2fr, ncol = 1, nrow = 4)
+
+overallfr <- annotate_figure(overallfr, left = "Nombres selon la longueur", bottom = "Point médian de la fourchette de longueur")
+overallfr
+
+png(paste0(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/NL_LFfr.png"),
+    width = 7, height = 11,units='in',pointsize=12, res=300,type='cairo')
+overallfr
+dev.off()
 ```
 
 
@@ -599,6 +643,27 @@ summary(NL_dat1996_2013$length)
 #all Campelen
 summary(NL_datUS$length)
 ```
+plotting mean number per tow?? - can't find the code for figure 25...maybe this could help? From 2014 assessment
+```{r}
+years<-1971:2013
+ylim1<-c(0,0.4)
+
+par(mfrow=c(1,1),omi=c(2,2,1,1),mar=c(2,2,2,.5), mgp=c(2,1,0), las=1)
+plot(1971:1982,rv.dat[1:length(1971:1982),2],type='l',lty=1,xlim=c(1971,2013),ylim=ylim1,xlab='',ylab='',lwd=3)
+lines(1983:1995,rv.dat[length(1971:1983):length(1971:1995),2],lwd=3)
+lines(1996:2013,rv.dat[length(1971:1996):length(1971:2013),2],,lwd=3)
+
+arrows(years,upper,years,lower,length=0.05,angle=90,code=3)  # change length to 0.05 if want horizontal lines on error bar and code=3
+mtext("Mean numbers per tow",side=2,line=2.5,cex=1.1,las=0)
+mtext("3NOPs Spring RV survey",side=3,line=.5,cex=1.2,las=0,adj=0)
+segments(1971, mean(rv.dat[1:length(1971:1982),2]), 1982, mean(rv.dat[1:length(1971:1982),2]), col="gray60", lwd=2)
+segments(1983, mean(rv.dat[length(1971:1982):length(1971:1995),2]), 1995, mean(rv.dat[length(1971:1982):length(1971:1995),2]), col="gray60", lwd=2)
+segments(1996, mean(rv.dat[length(1971:1995):length(1971:2012),2]), 2013, mean(rv.dat[length(1971:1995):length(1971:2012),2]), col="gray60", lwd=2)
+text(1976,0.38, "Yankee")
+text(1989,0.38, "Engel")
+text(2004,0.38, "Campelen")
+```
+
 
 updating abundance table by sex
 ```{r}

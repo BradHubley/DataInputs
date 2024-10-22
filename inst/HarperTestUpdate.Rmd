@@ -12,6 +12,9 @@ library(devtools)
 library(tidyverse)
 require(PBSmapping)
 library(pipeR)
+#install.packages("remotes")
+#remotes::install_github("mlesnoff/rchemo")
+library(rchemo)
 #source(file.path(getwd(), "directories.r"))
 #source(file.path(wd, "passwords.r")) 
 source(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/passwords.r")) 
@@ -112,7 +115,7 @@ dev.off()
 ```{r}
 
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
-  HSRandom_Index_WZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year)
+  HSRandom_Index_WZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, use.calc.weight=F)
   HSRandom_Index_WOZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F) 
   ##if looking for findPolys try require(PBSmapping)
   

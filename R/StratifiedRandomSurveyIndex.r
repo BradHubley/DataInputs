@@ -1,5 +1,5 @@
 #' @export
-StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30,nadj=1,use.calc.weight=F,restratify=F, France=F, select.strata, ZeroStrata=T, combine.strata=NULL){
+StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30,nadj=1,use.calc.weight=F,restratify=F, AltArea='n', select.strata, ZeroStrata=T, combine.strata=NULL){
 
   RSindexData <- RandomSurveyData(sp=sp,datadir=datadir, add.LF=T,by.sex=F, LF.from = "ISFISH")
   RSindexData$STRAT <- as.numeric(substr(RSindexData$ASSIGNED_STRATUM_ID,2,3)) # make strata.id numeric
@@ -25,11 +25,19 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
 
 
   # to calculate index for St. Pierre and Michelon EEZ (keyhole, baguette)
-  if(France){
+  if(AltArea=='France'){
     load(file.path(datadir,"Survey","SurveyStrata.rdata"))
     RSindexData<-reStratify(RSindexData,subset(surveyStrataPolyLL,PID%in%c(33,41:43)))
     RSindexData$STRAT<-RSindexData$PID
     areas<-areas2<-areas3<-read.csv(file.path(datadir,"Survey","SPMareas.csv"))
+  }
+
+  # to calculate index for St. Pierre and Michelon EEZ (keyhole, baguette)
+  if(AltArea=='NRA'){
+    load(file.path(datadir,"Survey","SurveyStrata.rdata"))
+    RSindexData<-reStratify(RSindexData,subset(surveyStrataPolyLL,PID%in%c(51:53)))
+    RSindexData$STRAT<-RSindexData$PID
+    areas<-areas2<-areas3<-read.csv(file.path(datadir,"Survey","NRAareas.csv"))
   }
 
 

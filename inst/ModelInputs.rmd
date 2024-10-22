@@ -80,7 +80,7 @@ BiologicalParameters$bins<-bins
 
 ```{r}
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2022, raw=T)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2023, raw=T)
 RVinputs$NSRV_unsexed<-RVinputs$NSRV_combined-(RVinputs$NSRV_males+RVinputs$NSRV_females) # unsexed
 NSRV_Index<-RVinputs$Index
 NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,
