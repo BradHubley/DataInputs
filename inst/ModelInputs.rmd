@@ -80,7 +80,7 @@ BiologicalParameters$bins<-bins
 
 ```{r}
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2023, raw=T)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2022, raw=T)
 RVinputs$NSRV_unsexed<-RVinputs$NSRV_combined-(RVinputs$NSRV_males+RVinputs$NSRV_females) # unsexed
 NSRV_Index<-RVinputs$Index
 NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,
@@ -138,11 +138,13 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
 
 #Halibut Survey Catch Composition
 ```{r}
-  Yrs1 = 2000:2022        
+  Yrs1 = 2000:2020        
   Yrs2 = 2017:2023        
 
   FixedSurvey <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=T)
   RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
+  
+  RandomSurvey$
 
   # Construct CLF
   FixedLF <- constructLF(LFdata=FixedSurvey,bins=bins, Yrs = Yrs1)
@@ -175,10 +177,27 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
    #                          se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
   
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022,use.calc.weight = F)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2023,use.calc.weight = F)
 
 
 ```
+# Plots for Data Inputs Doc
+```{r}
+    
+    pltYrs1=2000:2020
+    pltYrs2=2017:2020
+   
+    BarPlotLF(FixedLF[which(names(FixedLF)%in%pltYrs1)],yrs=pltYrs1,rel=F,filen=file.path(wd,"figures","HSLFfixed"),graphic='png')
+  
+    BarPlotLF(RandomLF[which(names(RandomLF)%in%pltYrs2)],yrs=pltYrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom"),graphic='png')
+
+    
+        BarPlotLF(FixedLF[which(names(FixedLF)%in%pltYrs1)],yrs=pltYrs1,rel=F,filen=file.path(wd,"figures","HSLFfixed_fr"),graphic='png',xlab="Longueur (cm)",ylab="Nombre de flétans")
+  
+    BarPlotLF(RandomLF[which(names(RandomLF)%in%pltYrs2)],yrs=pltYrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom_fr"),graphic='png',xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+```
+
 
 #Landings
 ```{r}
@@ -192,7 +211,7 @@ Landings_t<-read.csv(file.path(scaldir,"nafoSISCAL.csv"))
 
 #Fishery Catch Composition
 ```{r}
-CCyrs=1978:2022
+CCyrs=1978:2023
 
  nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PS", "3U")
  nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
@@ -202,6 +221,7 @@ portNAFO3OT=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="OT"),bins=bi
 portNAFO4OT=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="OT"),bins=bins, Yrs = CCyrs)
 portNAFO3LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo3&GEAR=="LL"),bins=bins, Yrs = CCyrs)
 portNAFO4LL=constructLF(LFdata=subset(PortData,NAFO%in%nafo4&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+
 
 ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins,min.length=0)
 obsNAFO3OT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3&GEAR=="OT"),bins=bins, Yrs = CCyrs)
@@ -278,15 +298,70 @@ Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
 
 #BubblePlotLF(Fishery_Lengths,bins=bins,yrs=CCyrs,path=file.path(wd,'figures'),filen='Commercial',inches=0.3)
 
+```
+
+# Plots for Data Inputs Doc
+```{r}
+
+YrsObs = 1991:2020 
+
+## English
+
+# port sampling
+BarPlotLF(portNAFO4LL[which(names(portNAFO4LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO4LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+BarPlotLF(portNAFO4OT[which(names(portNAFO4OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO4OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+#BarPlotLF(portNAFO3LL[which(names(portNAFO3LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO3LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+#BarPlotLF(portNAFO3OT[which(names(portNAFO3OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO3OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+# at-sea observer
+BarPlotLF(obsNAFO4LL[which(names(obsNAFO4LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO4LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+BarPlotLF(obsNAFO4OT[which(names(obsNAFO4OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO4OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+#BarPlotLF(obsNAFO3LL[which(names(obsNAFO3LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+#BarPlotLF(obsNAFO3OT[which(names(obsNAFO3OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+
+## French
+
+# port sampling
+BarPlotLF(portNAFO4LL[which(names(portNAFO4LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO4LL_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+BarPlotLF(portNAFO4OT[which(names(portNAFO4OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO4OT_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+#BarPlotLF(portNAFO3LL[which(names(portNAFO3LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO3LL_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+#BarPlotLF(portNAFO3OT[which(names(portNAFO3OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","portNAFO3OT_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+# at-sea observer
+BarPlotLF(obsNAFO4LL[which(names(obsNAFO4LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO4LL_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+BarPlotLF(obsNAFO4OT[which(names(obsNAFO4OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO4OT_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+#BarPlotLF(obsNAFO3LL[which(names(obsNAFO3LL)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3LL_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+#BarPlotLF(obsNAFO3OT[which(names(obsNAFO3OT)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3OT_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+
+
 # redo plot for data inputs to include NL data
 
 OT3<-revNAL(list(OTNafo3_males,OTNafo3_females,OTNafo3_unsexed))
 LL3<-revNAL(list(LLNafo3_males,LLNafo3_females,LLNafo3_unsexed))
-YrsObs = 1991:2022 
 
+# English
 BarPlotLF(OT3[which(names(OT3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3OT"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
 
 BarPlotLF(LL3[which(names(LL3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3LL"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+# French
+BarPlotLF(OT3[which(names(OT3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3OT_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+BarPlotLF(LL3[which(names(LL3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","obsNAFO3LL_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),xlab="Longueur (cm)",ylab="Nombre de flétans")
 
 
 ```
@@ -294,7 +369,7 @@ BarPlotLF(LL3[which(names(LL3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"
 # Put it all together
 ```{r}
 
-save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2022.rdata"))
+save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2023.rdata"))
 
 load(file=file.path(scaldir,"SCALmodeldata2022.rdata"))
 

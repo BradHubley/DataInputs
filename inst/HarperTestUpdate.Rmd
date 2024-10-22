@@ -349,3 +349,351 @@ legend(x="topleft", inset = 0.05,   # Coordinates (x also accepts keywords)
 dev.off()
 ```
 
+---
+title: "Update Advice - Harper Test"
+author: "Danni"
+date: "2022-10-13"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+library(ROracle)
+library(devtools)
+library(tidyverse)
+require(PBSmapping)
+library(pipeR)
+#source(file.path(getwd(), "directories.r"))
+#source(file.path(wd, "passwords.r")) 
+source(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/passwords.r")) 
+
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs"
+
+ds_all <- Mar.datawrangling::load_datasources()
+
+devtools::load_all(".")
+
+bins=seq(0,260,5)
+# labelled by upper bound
+
+
+Current.Year <- 2023
+
+
+```
+
+
+## Update data from database 
+
+```{r }
+
+
+# Update data from database 
+
+Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# open and check setprofile_wide to confirm that you have year, latitude & longitude
+
+RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
+
+```
+
+
+
+#NS RV survey
+
+```{r}
+
+#RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
+RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir) #pulls RV data from data vault on computer
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:Current.Year, raw=T) #preps data for each year 
+
+RVinputs$NSRV_unsexed<-RVinputs$NSRV_combined-(RVinputs$NSRV_males+RVinputs$NSRV_females) # unsexed
+NSRV_Index<-RVinputs$Index
+NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,
+                   NSRV_females=RVinputs$NSRV_females,
+                   NSRV_combined=RVinputs$NSRV_combined,
+                   NSRV_unsexed=RVinputs$NSRV_unsexed)
+# 
+#NSRV_Index$NPT[NSRV_Index$year==2021]<-NA
+
+BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2023,path=file.path(wd,'figures'),filen='NLRVSurvey',inches=0.3)
+
+nsrvl<-revNAL(NSRV_Lengths[-3])
+YrsObs = 1994:2023 
+BarPlotLF(nsrvl[which(names(nsrvl)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"figures","NSRVbarplot"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)))
+
+## data for comparing 4X and 4VSW
+
+strata4x<-c(470:495)
+RVinputs4X<-prepRVdata(RVdata,strat=strata4x,bins=bins,years=1970:Current.Year, raw=T)
+
+strata4VSW<-c(440:469)
+RVinputs4VSW<-prepRVdata(RVdata,strat=strata4VSW,bins=bins,years=c(1970:2017, 2019:2020,2023), raw=T)
+
+
+NSRV_Lengths4X<-list(NSRV_males=RVinputs4X$NSRV_males,
+                   NSRV_females=RVinputs4X$NSRV_females,
+                   NSRV_combined=RVinputs4X$NSRV_combined)
+
+NSRV_Lengths4VSW<-list(NSRV_males=RVinputs4VSW$NSRV_males,
+                   NSRV_females=RVinputs4VSW$NSRV_females,
+                   NSRV_combined=RVinputs4VSW$NSRV_combined)
+
+```
+# compare 4X and 4VSW in RV survey
+```{r}
+png(file.path(wd,'figures',"RVsurvey4Xvs4VSW.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+plot(B/tunits~year,RVinputs4X$Index, ylab="Kg / tow", xlab = '', ylim=c(0,5), type='o',pch=16,xlim=c(1970,Current.Year),xaxt='n')
+lines(B/tunits~year,RVinputs4VSW$Index,type='o',pch=15,col=2)
+
+
+plot(NPT~year,RVinputs4X$Index, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT,na.rm=T)*1.2), type='o',pch=16,xlim=c(1970,Current.Year))
+lines(NPT~year,RVinputs4VSW$Index,type='o',pch=15,col=2)
+
+dev.off()
+
+
+```
+
+#Halibut Longline Survey
+
+```{r}
+
+  HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
+  HSRandom_Index_WZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year)
+  HSRandom_Index_WOZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F) 
+  ##if looking for findPolys try require(PBSmapping)
+  
+  with(subset(HSRandom_Index_WZS,Year==Current.Year),c(mean3_biomass,mean3_biomass-KgPKHse*1.96,mean3_biomass+KgPKHse*1.96))/2
+  with(subset(HSRandom_Index_WZS,Year==Current.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
+  
+  
+```
+
+# Harvest Control Rule
+```{r}
+value <- HSRandom_Index_WZS$mean3_biomass[HSRandom_Index_WZS$Year==Current.Year] 
+HCR(value)
+
+
+#HCR(value, q=0.0019) # when using calculated weight...but HCR function uses q = 0.002
+
+```
+
+
+## plot survey indices SSR version
+```{r}
+#RVinputs$Index
+
+
+png(file.path(wd,'figures',"ModelindicesSSR_WZS_wo2021.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+plot(NPT~year,NSRV_Index_pre2021, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT,na.rm=T)*1.2), type='o',pch=16,xlim=c(1970,Current.Year),xaxt='n')
+axis(1,lab=F)
+lines(NPT~year,NSRV_Index_post2021, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT,na.rm=T)*1.2), type='o',pch=16,xlim=c(1970,Current.Year),xaxt='n')
+abline(h = 0.3, lty = "dashed")
+points(c(2018,2022),NSRV_Index$NPT[NSRV_Index$year%in%c(2018,2022)],col='red',cex=2)
+legend(x="topleft",   # Coordinates (x also accepts keywords)
+       legend = c("RV Survey"),
+       text.col = "black",
+       bty = "n",
+
+)
+
+plot(KgPKH~Year,HSFixed_Index,type='o',pch=16,col='grey40',ylim=c(0,255),xlim=c(1970,Current.Year), ylab="Kg / 1,000 hooks")
+lines(mean3_biomass~Year,HSFixed_Index, lwd = 3, col = 'grey40')
+lines(KgPKH~Year,HSRandom_Index_WZS,type='o',pch=16,col='blue')
+#lines(KgPKH+KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
+#lines(KgPKH-KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
+lines(mean3_biomass~Year,HSRandom_Index_WZS,lwd=3, col = "blue")
+legend(x="topleft", inset = 0.05,   # Coordinates (x also accepts keywords)
+       title = "Halibut Longline Survey",
+       title.col = "black",
+       legend = c("Fixed Station", "Stratified Random"), # Vector with the name of each group
+       text.col = c("grey40", "blue"),
+       bty = "n",
+
+)
+
+dev.off()
+
+
+##checking out #/tow and biomass/tow
+RVinputs <- data.frame(RVinputs)
+RVinputs <- RVinputs %>% mutate(Index.BPT = (Index.B/Index.tunits))
+
+png(file.path(wd,'figures',"RVsurvey_AbundanceVSBiomass.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+plot(NPT~year,NSRV_Index, ylab="Number / tow", xlab = '', ylim=c(0,max(NPT,na.rm=T)*1.2), type='o',pch=16,xlim=c(1970,Current.Year),xaxt='n')
+axis(1,lab=F)
+points(c(2018,2021,2022),NSRV_Index$NPT[NSRV_Index$year%in%c(2018,2021,2022)],col='red',cex=2)
+
+plot(Index.BPT~Index.year,RVinputs, ylab="Biomass / tow", xlab = '', ylim=c(0,max(Index.BPT,na.rm=T)*1.2), type='o',pch=16,xlim=c(1970,Current.Year))
+axis(1,lab=F)
+points(c(2018,2021,2022),RVinputs$Index.BPT[RVinputs$Index.year%in%c(2018,2021,2022)],col='red',cex=2)
+
+dev.off()
+```
+
+# Comparing calculated weight vs estimated weight
+```{r}
+ HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+ HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = T)
+
+```
+
+```{r}
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+  HSRandom_Index1<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year,use.calc.weight = F)
+
+```
+
+##some playing around...trying to figure some stuff out
+```{r}
+ #index using calculated weight vs estimated weight (I think we use estimated weight)
+ plot(KgPKH~Year,HSRandom_Index,ylim=c(0,150),type='l',lwd=2)
+ with(HSRandom_Index,lines(Year,mean3_biomass,lty=2))
+ with(HSRandom_Index2,lines(Year,KgPKH,lwd=2,col=2))
+ with(HSRandom_Index2,lines(Year,mean3_biomass,lty=2,col=2))
+ 
+ # Q-adjusted (using estimated weight) - plot of biomass rather than the index
+ plot(KgPKH/0.002~Year,HSRandom_Index,ylim=c(0,60000),type='l',lwd=2,ylab="Biomass")
+ with(HSRandom_Index,lines(Year,mean3_biomass/0.002,lty=2))
+ with(HSRandom_Index2,lines(Year,KgPKH/0.0019,lwd=2,col=2))
+ with(HSRandom_Index2,lines(Year,mean3_biomass/0.0019,lty=2,col=2))
+ 
+ # Q-adjusted (adjusting Fixed with SR)
+ plot(KgPKH/4.6~Year,HSFixed_Index,ylim=c(0,60),type='l',lwd=2,ylab="Biomas (kt)",las=1)
+ #with(HSFixed_Index,lines(Year,mean3_biomass/0.0046,lty=2))
+ with(HSRandom_Index,lines(Year,KgPKH/2,lwd=2,col=2))
+# with(HSRandom_Index,lines(Year,mean3_biomass/0.002,lty=2,col=2))
+ 
+ 
+ # comparing with and without zero strata
+ plot(KgPKH~Year,HSRandom_Index_WZS,ylim=c(0,150),type='l',lwd=2)
+ with(HSRandom_Index_WZS,lines(Year,mean3_biomass,lty=2)) #black line
+ with(HSRandom_Index_WOZS,lines(Year,KgPKH,lwd=2,col=2)) #red line
+ with(HSRandom_Index_WOZS,lines(Year,mean3_biomass,lty=2,col=2)) 
+ 
+ # comparing with and without 5.2 and 5.3 combined...not sure this really works how i think it does...but lines ALMOST overlap...red line slightly more conservative
+  HSRandom_Index_WOZS_5blend<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F, restratify = T)
+  HSRandom_Index_WOZS_test<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F, restratify = F)
+  HSRandom_Index5<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=T, restratify=F, combine.strata=52:53)
+  HSRandom_Index_WZS_5_restrat<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=T, restratify=T, combine.strata=52:53)
+ 
+png(file.path(wd,'figures',"LLindex_WZS_5combinedAll.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+ plot(KgPKH~Year,HSRandom_Index_WZS,ylim=c(0,150),type='l',lwd=2)
+ with(HSRandom_Index_WZS,lines(Year,mean3_biomass,lty=2)) #black line
+ with(HSRandom_Index5,lines(Year,KgPKH,lwd=2,col=2)) #red line
+ with(HSRandom_Index5,lines(Year,mean3_biomass,lty=2,col=2))
+ dev.off()
+ 
+ ##for Bruce on zero strata
+ png(file.path(wd,'figures',"LLindex_overtime_WandWOZS.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+ plot(KgPKH~Year,HSRandom_Index_WOZS,ylim=c(0,150),type='l',lwd=2)
+ with(HSRandom_Index_WZS_5_restrat,lines(Year,KgPKH,lwd=2,col=2)) #red line
+ dev.off()
+```
+
+##looking at #sets/area for each strata under different strata schemes and over time (to investigate the impact of zero strata)
+```{r}
+RSdata <- RandomSurveyData(sp=30, datadir, add.gear=F, add.LF=F, hook.data=F)
+
+load(file.path(datadir, "Survey","SurveyStrata.RData"))
+StrataAreas1 <-data.frame(StrataAreas)
+surveyStrataPolyLL1 <- data.frame(surveyStrataPolyLL)
+
+load(file.path(datadir, "Survey","SurveyStrata2022.RData"))
+StrataAreas2022 <-data.frame(StrataAreas)
+surveyStrataPolyLL2022 <- data.frame(surveyStrataPolyLL)
+
+load(file.path(datadir, "Survey","SurveyStrata2023.RData"))
+StrataAreas2023 <-data.frame(StrataAreas)
+surveyStrataPolyLL2023 <- data.frame(surveyStrataPolyLL)
+
+load(file.path(datadir, "Survey","SurveyStrata2023NoBO.RData"))
+StrataAreas2023WOZS <-data.frame(StrataAreas)
+surveyStrataPolyLL2023WOZS <- data.frame(surveyStrataPolyLL)
+
+RSdata_original <- reStratify(sets = RSdata, strata = surveyStrataPolyLL1)
+RSdata_2022 <- reStratify(sets = RSdata, strata = surveyStrataPolyLL2022)
+RSdata_2023 <- reStratify(sets = RSdata, strata = surveyStrataPolyLL2023)
+RSdata_2023WOZS <- reStratify(sets = RSdata, strata = surveyStrataPolyLL2023WOZS)
+
+#looking using original strata scheme
+RSdata_original_summary <- RSdata_original %>%
+  group_by(YEAR, PID) %>%
+  summarize(n = n())
+
+RSdata_originalWarea <- RSdata_original_summary %>% left_join(StrataAreas1, by = "PID") %>% mutate(prop = signif(n/area)*10000, digits = 3)
+RSdata_originalWarea_wide <- RSdata_originalWarea %>% select(PID, YEAR, prop) %>% spread(YEAR, prop)
+
+#looking using 2022 strata scheme
+RSdata_2022_summary <- RSdata_2022 %>%
+  group_by(YEAR, PID) %>%
+  summarize(n = n())
+
+RSdata_originalWarea <- RSdata_original_summary %>% left_join(StrataAreas1, by = "PID") %>% mutate(prop = signif(n/area)*10000, digits = 3)
+RSdata_originalWarea_wide <- RSdata_originalWarea %>% select(PID, YEAR, prop) %>% spread(YEAR, prop)
+
+
+##density for new zero strata allocation design
+load(file.path(datadir, "Survey","SurveyStrataOneZeroStrata.RData"))
+StrataAreas_ZS2024 <-data.frame(StrataAreas)
+StrataAreas_ZS2024$PID <- as.character(StrataAreas_ZS2024$PID)
+surveyStrataPolyLL2024 <- data.frame(surveyStrataPolyLL)
+
+allocation2024 <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/Survey/allocation2024.csv")
+
+allocation2024$SID <- as.character(gsub("\\.", "", (allocation2024$SID)))
+allocation2024[18, "SID"] <- 60
+allocation2024 <- allocation2024 %>% rename(PID = SID) %>% select(-Area)
+
+allocation2024 <- allocation2024 %>% left_join(StrataAreas_ZS2024, by = "PID")
+
+allocationdensity2024 <- allocation2024 %>% mutate(density = signif((Sets/area)*100, digits = 3))
+
+allocationdensity2024_WOZS <- allocationdensity2024 %>% filter(PID != 60)
+mean(allocationdensity2024_WOZS$density)
+```
+Survey update document
+```{r}
+ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,by.sex=F,add.portsampling=F,add.LF = F)
+FixedSurvey<-FixedSurveyData(datadir=datadir,by.sex=F, bins=bins, add.LF = F)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,add.gear=F,add.LF=F,bins=bins,by.sex=F,hook.data=F)
+
+png(file.path(wd,'figures',"CI.png"), width =6, height = 4,units='in',pointsize=9, res=300,type='cairo')
+   # par(mfcol=c(rows,ceiling(length(yrs)/rows)), mar = c(0,2,0,0.5), omi = c(0.85, 0.75, 0.75, 0.5))
+
+ComIndex$KgPKH<-ComIndex$EST_COMBINED_WT/ComIndex$NUM_HOOK_HAUL*1000
+dot <- ComIndex %>% group_by(YEAR) %>% summarize(mean = mean(KgPKH, na.rm = TRUE))
+CI<-with(ComIndex,tapply(KgPKH,YEAR, mean, na.rm=T))
+plot(as.numeric(names(CI)),CI,xlab = '',ylab = 'Kg / 1,000 Hooks',ylim=c(0,500),type='b',pch=16)
+lines(KgPKH~Year,HSRandom_Index_WZS,type='o',pch=16,col='blue')
+points(2023,dot$mean[dot$YEAR==2023],col='red',cex=2)
+
+
+
+FixedSurvey$KgPKH<-FixedSurvey$EST_COMBINED_WT/FixedSurvey$NUM_HOOK_HAUL*1000
+FS<-with(FixedSurvey,tapply(KgPKH,YEAR, mean, na.rm=T))
+lines(as.numeric(names(FS)),FS,col='grey',lty=2)
+legend(x="topleft", inset = 0.05,   # Coordinates (x also accepts keywords)
+       title.col = "black",
+       legend = c("Biological Sampling Program","Fixed Station", "Stratified Random"), # Vector with the name of each group
+       text.col = c("black","grey40", "blue"),
+       bty = "n",
+
+)
+
+
+
+
+dev.off()
+```
+

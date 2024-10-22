@@ -73,7 +73,7 @@ sp=30 #halibut
 #sp=10 #cod
 
 
-RandomSurveyRaph<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+RandomSurveyRaph<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
 RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
 RandomSurveyRaph$STATION <- RandomSurveyRaph$ASSIGNED_STATION
 RandomSurveyRaph$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
@@ -109,6 +109,35 @@ RandomSurvey<-read.csv(file.path(datadir,"RandomSurveyHalibut.csv"))
 ```{r}
 FixedSurveyTest<-FixedSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F)
 ```
+
+# data request
+```{r}
+
+#species of interest
+sp<-c(10, #cod
+      15, #cusk
+      30, #halibut
+      220)#dogfish
+
+HLLRS<-list()#HalibutLongLineRandomSurvey     
+
+for(i in 1:legth(sp)){
+  
+  
+  RS<-RandomSurveyData(sp=sp[i],datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
+  RS$STATION <- RS$ASSIGNED_STATION
+  RS$DEPTH[RS$DEPTH==0]<-NA
+  
+  colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","SPECCD_ID","EST_NUM_CAUGHT", "EST_COMBINED_WT")
+  
+HLLRS[[i]] <- RS[,colNames1]
+#write.csv(HLLRS[[i]],paste0("HalibutLongLineSurveySp",sp[i],".csv"))
+}
+names(HLLRS)<-sp
+
+
+```
+
 
 
 # data checking random survey
@@ -433,7 +462,7 @@ with(RandomSurveyHO,abline(lm(avglength~(other_species+empty_unbaited)/(other_sp
 ## RV survey
 
 ```{r}
-RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=F,datadir=datadir)
+#RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=F,datadir=datadir)
 RVSurvey<-RVSurveyData(uid, pwd, bins=bins, by.sex=T,use.local=T,datadir=datadir)
 
 
@@ -466,6 +495,21 @@ points(2018,RVinputs$Index$NPT[RVinputs$Index$year==2018],col='red',cex=2)
 
 dev.off()
 
+#RVinputs$Index
+png(file.path(wd,'figures',"NSRVindex_fr.png"), width =6, height = 8,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(3,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+
+plot(N/10^6~year,RVinputs$Index, ylab="Nombre d’individus (millions)", xlab = '', ylim=c(0,max(N/10^6)*1.2), type='b',pch=16)
+points(2018,RVinputs$Index$N[RVinputs$Index$year==2018]/10^6,col='red',cex=2)
+plot(B/10^6~year,RVinputs$Index, ylab="Biomasse (kt)", xlab = '', ylim=c(0,max(B/10^6)*1.2), type='b',pch=16)
+points(2018,RVinputs$Index$B[RVinputs$Index$year==2018]/10^6,col='red',cex=2)
+plot(NPT~year,RVinputs$Index, ylab="Nombre / trait", xlab = '', ylim=c(0,max(NPT)*1.2), type='b',pch=16)
+points(2018,RVinputs$Index$NPT[RVinputs$Index$year==2018],col='red',cex=2)
+
+
+dev.off()
+
 
 ```
 # plot RV LF
@@ -478,6 +522,10 @@ rvLF<-rearrangeLFlist(RVinputs[2:4])
 BarPlotLF(rvLF[1:26],yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF1"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6)
 
 BarPlotLF(rvLF[27:51],yrs=Yrs2,rel=F,filen=file.path(wd,"figures","RVLF2"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6)
+
+BarPlotLF(rvLF[1:26],yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF1_fr"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6,xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+BarPlotLF(rvLF[27:51],yrs=Yrs2,rel=F,filen=file.path(wd,"figures","RVLF2_fr"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6,xlab="Longueur (cm)",ylab="Nombre de flétans")
 
 
 ```

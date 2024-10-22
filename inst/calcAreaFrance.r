@@ -27,3 +27,9 @@ nraAreas<-calcArea(nraStrata,1)
 
 write.csv(nraAreas,file.path(datadir,"Survey","NRAareas.csv"),row.names = F)
 
+
+
+NAFO <- sf::st_read(file.path(datadir,"Mapping","NAFODivisions","Divisions.shp"))
+st_geometry(NAFO)
+
+
