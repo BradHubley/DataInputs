@@ -56,7 +56,7 @@ nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
  ay = 2023
 
 # annual TAC table
-TAC = data.frame(Year=1988:2023,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807, 4744)) ##update each year
+TAC = data.frame(Year=1988:2024,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807, 4744, 4927)) ##update each year
 
 # 21B start year
 ystart =1960
@@ -71,7 +71,7 @@ height2=5
 
 ## Landings Data
 
-To get the landings data download STATLANT21A from here: https://www.nafo.int/Data/STATLANT. Select HAL - ATLANTIC HALIBUT as the species and save the .csv 
+To get the landings data download STATLANT21A from here: https://www.nafo.int/Data/STATLANT-21A. Select HAL - ATLANTIC HALIBUT as the species and save the .csv 
 
 Construct Table 1
 ```{r landings NAFOA}
@@ -102,8 +102,8 @@ nafoForeign4= nafoForeign %>%
   group_by(Year) %>%
   summarize(Foreign4VWX5Z=sum(CatchA))
 
-Canada = merge(merge(data.frame(Year=1960:2022), nafoCDN3,all=T), nafoCDN4,all=T) ##CHANGE TO 2022???
-Foreign  = merge(merge(data.frame(Year=1960:2022), nafoForeign3,all=T), nafoForeign4,all=T) ##CHANGE TO 2022???
+Canada = merge(merge(data.frame(Year=1960:2023), nafoCDN3,all=T), nafoCDN4,all=T) ##CHANGE TO 2023???
+Foreign  = merge(merge(data.frame(Year=1960:2023), nafoForeign3,all=T), nafoForeign4,all=T) ##CHANGE TO 2023???
 Foreign[is.na(Foreign)] <- 0
 Canada[is.na(Canada)] <- 0
 Canada$CanadaTotal = Canada$Canada3NOPS+Canada$Canada4VWX5Z
@@ -132,7 +132,7 @@ table2=rbind(table11, table12)
 
 ## 
 
-write.csv(table2,"C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/update_table1_2023.csv",row.names = F)
+write.csv(table2,"C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/update_table1_2024.csv",row.names = F)
 table2
 
 ```
@@ -214,10 +214,10 @@ Canadaay
 
 ```{r, echo=F}
 
-plm = rbind(table1$CanadaTotal,table1$ForeignTotal,c(rep(NA,63),Canadaay$CanadaTotal)) ##62 becomes 63 for 2023
+plm = rbind(table1$CanadaTotal,table1$ForeignTotal,c(rep(NA,64),Canadaay$CanadaTotal)) ##63 becomes 64 for 2024
 plm[is.na(plm)]<-0
 
-png(file.path(wd,"figures","Fig2 fishery 2023_updated.png"), width = width1, height = height2,units='in',pointsize=12, res=300,type='cairo')
+png(file.path(wd,"figures","Fig2 fishery 2024_updated.png"), width = width1, height = height2,units='in',pointsize=12, res=300,type='cairo')
 
 par(las=1,mar=c(5, 5, 4, 2))
 
@@ -230,7 +230,7 @@ barplot(plm,ylim=c(0,5600), axes = FALSE, col=c('#377eb8','#d53e4f','#377eb8'),b
      labels = prettyNum(seq(0, 5600,1000), 
                        big.mark = ',', 
                        scientific = FALSE))
- lines(seq(0.7,77.2,1.2),table1$TAC,col='#7fbc41',lwd=4) ##change to 77 to accommodate additional year (2023)
+ lines(seq(0.7,78.2,1.2),table1$TAC,col='#7fbc41',lwd=4) ##change to 78 to accommodate additional year (2024)
 # grid(ny=NULL,nx=NA)
  legend('topright',c("Canada","Foreign","TAC"),fill=c('#377eb8','#d53e4f',NA),col=c(NA,NA,'#7fbc41'),lwd=c(NA,NA,4),border=NA,inset=c(0.2,0.1),bg='white',box.lty=0)
  dev.off()
