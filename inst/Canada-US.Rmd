@@ -91,6 +91,9 @@ pNRA$conf.int
 
 p3NOP$estimate[3]
 p3NOP$conf.int
+
+
+
 ```
 
 # a plot

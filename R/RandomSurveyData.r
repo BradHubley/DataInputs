@@ -133,7 +133,9 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
     left_join(.,trips)
 
   # get assigned strata
+  #browser()
   StnStrt<-read.csv(file.path(datadir,"Survey","HS_STATION_STRATA.csv"))
+  StnStrt$ASSIGNED_STATION<-floor( StnStrt$ASSIGNED_STATION)
   HALIBUTSURVEY$ASSIGNED_STATION<-floor(as.numeric( HALIBUTSURVEY$STATION))
   HALIBUTSURVEY <- left_join(HALIBUTSURVEY,StnStrt)
   HALIBUTSURVEY$STRATUM_ID <- HALIBUTSURVEY$ASSIGNED_STRATUM_ID

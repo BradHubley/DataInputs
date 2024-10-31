@@ -14,8 +14,12 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   areas2<- data.frame(StrataAreas)
 
   load(file.path(datadir,"Survey","SurveyStrata2023.rdata")) # these strata were introduced in 2023
-   if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
+  if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
   areas3<- data.frame(StrataAreas)
+
+  load(file.path(datadir,"Survey","SurveyStrata2024.rdata")) # these strata were introduced in 2024
+  if(!missing(select.strata))StrataAreas<-subset(StrataAreas,PID%in%select.strata)
+  areas4<- data.frame(StrataAreas)
 
   if(!ZeroStrata){
     load(file.path(datadir,"Survey","SurveyStrata2023NoBO.rdata")) # these strata were introduced in 2023
@@ -80,6 +84,8 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
     areas2<-areas2[!areas2$PID%in%combine.strata[-1],]
     areas3$area[areas3$PID==combine.strata[1]]<-sum(areas3$area[areas3$PID%in%combine.strata])
     areas3<-areas3[!areas3$PID%in%combine.strata[-1],]
+    areas4$area[areas4$PID==combine.strata[1]]<-sum(areas4$area[areas4$PID%in%combine.strata])
+    areas4<-areas4[!areas4$PID%in%combine.strata[-1],]
     RSindexData$STRAT[RSindexData$STRAT%in%combine.strata] <- combine.strata[1]
 
   }
@@ -119,9 +125,12 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
       RSindexData$STRAT[RSindexData$YEAR==2023&RSindexData$STRAT==53] <- 52
       #browser()
     }
+    if(yrs[i]>2023 ){
+      areas<-areas4 # new strata areas in 2022
+    }
 
     total.area<-sum(areas$area)
-
+#browser()
 
     # Stratified mean and variance
     n<-with(subset(RSindexData,YEAR==yrs[i]),tapply(STATION,STRAT,length))*nadj

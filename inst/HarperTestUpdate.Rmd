@@ -11,16 +11,16 @@ library(ROracle)
 library(devtools)
 library(tidyverse)
 require(PBSmapping)
-library(pipeR)
+#library(pipeR)
 #install.packages("remotes")
 #remotes::install_github("mlesnoff/rchemo")
-library(rchemo)
-#source(file.path(getwd(), "directories.r"))
-#source(file.path(wd, "passwords.r")) 
-source(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/passwords.r")) 
+#library(rchemo)
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r")) 
+#source(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/passwords.r")) 
 
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
-wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs"
 
 ds_all <- Mar.datawrangling::load_datasources()
 
