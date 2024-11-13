@@ -37,6 +37,13 @@ CanUSProp<-read.csv(file.path(datadir,"Regional_Proportions 1.csv"))
 with(CanUSProp,tapply(Proportion,Index_Region,mean))
 ```
 
+```{r}
+CanUSPropB<-read.csv(file.path(datadir,"Regional_Proportions_Biomass2.csv"))
+
+with(CanUSPropB,tapply(Proportion,Index_Region,mean))
+```
+
+
 # Stratified Random Survey
 ```{r}
 
@@ -71,11 +78,18 @@ HSRandom_Index_3NOP<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, 
 pSS<- ttestratio(HSRandom_Index_SSS$N,HSRandom_Index$N)
 pNRA<- ttestratio(HSRandom_Index_NRA$B,HSRandom_Index$B)
 p3NOP<- ttestratio(HSRandom_Index_3NOP$B - HSRandom_Index_NRA$B,HSRandom_Index$B)
-pUS<-ttestratio(CanUSProp$Index_Estimate[CanUSProp$Index_Region=="USA"],CanUSProp$Total_Estimate[CanUSProp$Index_Region=="USA"])
-pCan<-ttestratio(CanUSProp$Index_Estimate[CanUSProp$Index_Region=="Canada"],CanUSProp$Total_Estimate[CanUSProp$Index_Region=="Canada"])
+pUS<-ttestratio(CanUSPropB$Index_Estimate[CanUSPropB$Index_Region=="USA"],CanUSPropB$Total_Estimate[CanUSPropB$Index_Region=="USA"])
+pCan<-ttestratio(CanUSPropB$Index_Estimate[CanUSPropB$Index_Region=="Canada"],CanUSPropB$Total_Estimate[CanUSPropB$Index_Region=="Canada"])
 
-pCan<-ttestratio(CanUSProp$Index_Estimate[CanUSProp$Index_Region=="Canada"],CanUSProp$Total_Estimate[CanUSProp$Index_Region=="Canada"])
+pCan<-ttestratio(CanUSPropB$Index_Estimate[CanUSPropB$Index_Region=="Canada"],CanUSPropB$Total_Estimate[CanUSPropB$Index_Region=="Canada"])
 
+
+
+
+
+```
+
+```{r}
 
 pCan$estimate[3]
 pCan$conf.int
@@ -91,8 +105,6 @@ pNRA$conf.int
 
 p3NOP$estimate[3]
 p3NOP$conf.int
-
-
 
 ```
 
