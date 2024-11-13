@@ -104,11 +104,13 @@ Data changes: [Optional (otherwise, do not include).]
 ```{r base1, fig.cap="(ref:caption)"}
  
 setwd('FSAR')
-source("fake-data.R")
+Assessment.Year=2024
+
 source("real-data.R")
 source("plot-timeseries.R")
-in.df <- sim_fsar_data("long")
-in.df <- fsar_data("long",AY=2024)
+
+
+in.df <- fsar_data(Assessment.Year=Assessment.Year)
 
 ## English template
 fsar_plot_base(in.df, "English")
