@@ -15,15 +15,15 @@ library(devtools)
  #library(Mar.fleets)
  library(tidyverse)
  library(SpatialHub)
-library(PBSmappingb)
+library(PBSmapping)
  library(RColorBrewer)
 
 #install_github("BradHubley/SpatialHub")
 source(file.path(getwd(), "directories.r"))
 #datadir="C:/Users/hubleyb/Documents/Halibut/data"
 #wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
-wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 
 source(file.path(wd, "passwords.r")) 
 ds_all <- Mar.datawrangling::load_datasources()
@@ -73,7 +73,7 @@ sp=30 #halibut
 #sp=10 #cod
 
 
-RandomSurveyRaph<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
+RandomSurveyLandmark<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
 RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
 RandomSurveyRaph$STATION <- RandomSurveyRaph$ASSIGNED_STATION
 RandomSurveyRaph$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
