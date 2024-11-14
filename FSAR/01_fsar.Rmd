@@ -1,10 +1,7 @@
 ---
 output:
-<<<<<<< HEAD
   word_document: default
-=======
   pdf_document: default
->>>>>>> ba633b8b811afe1c7e5d33693cebde4803bfa054
   html_document: default
 ---
 ## SCIENCE ADVICE {-}
