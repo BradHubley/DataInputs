@@ -53,7 +53,7 @@ nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
 nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
 
 # assessment year
- ay = 2023
+ ay = 2024
 
 # annual TAC table
 TAC = data.frame(Year=1988:2024,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807, 4744, 4927)) ##update each year
@@ -133,6 +133,7 @@ table2=rbind(table11, table12)
 ## 
 
 write.csv(table2,"C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/update_table1_2024.csv",row.names = F)
+write.csv(table1,"C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/figuredata_2024.csv",row.names = F)
 table2
 
 ```
@@ -154,10 +155,10 @@ PRO_SPC_INFO = PRO_SPC_INFO  %>%
     filter(!is.na(RND_WEIGHT_KGS) )
 self_filter()
 #PRO_SPC_INFO = PRO_SPC_INFO[PRO_SPC_INFO$YEAR %in% c(ay-1,ay),]
-
-marfis4VWX5Z_old = with(subset(PRO_SPC_INFO,NAFO_UNIT_AREA_ID%in%NAFO_UNIT_AREAS$AREA_ID[!grepl("3",NAFO_UNIT_AREAS$NAFO_AREA)]),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
-marfis3NOPS_old = with(subset(PRO_SPC_INFO,NAFO_UNIT_AREA_ID%in%NAFO_UNIT_AREAS$AREA_ID[grepl("3",NAFO_UNIT_AREAS$NAFO_AREA)]),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
-CanadaMar_old=merge(data.frame(Year=names(marfis4VWX5Z_old),'Canada4VWX5Z'=round(marfis4VWX5Z_old/1000)),data.frame(Year=names(marfis3NOPS_old),'Canada3NOPS'=round(marfis3NOPS_old/1000)),all=T)
+# 
+# marfis4VWX5Z_old = with(subset(PRO_SPC_INFO,NAFO_UNIT_AREA_ID%in%NAFO_UNIT_AREAS$AREA_ID[!grepl("3",NAFO_UNIT_AREAS$NAFO_AREA)]),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+# marfis3NOPS_old = with(subset(PRO_SPC_INFO,NAFO_UNIT_AREA_ID%in%NAFO_UNIT_AREAS$AREA_ID[grepl("3",NAFO_UNIT_AREAS$NAFO_AREA)]),tapply(RND_WEIGHT_KGS,YEAR,sum,na.rm=T))
+# CanadaMar_old=merge(data.frame(Year=names(marfis4VWX5Z_old),'Canada4VWX5Z'=round(marfis4VWX5Z_old/1000)),data.frame(Year=names(marfis3NOPS_old),'Canada3NOPS'=round(marfis3NOPS_old/1000)),all=T)
 
 ##changing to actually just getting parts of 3 that are in our stock boundaries (3NOPs, rather than pulling all of 3)
 
@@ -178,7 +179,15 @@ marfis3NOPS <- PRO_SPC_INFO %>% filter(NAFO_UNIT_AREA_ID %in% c(114:128, 130:138
 marfis4VWX5Z <- PRO_SPC_INFO %>% filter(NAFO_UNIT_AREA_ID %in% c(164:169, 171:204)) %>% group_by(YEAR) %>% summarize(Canada4VWX5Z = round(sum(RND_WEIGHT_KGS)/1000)) %>% drop_na()
 
 #comparing old with new
-CanadaMar <- marfis4VWX5Z %>% left_join(marfis3NOPS, by = "YEAR")
+# CanadaMar <- marfis4VWX5Z %>% left_join(marfis3NOPS, by = "YEAR")
+# CanadaMar_ay <- CanadaMar %>% mutate(CanadaTotal = (Canada3NOPS+Canada4VWX5Z)) %>% filter(YEAR == ay)
+
+##data for the figure the new way?
+figtab <- table1 %>% select("Year", "CanadaTotal", "ForeignTotal", "TAC")
+figtab <- figtab %>% gather(key = Source, value = landings_mt, CanadaTotal, ForeignTotal, TAC)
+
+figtab[nrow(figtab) + 1, 1:3] = c(2024, "MARFIS", CanadaMar_ay$CanadaTotal)
+write.csv(figtab, "C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/figuredata_markdown_2024.csv", row.names = F)
 ```
 
 ### from NL landings
@@ -187,26 +196,26 @@ NL landing data
 ```{r  CDN landing for the year of ay}
 
 # landing NL ...right now in 2023 no new NL landings
-  landNL = read.csv(file.path(datadir,"landingNL.csv")) ##changed all 'Year' to 'YEAR' from here on out...to match CanadaMar
-  unique(landNL$Gear.Name)
-  landNL = landNL   %>%
-    mutate(Catch1 = Landed.RW/1000 )  %>%
-    rename (YEAR = 1, Division = 6) %>%          
-    dplyr::select(YEAR,Division, Catch1 ) %>%
-    group_by(YEAR) %>%
-    summarise(Catch = sum(Catch1)) 
-  
-  
-  Canadaland=merge( CanadaMar, landNL,by= "YEAR", all=T )%>%
-    replace(is.na(.), 0)  %>%
-    mutate(Canada3NOPS=round(Canada3NOPS+Catch ) )%>%
-    select(YEAR,Canada3NOPS, Canada4VWX5Z )%>%
-    mutate(CanadaTotal = round(Canada3NOPS+Canada4VWX5Z)  )
-
-  # CDN landings of the year of ay in zone 3 and 4
-  Canadaay= subset(Canadaland, YEAR==ay) ##this just to add to the table since no CURRENT YEAR data in NAFO 21A?
-
-Canadaay
+#   landNL = read.csv(file.path(datadir,"landingNL.csv")) ##changed all 'Year' to 'YEAR' from here on out...to match CanadaMar
+#   unique(landNL$Gear.Name)
+#   landNL = landNL   %>%
+#     mutate(Catch1 = Landed.RW/1000 )  %>%
+#     rename (YEAR = 1, Division = 6) %>%          
+#     dplyr::select(YEAR,Division, Catch1 ) %>%
+#     group_by(YEAR) %>%
+#     summarise(Catch = sum(Catch1)) 
+#   
+#   
+#   Canadaland=merge( CanadaMar, landNL,by= "YEAR", all=T )%>%
+#     replace(is.na(.), 0)  %>%
+#     mutate(Canada3NOPS=round(Canada3NOPS+Catch ) )%>%
+#     select(YEAR,Canada3NOPS, Canada4VWX5Z )%>%
+#     mutate(CanadaTotal = round(Canada3NOPS+Canada4VWX5Z)  )
+# 
+#   # CDN landings of the year of ay in zone 3 and 4
+#   Canadaay= subset(Canadaland, YEAR==ay) ##this just to add to the table since no CURRENT YEAR data in NAFO 21A?
+# 
+# Canadaay
 ```
 
 
@@ -214,7 +223,7 @@ Canadaay
 
 ```{r, echo=F}
 
-plm = rbind(table1$CanadaTotal,table1$ForeignTotal,c(rep(NA,64),Canadaay$CanadaTotal)) ##63 becomes 64 for 2024
+plm = rbind(table1$CanadaTotal,table1$ForeignTotal,c(rep(NA,64),CanadaMar_ay$CanadaTotal)) ##63 becomes 64 for 2024
 plm[is.na(plm)]<-0
 
 png(file.path(wd,"figures","Fig2 fishery 2024_updated.png"), width = width1, height = height2,units='in',pointsize=12, res=300,type='cairo')
