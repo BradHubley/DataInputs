@@ -1,6 +1,6 @@
 #' @export
 
-prepRVdata<-function(RVdata,years,strat, bins, pal=F,raw=F){
+prepRVdata<-function(RVdata,years,strat, bins=seq(0,260,5), pal=F,raw=F){
 
   options(warn = -1)
   ##edit of rv data

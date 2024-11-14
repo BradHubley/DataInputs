@@ -36,7 +36,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
     areas<-areas2<-areas3<-read.csv(file.path(datadir,"Survey","SPMareas.csv"))
   }
 
-  # to calculate index for St. Pierre and Michelon EEZ (keyhole, baguette)
+  # to calculate index NRA (tail of the Grand Banks)
   if(AltArea=='NRA'){
     load(file.path(datadir,"Survey","SurveyStrata.rdata"))
     RSindexData<-reStratify(RSindexData,subset(surveyStrataPolyLL,PID%in%c(51:53)))
