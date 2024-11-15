@@ -1,9 +1,13 @@
 ---
-output:
+output: STOCK STATUS UPDATE OF ATLANTIC HALIBUT (HIPPOGLOSSUS HIPPOGLOSSUS) ON THE SCOTIAN SHELF AND SOUTHERN GRAND BANKS IN NAFO DIVISIONS 3NOPS4VWX5ZC FOR 2024
   word_document: default
   pdf_document: default
   html_document: default
 ---
+
+Context section???
+
+
 ## SCIENCE ADVICE {-}
 [Mandatory. Maximum length 500 words. Include summary bullets of the following factors affecting the stock that are relevant for decision-making. Please refer to the Guidance Document for standardized language and examples, and what to avoid in this section.] 
 
@@ -11,20 +15,18 @@ output:
 
 ::: {custom-style="fsar-bullet"}
 [Mandatory bullet(s)]
-The LRP is 0.4 BMSY = 10.9 kt and the USR is 0.8 BMSY = 21.8 kt. The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 to be XX kt(95% confidence interval: XX, XX). Based on the three-year mean, the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is XX kt which is XX BMSY, and substantially higher than the USR, putting this stock in the healthy zone. - text from the document
+The LRP is 0.4 BMSY = 10.9 kt and the USR is 0.8 BMSY = 21.8 kt. The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 to be 56 kt (95% confidence interval: 43, 68). Based on the three-year mean, the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 52 kt which is 1.9 BMSY, and substantially higher than the USR, putting this stock in the healthy zone. - text from the document: probably shorten to just say that estimate is > BMSY/USR so in healthy zone.
 :::
 
 ### Trends {-}
 
 ::: {custom-style="fsar-bullet"}
 [Mandatory bullet(s)] 
-The biomass index from the previous Fixed Station Halibut Survey (1998-2022) peaked in 2018 and the three-year mean peaked in 2020, followed by a decline in the final two years of that survey. - maybe removing reference to Fixed Station?
+The biomass index from the previous Fixed Station Halibut Survey (1998-2022) peaked in 2018 and the three-year mean peaked in 2020, followed by a decline in the final two years of that survey. - maybe removing reference to Fixed Station? - bullet's shouldn't just provide context, so will remove this one
 
-There have been minimal inter-annual changes in the exploitable biomass index from the Stratified Random Halibut Survey (2017-2024)? The three-year mean remained relatively stable with a XX (slight increase) in 2024?
+The 2024 index of exploitable biomass from the Stratified Random Survey and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
-"Inter-annual changes in the exploitable biomass index have been smaller for the Stratified Random Halibut Survey compared with the Fixed Station Halibut Survey. The three-year mean remained relatively stable with a XX (slight increase?) in 2024." - what's in the document now; maybe removing reference to Fixed Station
-
-The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) provides an a recruitment index for Atlantic halibut. The catch of Atlantic Halibut in this survey increased between 2000 and 2011, followed by a decline, but has been increasing in recent years. The index for 2024 is the XXth highest value in the time series.
+Atlantic halibut catch per tow in 2024 from the DFO Maritimes Region Summer Ecosystem Survey (RV Survey) was the second highest value in the time series. Catch from this survey, which provides an index of recruitment for Atlantic halibut, increased between 2000 and 2011, followed by a decline, but has been increasing again since 2020. - maybe remove the 'contexty' middle section?
 
 :::
 
@@ -39,9 +41,14 @@ The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) pr
 
 ::: {custom-style="fsar-bullet"}
 [Mandatory bullet(s)]
-As the 2024 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2BMSY (XX kt), the highest fishing mortality, 1.2 FMSY(0.104), would be applied using the articulated harvest control (decision?) rule. This results in a TAC advice (recommended removal) for 2025-2026 of XXXX t. This assumes all removals from Canadian and international fisheries are included. - basically the harvest control section of the text...separate? reduce?
 
-TAC advice of XXXX t is within the maximum annual change of 15% from the 2024-02025 TAC. 
+The three-year mean exploitable biomass of 52 kt corresponds to removals of 5,149 t under the Harvest Decision Rule for this stock. - this is word for word from the guidance doc
+
+Removals of 5,149 t is within the maximum annual change of 15% from the 2024-2025 TAC. It is 222 t (4.5%) more than last year's TAC.
+
+OORRR
+
+As the 2024 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2BMSY (52 kt), the highest fishing mortality, 1.2 FMSY(0.104), would be applied using the articulated harvest control (decision?) rule. This results in a TAC advice (recommended removal) for 2025-2026 of 5,149 t. This assumes all removals from Canadian and international fisheries are included. - basically the harvest control section of the text...separate? reduce?
 
 SOME STATEMENT ABOUT LIKELIHOOD OF REMAININGS IN THE HEALTHY ZONE?? 
 
@@ -88,6 +95,14 @@ In 1987, two management units, 4RST and 3NOPs4VWX5Zc, were defined for Atlantic 
 
 ### Reference Points {-}
 [Mandatory. A table may be used in lieu of bullets for this section. Refer to the Guidance Document for further instructions.]
+
+A new assessment framework was adopted in November 2021/March 2022 (refs). This framework used a new Spatially Integrated Statistical Catch-At-Length (SISCAL) model with sex and age structure to assess the stock status and provide maximum sustainable yield (MSY) based reference points. <- maybe don't need this info (just first sentence?) and instead just ref the res docs (this whole thing is about reducing, so could be a good spot to reduce?)
+
+The limit reference point (LRP) was defined as 0.4 spawning stock biomass (SSB) at MSY (SSBMSY) and the upper stock reference (USR) was defines as 0.8 SSBMSY (Table XX). 
+
+Mature female biomass, derived from the enw assessment model using estimates of female age-at-maturity at 50% (11.5 years) and 95% (14.5 year), is used to estimate the SSB for Atlantic halibut. Additionally, closed-loop simulation was used to evaluate the impact of a suite of harvest strategies on the population trends and landings. 
+
+In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4BMSY, USR = 0.8 BMSY, and 1.2BMSY, Table XX). <- maybe only include this paragraph? All other info is in res doc so just point to those?
 
 Use Table 2 from last update (but table format)
 Model-estimated Biomass
@@ -163,6 +178,8 @@ Data changes: [Optional (otherwise, do not include).]
 ## ASSESSMENT {-}
 [Mandatory panel of images comes first – example shown. Refer to the Guidance Document for options and further instructions.]
 
+Stock status in interim years is assessed based on the three-year mean exploitable biomass index from the Stratified Random Halibut Survey. The next assessment framework review is currently scheduled for 2026. However, if the three-year mean index of exploitable biomass from the Stratified Random Halibut Survey falls above or below the 90% probability envelope from the closed-loop simulation for that index, a new framework will be triggered. <- not sure where to include this information...so just put it here for now
+
 (ref:caption) (A) Catch and Total Allowable Catch, (B) Spawning Stock Biomass (SSB) in relation to the Limit Reference Point (LRP; X) and (proposed) Upper Stock Reference (USR; X), (C) Fishing Mortality (F; X), Removal Reference (RR) and Natural Mortality (M), (D) Recruitment (numbers).
 
 ```{r base1, fig.cap="(ref:caption)"}
@@ -197,22 +214,23 @@ The Industry-DFO Halibut Longline Survey provides an index of exploitable biomas
 
 With the switch to an exclusively stratified random design in 2023, there was also a change in the allocation of stations and stratification of the stock area. A new stratum was introduced in an area in the northeast where there has been little to no catch of Atlantic Halibut in the Stratified Random Halibut Survey since 2017 (Figure XX). Allocation of stations in the new stratum was reduced, while for the rest of the strata allocation was proportional to area. Due to challenges with survey completion and the low number of stations in two strata on the shelf edge of the southern Grand Banks, two small strata were combined to allow for the calculation of exploitable biomass from the survey this year. 
 
-Although there was 100% (synonym here!) station completion (Figure XX) this year, there was adequate coverage in all strata to effectively calculate the index of exploitable biomass from the Stratified Random survey. The 2024 index of exploitable biomass was close to the index observed in 2021. The three-year mean remained relatively stable with a slight increase in 2024.
+Although there was 100% (synonym here!) station completion (Figure XX) this year, there was adequate coverage in all strata to effectively calculate the index of exploitable biomass from the Stratified Random survey. The 2024 index of exploitable biomass and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
 Include the survey station/strata map (same as last year but with no station locations/completion)
 
+Should stuff under headings of stock status relative to reference points/Harvest Control Rule/Conclusions go here?
 
 #### [Indicator 1] [specify name, e.g., Abundance]: {-}
 [Provide values and trends for the stock (as applicable).]
 Recruitment - DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX)
 
-The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) has been conducted typically between July–August since 1970. The RV survey provides an index of recruitment for Atlantic Halibut. The median size of Atlantic Halibut caught in the trawl survey is between 40–50 cm. The catch of Atlantic Halibut in this survey increased between 2000 and 2011 (Figure 4). This was followed by a decline. The mean numbers per tow in 2019 and 2020 were lower than they have been since 2011, but were still above the long-term mean. 
+The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) has been conducted typically between July–August since 1970. The RV survey provides an index of recruitment for Atlantic Halibut. The median size of Atlantic Halibut caught in the trawl survey is between 40–50 cm. The catch of Atlantic Halibut in this survey increased between 2000 and 2011 (Figure 4) but then declined to the lowest value since 2011 in 2020. Since 2020, catch has been increasing.
 
 The 2018 and 2022 DFO Summer Ecosystem RV Survey did not cover all strata due to mechanical issues with the vessel; therefore, the abundance index from those two years cannot be compared with other years. - still true? not comparable? - maybe maybe new vessel fills in 2022??
 
-Additionally, an abundance index cannot be estimated for 2021 because the RV Survey was completed using a new vessel with a new fishing net and the conversion factor has not been developed (Figure XX - in the 4 panel). - disregard making a comment on this year? Or comment that following completion of comparative fishing between the old and new vessels, a convertion factor for Atlantic halibut was estimated (1:1) and data from the 2021 survey that was not included in previous years has now been incorporated into the time series.
+Additionally, an abundance index cannot be estimated for 2021 because the RV Survey was completed using a new vessel with a new fishing net and the conversion factor has not been developed (Figure XX - in the 4 panel). - disregard making a comment on this year? Or comment that following completion of comparative fishing between the old and new vessels, a conversion factor for Atlantic halibut was estimated (1:1) and data from the 2021 survey that was not included in previous years has now been incorporated into the time series.
 
-The abundance index for 2024 is the XX highest value in the time series. The length composition and the index of abundance are reviewed annually, exclusively for context and do not directly contribute to the HCR outputs.
+The abundance index for 2024 is the second highest value in the time series. The length composition and the index of abundance are reviewed annually, exclusively for context and do not directly contribute to the HCR outputs.
 
 #### [Indicator 1] [specify name, e.g., Abundance]: {-}
 [Provide values and trends for the stock (as applicable).]
@@ -247,7 +265,9 @@ Figure of landings? Actually going in the 4 panel...
 
 ### Harvest Decision Rule Outputs {-}
 [If applicable (otherwise, do not include).] 
-As the 2024 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2 BMSY (32.8 kt, Table XX), the highest fishing mortality, 1.2 FMSY (0.104), would be applied using the articulated HCR. This results in a TAC advice for 2025-2026 of XXXX t. As this is within the maximum annual change of 15% from the 2024-2025 TAC (4,927 t), the 2025-2026 TAC advice is XXXX t. This application of the HCU assumes all removals from Canadian and international fisheries are included. - directly from previous doc
+As the 2024 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2 BMSY (32.8 kt, Table XX), the highest fishing mortality, 1.2 FMSY (0.104), would be applied using the articulated HCR. This results in a TAC advice for 2025-2026 of 5,149 t. As this is within the maximum annual change of 15% from the 2024-2025 TAC (4,927 t), the 2025-2026 TAC advice is 5,149 t. This application of the HCR assumes all removals from Canadian and international fisheries are included. - directly from previous doc
+
+Should stuff under headings of stock status relative to reference points/Harvest Control Rule/Conclusions go here?
 
 ### Evaluation of Exceptional Circumstances/Assessment Triggers {-}
 [If applicable (otherwise, do not include).] 
