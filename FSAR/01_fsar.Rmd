@@ -1,5 +1,5 @@
 ---
-output: STOCK STATUS UPDATE OF ATLANTIC HALIBUT (HIPPOGLOSSUS HIPPOGLOSSUS) ON THE SCOTIAN SHELF AND SOUTHERN GRAND BANKS IN NAFO DIVISIONS 3NOPS4VWX5ZC FOR 2024
+output: 
   word_document: default
   pdf_document: default
   html_document: default
