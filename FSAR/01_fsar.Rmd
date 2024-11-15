@@ -111,7 +111,7 @@ source("real-data.R")
 source("plot-timeseries.R")
 
 
-in.df <- fsar_data(Assessment.Year=Assessment.Year)
+in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
 
 ## English template
 fsar_plot_base(in.df, "English")

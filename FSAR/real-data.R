@@ -7,7 +7,7 @@
 #'
 #' @examples
 #' fsar_data()
-fsar_data <- function(Assessment.Year=2024,datadir,update.data=F) {
+fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
 
 
   if(update.data){
@@ -18,16 +18,18 @@ fsar_data <- function(Assessment.Year=2024,datadir,update.data=F) {
   categories <- c("Catch", "Biomass", "Fishing", "Recruitment")
 
   # model output
-  load("ModelOuputFSAR.rdata")
+  load("data/ModelOuputFSAR.rdata")
 
   ### Catch
 
-  # annual TAC table
-  ##update TAC each year
-  ### add landings script here
-  Catch=NULL
+  ##update from Landings SCript each year
 
-  TAC = data.frame(Year=1988:Assessment.Year,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807, 4744, 4927))
+  Catch=read.csv("data/figuredata_markdown_2024.csv")
+  ts1=data.frame(
+    panel.category = rep(categories[1],nrow(Catch)),
+    year = Catch$Year,
+    ts.name = Catch$Source,
+    ts.value = Catch$landings_mt)
 
 
   ######
@@ -38,12 +40,12 @@ fsar_data <- function(Assessment.Year=2024,datadir,update.data=F) {
     data.frame(
       panel.category = rep(categories[2],nrow(HSRandom_Index)),
       year = HSRandom_Index$Year,
-      ts.name = rep("HSobs",nrow(NSRV_Index)),
+      ts.name = rep("HSobs",nrow(HSRandom_Index)),
       ts.value = HSRandom_Index$KgPKH/qRS/1000),
     data.frame(
       panel.category = rep(categories[2],nrow(HSRandom_Index)-2),
       year = HSRandom_Index$Year[-(1:2)],
-      ts.name = rep("HSobs",nrow(NSRV_Index)-2),
+      ts.name = rep("HSobs_3yrm",nrow(HSRandom_Index)-2),
       ts.value = HSRandom_Index$KgPKH[-(1:2)]/qRS/1000),
     data.frame(
       panel.category = rep(categories[2],length(vulnB)),
@@ -56,9 +58,9 @@ fsar_data <- function(Assessment.Year=2024,datadir,update.data=F) {
 
   ### Fishing
   ts3<-data.frame(
-      panel.category = rep(categories[3],nrow(U_t)),
-      year = as.numeric(names(U_T)),
-      ts.name = rep("Ut",nrow(U_T)),
+      panel.category = rep(categories[3],length(U_t)),
+      year = as.numeric(names(U_t)),
+      ts.name = rep("Ut",length(U_t)),
       ts.value = U_t)
 
 
