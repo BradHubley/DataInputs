@@ -93,24 +93,22 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
     legend.text <- c("Capture-tonne", "TAC-tonne")
   }
 
-  plot(ts.value ~ year, data = tl.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl)
-  ## Catch
-  lines(ts.value ~ year, data = tl.df[which(tl.df$ts.name == "Catch-MT"), ], type = "l", lwd = 2)
-  ## TAC
-  lines(ts.value ~ year, data = tl.df[which(tl.df$ts.name == "TAC-MT"), ], type = "l", lty = 2)
+  plm<- filter(in.df,panel.category=="Catch") |>
+    pivot_wider(names_from = year, values_from = ts.value)
+  plm<-as.matrix(plm[c(1,2,4),-(1:2)])
+  plm[is.na(plm)]<-0
+  yl <- c(0,max(colSums(plm))*1.1)
 
-  legend("topright","(A)", bty = "n", cex=1.25)
-  legend("topleft",
-         legend.text,
-         lty = c(1, 2),
-         lwd = c(2, 1),
-         pch = c(-1, -1),
-         box.lwd = 0.5
-  )
+  barplot(plm,ylim=yl, axes = FALSE, col=c('#377eb8','#d53e4f','#377eb8'),border=NA,density=c(NA,NA,40))
+  axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,1.2),lab=F,tck=-0.01) ##change to 77 in sequence to increase axis length (ticks)
+  axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,12),lab=seq(1960,Assessment.Year,10))##75 remains (no change) since 2023 not a multiple of 10
+  axis(2, at = seq(0, yl[2], 1000), las = 1,
+       labels = prettyNum(seq(0, yl[2],1000),
+                          big.mark = ',',
+                          scientific = FALSE))
+  lines(seq(0.7,78.2,1.2),in.df$ts.value[in.df$ts.name=="TAC"],col='#7fbc41',lwd=4) ##change to 78 to accommodate additional year
+  legend('topright',c("Canada","Foreign","TAC"),fill=c('#377eb8','#d53e4f',NA),col=c(NA,NA,'#7fbc41'),lwd=c(NA,NA,4),border=NA,inset=c(0.2,0.1),bg='white',box.lty=0)
 
-
-  axis(side = 1, padj = -0.5)
-  axis(side = 2, las = 1, hadj = 0.9)
   mtext(side = 1, x.lab, line = 2, cex = 0.75)
   mtext(side = 2, y.lab, line = 3, cex = 0.75)
   box()
