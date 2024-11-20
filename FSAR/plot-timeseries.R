@@ -72,6 +72,7 @@ fsar_plot_ggplot <- function(df, language = c("English","French")) {
 fsar_plot_base <- function(in.df, language = c("English","French")) {
 
   language <- match.arg(language)
+  colrs<-c('#377eb8','#d53e4f','#7fbc41')
 
   mm <- matrix(c(rep(0, 5), 0, 1, 0, 2, 0, rep(0, 5), 0, 3, 0, 4, 0, rep(0, 5)), nc = 5, byrow = TRUE)
   ll <- layout(mm, widths = c(0.06, 0.43, 0.06, 0.43, 0.02), heights = c(c(0.02, 0.45, 0.04, 0.45, 0.04))) # layout.show(ll)
@@ -85,7 +86,7 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
   if (language == "English") {
     x.lab <- "Year"
     y.lab <- "Catch"
-    legend.text <- c("Catch-MT", "TAC-MT")
+    legend.text <- c("Canada-Catch-MT","Foreign-Catch-MT", "TAC-MT")
   }
   if (language == "French") {
     x.lab <- "Année"
@@ -99,51 +100,65 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
   plm[is.na(plm)]<-0
   yl <- c(0,max(colSums(plm))*1.1)
 
-  barplot(plm,ylim=yl, axes = FALSE, col=c('#377eb8','#d53e4f','#377eb8'),border=NA,density=c(NA,NA,40))
+
+  barplot(plm,ylim=yl, axes = FALSE, col=c(colrs[1],colrs[2],colrs[1]),border=NA,density=c(NA,NA,40),axisnames=F)
   axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,1.2),lab=F,tck=-0.01) ##change to 77 in sequence to increase axis length (ticks)
   axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,12),lab=seq(1960,Assessment.Year,10))##75 remains (no change) since 2023 not a multiple of 10
   axis(2, at = seq(0, yl[2], 1000), las = 1,
        labels = prettyNum(seq(0, yl[2],1000),
                           big.mark = ',',
                           scientific = FALSE))
-  lines(seq(0.7,78.2,1.2),in.df$ts.value[in.df$ts.name=="TAC"],col='#7fbc41',lwd=4) ##change to 78 to accommodate additional year
-  legend('topright',c("Canada","Foreign","TAC"),fill=c('#377eb8','#d53e4f',NA),col=c(NA,NA,'#7fbc41'),lwd=c(NA,NA,4),border=NA,inset=c(0.2,0.1),bg='white',box.lty=0)
+  lines(seq(0.7,(Assessment.Year-1959)*1.2,1.2),in.df$ts.value[in.df$ts.name=="TAC"],col=colrs[3],lwd=4) ##change to 78 to accommodate additional year
+  legend('topright',legend.text,fill=c(colrs[1],colrs[2],NA),col=c(NA,NA,colrs[3]),lwd=c(NA,NA,4),border=NA,inset=c(0.2,0.1),bg='white',box.lty=0)
 
-  mtext(side = 1, x.lab, line = 2, cex = 0.75)
-  mtext(side = 2, y.lab, line = 3, cex = 0.75)
+  mtext(side = 1, x.lab, line = 2.5, cex = 0.75)
+  mtext(side = 2, y.lab, line = 3.5, cex = 0.75)
   box()
 
 
   # top-right panel
-  idx <- which(in.df$panel.category == "SSB")
-  yl <- c(0, max(in.df[idx, "ts.value"]) * 1.4)
+  idx <- which(in.df$panel.category == "Biomass")
+  yl <- c(0, max(in.df[idx, "ts.value"]) * 1.2)
   tr.df <- in.df[idx, ]
 
   if (language == "English") {
-    y.lab <- "Biomass"
-    legend.text <- c("SSB-MT", "95% confidence", "USR-MT", "LRP-MT")
+    y.lab <- "Biomass KT"
+    legend.text <- c("Survey Biomass (modelled)","95% confidence", "Survey Biomass (index)", "3-year mean of index","USR", "LRP")
   }
   if (language == "French") {
-    y.lab <- "Biomasse"
+    y.lab <- "Biomasse KT"
     legend.text <- c("BSR-tonne", "confiance à 95%", "NRS-tonne", "NRL-tonne")
   }
 
   plot(ts.value ~ year, data = tr.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl)
-  ## SSB
-  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "SSB-MT"), ], type = "l", lwd = 2)
+
+  ## Vulnerable Biomass
   ## lower and upper
-  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "SSBlow-MT"), ], type = "l", lty = 2)
-  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "SSBhigh-MT"), ], type = "l", lty = 2)
+  yrs<-tr.df$year[tr.df$ts.name == "HSpredlow"]
+  cil<-tr.df$ts.value[tr.df$ts.name == "HSpredlow"]
+  cih<-tr.df$ts.value[tr.df$ts.name == "HSpredhigh"]
+
+  polygon(  x = c(yrs,rev(yrs)),y = c(cil,rev(cih)), col = 'grey', border = NA )
+  #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpredlow"), ], type = "l", lty = 2)
+  #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpredhigh"), ], type = "l", lty = 2)
+  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpred"), ], type = "l", lwd = 1,col='grey40',lty=1)
+
+  ## SurveyBiomass
+  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSobs"), ], type = "p",pch=16)
+  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSobs_3yrm"), ], type = "l", lwd = 3,col='blue')
   ## LRP and USR
-  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "SSBlrp-MT"), ], type = "l", lty = 3, lwd = 2, col = "red")
-  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "SSBusr-MT"), ], type = "l", lty = 3, lwd = 2, col = "forestgreen")
+  abline(h=10.9, lty = 3, lwd = 2, col = "red")
+  abline(h=21.8, lty = 3, lwd = 2, col = "forestgreen")
+  #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "SSBlrp-MT"), ], type = "l")
+  #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "SSBusr-MT"), ], type = "l"
 
   legend("topright","(B)", bty = "n", cex=1.25)
   legend("topleft",
          legend.text,
-         lty = c(1, 2, 3, 3),
-         lwd = c(2, 1, 2, 2),
-         col = c("black", "black", "forestgreen", "red"),
+         lty = c(1, 2, NA, 1, 3, 3),
+         lwd = c(1, 1, NA, 3, 2, 2),
+         pch = c(NA,NA,16,NA,NA,NA),
+         col = c('grey40','grey',"black", "blue", "forestgreen", "red"),
          box.lwd = 0.5
   )
 
@@ -155,7 +170,7 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
 
   ## bottom-left panel
   idx <- which(in.df$panel.category == "Fishing")
-  yl <- c(0, max(in.df[idx, "ts.value"]) * 1.4)
+  yl <- c(0, max(in.df[idx, "ts.value"]) * 1.2)
   bl.df <- in.df[idx, ]
 
   if (language == "English") {
@@ -168,12 +183,13 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
   }
 
   idx <- which(in.df$panel.category == "Fishing" & in.df$ts.name == "F-1/yr")
-  plot(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "F-1/yr"), ], type = "l", lwd = 2, axes = FALSE, xlab = "", ylab = "", ylim = yl)
-  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Flow-1/yr"), ], type = "l", lty = 2)
-  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Fhigh-1/yr"), ], type = "l", lty = 2)
-  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Flim-1/yr"), ], lty = 3, lwd = 2, col = "red")
+  plot(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Ut"), ], type = "l", lwd = 2, axes = FALSE, xlab = "", ylab = "", ylim = yl)
+  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Utlow"), ], type = "l", lty = 2)
+  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Uthigh"), ], type = "l", lty = 2)
+  #lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Flim-1/yr"), ], lty = 3, lwd = 2, col = "red")
+  abline(h=0.0877*c(0.8,1,1.2), lty = 3, lwd = 2)
 
-  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "M-1/yr"), ], lty = 1, lwd = 2, col = grey(0.5))
+  #lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "M-1/yr"), ], lty = 1, lwd = 2, col = grey(0.5))
 
   ## natural mortality
 

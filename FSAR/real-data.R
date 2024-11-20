@@ -46,22 +46,44 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
       panel.category = rep(categories[2],nrow(HSRandom_Index)-2),
       year = HSRandom_Index$Year[-(1:2)],
       ts.name = rep("HSobs_3yrm",nrow(HSRandom_Index)-2),
-      ts.value = HSRandom_Index$KgPKH[-(1:2)]/qRS/1000),
+      ts.value = HSRandom_Index$mean3_biomass[-(1:2)]/qRS/1000),
     data.frame(
       panel.category = rep(categories[2],length(vulnB)),
       year = as.numeric(names(vulnB)),
       ts.name = rep("HSpred",length(vulnB)),
-      ts.value = vulnB)
+      ts.value = vulnB),
+    data.frame(
+      panel.category = rep(categories[2],length(vulnB)),
+      year = as.numeric(names(vulnB)),
+      ts.name = rep("HSpredlow",length(vulnB)),
+      ts.value = vulnB_ci[1,]),
+    data.frame(
+      panel.category = rep(categories[2],length(vulnB)),
+      year = as.numeric(names(vulnB)),
+      ts.name = rep("HSpredhigh",length(vulnB)),
+      ts.value = vulnB_ci[2,])
   )
 
 
 
   ### Fishing
-  ts3<-data.frame(
-      panel.category = rep(categories[3],length(U_t)),
-      year = as.numeric(names(U_t)),
-      ts.name = rep("Ut",length(U_t)),
-      ts.value = U_t)
+  ts3<-rbind(
+    data.frame(
+      panel.category = rep(categories[3],length(Ut)),
+      year = as.numeric(names(Ut)),
+      ts.name = rep("Ut",length(Ut)),
+      ts.value = U_t),
+    data.frame(
+      panel.category = rep(categories[3],length(Ut)),
+      year = as.numeric(names(Ut)),
+      ts.name = rep("Utlow",length(Ut)),
+      ts.value = Ut_low),
+    data.frame(
+      panel.category = rep(categories[3],length(Ut)),
+      year = as.numeric(names(Ut)),
+      ts.name = rep("Uthigh",length(Ut)),
+      ts.value = Ut_high)
+  )
 
 
   ### Recruitment
