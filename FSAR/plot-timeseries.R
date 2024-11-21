@@ -80,13 +80,13 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
 
   # top-left panel - Catch and TAC
   idx <- which(in.df$panel.category == "Catch")
-  yl <- c(0, max(in.df[idx, "ts.value"]) * 1.4)
+  yl <- c(0, max(in.df[idx, "ts.value"],na.rm=T) * 1.2)
   tl.df <- in.df[idx, ]
 
   if (language == "English") {
     x.lab <- "Year"
-    y.lab <- "Catch"
-    legend.text <- c("Canada-Catch-MT","Foreign-Catch-MT", "TAC-MT")
+    y.lab <- "Catch (T)"
+    legend.text <- c("Canada","Foreign", "TAC")
   }
   if (language == "French") {
     x.lab <- "Année"
@@ -94,22 +94,27 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
     legend.text <- c("Capture-tonne", "TAC-tonne")
   }
 
-  plm<- filter(in.df,panel.category=="Catch") |>
-    pivot_wider(names_from = year, values_from = ts.value)
+  y1<-min(tl.df$year)
+  plm<-pivot_wider(tl.df,names_from = year, values_from = ts.value)
   plm<-as.matrix(plm[c(1,2,4),-(1:2)])
   plm[is.na(plm)]<-0
-  yl <- c(0,max(colSums(plm))*1.1)
 
 
   barplot(plm,ylim=yl, axes = FALSE, col=c(colrs[1],colrs[2],colrs[1]),border=NA,density=c(NA,NA,40),axisnames=F)
-  axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,1.2),lab=F,tck=-0.01) ##change to 77 in sequence to increase axis length (ticks)
-  axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,12),lab=seq(1960,Assessment.Year,10))##75 remains (no change) since 2023 not a multiple of 10
+  #axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,1.2),lab=F,tck=-0.01) ##change to 77 in sequence to increase axis length (ticks)
+  axis(1,at=seq(0.7,(Assessment.Year-y1+1)*1.2,12),lab=seq(y1,Assessment.Year,10))##75 remains (no change) since 2023 not a multiple of 10
   axis(2, at = seq(0, yl[2], 1000), las = 1,
        labels = prettyNum(seq(0, yl[2],1000),
                           big.mark = ',',
                           scientific = FALSE))
-  lines(seq(0.7,(Assessment.Year-1959)*1.2,1.2),in.df$ts.value[in.df$ts.name=="TAC"],col=colrs[3],lwd=4) ##change to 78 to accommodate additional year
-  legend('topright',legend.text,fill=c(colrs[1],colrs[2],NA),col=c(NA,NA,colrs[3]),lwd=c(NA,NA,4),border=NA,inset=c(0.2,0.1),bg='white',box.lty=0)
+  lines(seq(0.7,(Assessment.Year-y1+1)*1.2,1.2),in.df$ts.value[in.df$ts.name=="TAC"],col=colrs[3],lwd=3) ##change to 78 to accommodate additional year
+  legend("topright","(A)", bty = "n", cex=1.25)
+  legend('topleft',
+         legend.text,
+         pch=c(15,15,NA),
+         col=c(colrs[1],colrs[2],colrs[3]),
+         lwd=c(NA,NA,3),
+         box.lty=0)
 
   mtext(side = 1, x.lab, line = 2.5, cex = 0.75)
   mtext(side = 2, y.lab, line = 3.5, cex = 0.75)
@@ -120,10 +125,11 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
   idx <- which(in.df$panel.category == "Biomass")
   yl <- c(0, max(in.df[idx, "ts.value"]) * 1.2)
   tr.df <- in.df[idx, ]
+  xl <- range(tr.df$year)
 
   if (language == "English") {
-    y.lab <- "Biomass KT"
-    legend.text <- c("Survey Biomass (modelled)","95% confidence", "Survey Biomass (index)", "3-year mean of index","USR", "LRP")
+    y.lab <- "Biomass (KT)"
+    legend.text <- c("Halibut Survey (modelled)","95% confidence", "Halibut Survey (index)", "3-year mean of index","USR", "LRP")
   }
   if (language == "French") {
     y.lab <- "Biomasse KT"
@@ -155,11 +161,11 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
   legend("topright","(B)", bty = "n", cex=1.25)
   legend("topleft",
          legend.text,
-         lty = c(1, 2, NA, 1, 3, 3),
-         lwd = c(1, 1, NA, 3, 2, 2),
-         pch = c(NA,NA,16,NA,NA,NA),
+         lty = c(1, NA, NA, 1, 3, 3),
+         lwd = c(1, NA, NA, 3, 2, 2),
+         pch = c(NA,15,16,NA,NA,NA),
          col = c('grey40','grey',"black", "blue", "forestgreen", "red"),
-         box.lwd = 0.5
+         box.lty=0
   )
 
   axis(side = 1, padj = -0.5)
@@ -174,32 +180,47 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
   bl.df <- in.df[idx, ]
 
   if (language == "English") {
-    y.lab <- "Mortality"
-    legend.text <- c("F-1/yr", "95% confidence", "RR-1/yr", "M-1/yr")
+    y.lab <- "Mortality (1/yr)"
+    legend.text <- c("Fishing", "95% confidence", "Natural", "95% confidence", "1.2FMSY", "FMSY", "0.8FMSY")
   }
   if (language == "French") {
     y.lab <- "Mortalité"
     legend.text <- c("F-1/yr", "confiance à 95%", "RP-1/yr", "M-1/yr")
   }
 
-  idx <- which(in.df$panel.category == "Fishing" & in.df$ts.name == "F-1/yr")
-  plot(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Ut"), ], type = "l", lwd = 2, axes = FALSE, xlab = "", ylab = "", ylim = yl)
-  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Utlow"), ], type = "l", lty = 2)
-  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Uthigh"), ], type = "l", lty = 2)
-  #lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Flim-1/yr"), ], lty = 3, lwd = 2, col = "red")
-  abline(h=0.0877*c(0.8,1,1.2), lty = 3, lwd = 2)
+  plot(ts.value ~ year, data = bl.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl,xlim=xl)
+
+  ## Fishing
+  yrs<-bl.df$year[bl.df$ts.name == "Utlow"]
+  cil<-bl.df$ts.value[bl.df$ts.name == "Utlow"]
+  cih<-bl.df$ts.value[bl.df$ts.name == "Uthigh"]
+
+  polygon(  x = c(yrs,rev(yrs)),y = c(cil,rev(cih)), col = 'grey', border = NA )
+  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Ut"), ], type = "l", lwd = 1,col='grey40',lty=1)
+
+  ## natural mortality
+  yrs<-bl.df$year[bl.df$ts.name == "Mtlow"]
+  cil<-bl.df$ts.value[bl.df$ts.name == "Mtlow"]
+  cih<-bl.df$ts.value[bl.df$ts.name == "Mthigh"]
+
+  polygon(  x = c(yrs,rev(yrs)),y = c(cil,rev(cih)), col = rgb(1,0,0,0.2), border = NA )
+  lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "Mt"), ], type = "l", lwd = 1,col='red',lty=2)
+
+  #removal reference
+  abline(h=0.0877*c(1.2,1,0.8), lty = 3, lwd = 2,col=c("blue", "forestgreen", "orange"))
 
   #lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "M-1/yr"), ], lty = 1, lwd = 2, col = grey(0.5))
 
-  ## natural mortality
 
   legend("topright","(C)", bty = "n", cex=1.25)
   legend("topleft",
          legend.text,
-         lty = c(1, 2, 3, 1),
-         lwd = c(2, 1, 2, 2),
-         col = c("black", "black", "red", grey(0.5)),
-         box.lwd = 0.5
+         lty = c(1, NA, 2, NA, 3, 3, 3),
+         lwd = c(1, NA, 1, NA, 2, 2, 2),
+         pch = c(NA, 15, NA, 15, NA, NA, NA),
+         col = c('grey40','grey','red',rgb(1,0,0,0.2), "blue", "forestgreen", "orange"),
+         box.lty = 0,
+         bg=NA
   )
 
   axis(side = 1, padj = -0.5)
@@ -217,25 +238,37 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
   br.df <- in.df[idx, ]
 
   if (language == "English") {
-    y.lab <- "Recruitment"
-    legend.text <- c("R-E06", "95% confidence")
+    y.lab <- "Abundance (millions)"
+    legend.text <- c("RV Survey (modelled)", "95% confidence", "RV Survey (Index)")
   }
   if (language == "French") {
     y.lab <- "Recrutement"
     legend.text <- c("R-E06", "confiance à 95%")
   }
-  plot(ts.value ~ year, data = br.df[which(br.df$ts.name == "R-E06"), ], type = "l", lwd = 2, axes = FALSE, xlab = "", ylab = "", ylim = yl)
-  lines(ts.value ~ year, data = br.df[which(br.df$ts.name == "Rlow-E06"), ], type = "l", lty = 2)
-  lines(ts.value ~ year, data = br.df[which(br.df$ts.name == "Rhigh-E06"), ], type = "l", lty = 2)
+  plot(ts.value ~ year, data = br.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl)
+  ## Vulnerable Abundance
+  ## lower and upper
+  yrs<-br.df$year[br.df$ts.name == "RVpredlow"]
+  cil<-br.df$ts.value[br.df$ts.name == "RVpredlow"]
+  cih<-br.df$ts.value[br.df$ts.name == "RVpredhigh"]
+
+  polygon(  x = c(yrs,rev(yrs)),y = c(cil,rev(cih)), col = 'grey', border = NA )
+  lines(ts.value ~ year, data = br.df[which(br.df$ts.name == "RVpred"), ], type = "l", lwd = 1,col='grey40',lty=1)
+
+  ## Survey Abundance
+  lines(ts.value ~ year, data = br.df[which(br.df$ts.name == "RVobs"), ], type = "p",pch=16)
 
   legend("topright","(D)", bty = "n", cex=1.25)
   legend("topleft",
          legend.text,
-         lty = c(1, 2),
-         lwd = c(2, 1),
-         col = c("black", "black"),
-         box.lwd = 0.5
+         lty = c(1, NA, NA),
+         lwd = c(1, NA, NA),
+         pch = c(NA,15,16),
+         col = c('grey40','grey',"black"),
+         box.lty = 0,
+         bg=NA
   )
+
 
   axis(side = 1, padj = -0.5)
   mtext(side = 1, x.lab, line = 2, cex = 0.75)

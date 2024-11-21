@@ -25,6 +25,7 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
   ##update from Landings SCript each year
 
   Catch=read.csv("data/figuredata_markdown_2024.csv")
+  Catch=subset(Catch,Year>1969)
   ts1=data.frame(
     panel.category = rep(categories[1],nrow(Catch)),
     year = Catch$Year,
@@ -72,7 +73,7 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
       panel.category = rep(categories[3],length(Ut)),
       year = as.numeric(names(Ut)),
       ts.name = rep("Ut",length(Ut)),
-      ts.value = U_t),
+      ts.value = Ut),
     data.frame(
       panel.category = rep(categories[3],length(Ut)),
       year = as.numeric(names(Ut)),
@@ -82,13 +83,28 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
       panel.category = rep(categories[3],length(Ut)),
       year = as.numeric(names(Ut)),
       ts.name = rep("Uthigh",length(Ut)),
-      ts.value = Ut_high)
+      ts.value = Ut_high),
+    data.frame(
+      panel.category = rep(categories[3],length(Mt)),
+      year = as.numeric(names(Mt)),
+      ts.name = rep("Mt",length(Mt)),
+      ts.value = Mt),
+    data.frame(
+      panel.category = rep(categories[3],length(Mt)),
+      year = as.numeric(names(Mt)),
+      ts.name = rep("Mtlow",length(Mt)),
+      ts.value = Mt_ci[1,]),
+    data.frame(
+      panel.category = rep(categories[3],length(Mt)),
+      year = as.numeric(names(Mt)),
+      ts.name = rep("Mthigh",length(Mt)),
+      ts.value = Mt_ci[2,])
   )
 
 
   ### Recruitment
   RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-  RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:Assessment.Year, raw=T)
+  RVinputs<-prepRVdata(RVdata,years=1970:Assessment.Year, raw=T)
   NSRV_Index<-RVinputs$Index
   ts4<-rbind(
     data.frame(
@@ -100,8 +116,18 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
       panel.category = rep(categories[4],length(vulnN)),
       year = as.numeric(names(vulnN)),
       ts.name = rep("RVpred",length(vulnN)),
-      ts.value = vulnN)
-    )
+      ts.value = vulnN),
+    data.frame(
+      panel.category = rep(categories[4],length(vulnN)),
+      year = as.numeric(names(vulnN)),
+      ts.name = rep("RVpredlow",length(vulnN)),
+      ts.value = vulnN_ci[1,]),
+    data.frame(
+      panel.category = rep(categories[4],length(vulnN)),
+      year = as.numeric(names(vulnN)),
+      ts.name = rep("RVpredhigh",length(vulnN)),
+      ts.value = vulnN_ci[2,])
+  )
 
 
 
