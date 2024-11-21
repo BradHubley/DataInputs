@@ -182,11 +182,8 @@ Data changes: [Optional (otherwise, do not include).]
 ## ASSESSMENT {-}
 [Mandatory panel of images comes first – example shown. Refer to the Guidance Document for options and further instructions.]
 
-<<<<<<< HEAD
-=======
 Stock status in interim years is assessed based on the three-year mean exploitable biomass index from the Stratified Random Halibut Survey. The next assessment framework review is currently scheduled for 2026. However, if the three-year mean index of exploitable biomass from the Stratified Random Halibut Survey falls above or below the 90% probability envelope from the closed-loop simulation for that index, a new framework will be triggered. <- not sure where to include this information...so just put it here for now 
 
->>>>>>> 8568237756d79b18274c522c9c311550f84df06a
 (ref:caption) (A) Catch and Total Allowable Catch, (B) Spawning Stock Biomass (SSB) in relation to the Limit Reference Point (LRP; X) and (proposed) Upper Stock Reference (USR; X), (C) Fishing Mortality (F; X), Removal Reference (RR) and Natural Mortality (M), (D) Recruitment (numbers).
 
 ```{r base1, fig.cap="(ref:caption)"}

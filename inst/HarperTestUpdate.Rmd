@@ -383,6 +383,167 @@ Current.Year <- 2023
 
 ```
 
+Figures for the 2023 Stock Status Update presentation
+```{r}
+##map of 2023 strata
+
+load(file.path(datadir,"SurveyStrata2022.RData"))
+BO1<-data.frame(PID=1,POS=1:6,X=c(-47,-55,-55,-56.15283,-56.15283,-47),Y=c(45.5,45.5,46.25,46.25,48,48))
+
+BO1<-joinPolys(BO1,surveyPolyLL,operation="INT")
+
+
+BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
+
+BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
+ 
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/start2023strata_forDoc.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')                            
+xl=c(-68,-47)
+yl=c(40,48)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+addPolys(BO1,density=20,col='black')
+# addPolys(BO2,density=20,col='black')
+ #points(lat.DecDeg~lon.DecDeg,assignedstations2023,pch=21,bg = "yellow",cex=0.5)
+ #points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2023,pch=21, bg = "black",cex=0.5)
+plot(NAFO_test,add=T)
+#text(coordinates(NAFO_test)[,1], coordinates(NAFO_test)[,2], NAFO_test$ZONE)
+text(x = -56.5, y = 43, labels = "4Vs")
+text(x = -59.55, y = 46.37, labels = "4Vn")
+text(x = -61, y = 42, labels = "4W")
+text(x = -64.5, y = 41.5, labels = "4X")
+text(x = -66.25, y = 41.9, labels = "5Zc")
+text(x = -48.75, y = 42.5, labels = "3N")
+text(x = -53.2, y = 43.7, labels = "3O")
+text(x = -55.5, y = 45.9, labels = "3Ps")
+text(x = -58.7, y = 47.35, labels = "3Pn")
+
+dev.off()
+
+NAFO_test <- subset(NAFO, ZONE %in% c("3N", "3O", "3Ps", "3Pn","4Vn", "4Vs", "4W", "4X", "5Ze"))
+
+  ##without zero strata
+
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/2022strata.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')                            
+xl=c(-69,-47)
+yl=c(40,48)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+
+dev.off()
+
+  #insets to highlight channel strata (from 2022) and zero strata for 2023
+ChannelPoly <- joinPolys(subset(surveyStrataPolyLL,PID==33),subset(surveyStrataPolyLL,PID==43),operation = "UNION")
+ChannelPoly <- subset(ChannelPoly,SID==16)
+
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/zoomchannelstrata2022.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo') 
+ bioMap(xlim=c(-61,-54),ylim=c(44,48),poly.lst = list(surveyStrataPolyLL,props),plot.rivers=F,isobaths = NULL,mapRes="MR",LT=T)
+    plot(NAFO,add=T)
+    text(coordinates(NAFO)[,1], coordinates(NAFO)[,2],NAFO$ZONE)
+ addPolys(ChannelPoly,col=rgb(0,0,1,0.1))
+dev.off()
+
+#add on 200 stations assigned
+assignedstations2023 <- read.csv("C:/Users/harperd/Documents/Halibut/Survey/HalSurvey2023/Survey Audit 2023/2023 Halibut Longline Survey Stations - w assignmentsJuly18.csv")
+
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/start2023stations.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo') 
+xl=c(-69,-47)
+yl=c(40,48)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+addPolys(BO1,density=20,col='black')
+addPolys(BO2,density=20,col='black')
+ points(lat.DecDeg~lon.DecDeg,assignedstations2023,pch=21,bg="yellow",cex=0.5)
+dev.off()
+
+#overlay completed 175 stations
+completed2023 <- read.csv("C:/Users/harperd/Documents/Halibut/Survey/HalSurvey2023/Survey Audit 2023/survey_dat_edited.csv")
+
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/completed2023stations.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo') 
+xl=c(-69,-47)
+yl=c(40,48)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+
+addPolys(BO1,density=20,col='black')
+addPolys(BO2,density=20,col='black')
+ points(lat.DecDeg~lon.DecDeg,assignedstations2023,pch=21,bg = "yellow",cex=0.5)
+ points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2023,pch=21, bg = "black",cex=0.5)
+dev.off()
+
+#zoom in on 5.2 and 5.3 area
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/zoomstrata5.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo') 
+xl=c(-55,-47)
+yl=c(42.5,45)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+ points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2023,pch=21, bg = "black")
+addPolys(BO1,density=20,col='black') 
+dev.off()
+
+##new map with strata design for index calculation this year
+load("C:/Users/harperd/Documents/Halibut/RDataVault/Survey/SurveyStrata2023.rdata")
+
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/strata2023update.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo') 
+xl=c(-69,-47)
+yl=c(40,48)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+ points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2023,pch=21,bg = "black",cex=0.5)
+addPolys(BO1,density=20,col='black')
+dev.off()
+  
+#inset zooming into single zero strata
+xl=c(-57,-47)
+yl=c(45,48)
+
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/zoomnewZS.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo') 
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+ points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2023,pch=21, bg = "black")
+addPolys(BO1,density=20,col='black')
+dev.off()
+  
+#inset to show combined 5.2 and 5.3
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/zoomstrata5combined.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo') 
+xl=c(-55,-47)
+yl=c(42.5,45)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+ points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2023,pch=21, bg = "black")
+addPolys(BO1,density=20,col='black')
+dev.off()
+
+
+```
+Making 2024 map (for Nell's NAFO presentation)
+```{r}
+##map of 2023 strata
+
+load(file.path(datadir,"SurveyStrata2022.RData"))
+BO1<-data.frame(PID=1,POS=1:6,X=c(-47,-55,-55,-56.15283,-56.15283,-47),Y=c(45.5,45.5,46.25,46.25,48,48))
+
+BO1<-joinPolys(BO1,surveyPolyLL,operation="INT")
+
+
+BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
+
+BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
+ 
+library(SpatialHub)
+HalSurvey2024 <- read.csv("C:/Users/harperd/Documents/Halibut/Survey/HalSurvey2024/LongLineSurvey/data/StratifiedRandom_2024final_St38_May27.csv")
+
+png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/2024survey_NellNAFOpresentation.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')                            
+xl=c(-68,-47)
+yl=c(40,48)
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+addPolys(BO1,density=20,col='black')
+sp::plot(NAFO,add=T)
+points(lat.DecDeg~lon.DecDeg, HalSurvey2024,pch=21, bg="black",cex=0.5)
+text(x = -56.5, y = 43, labels = "4Vs")
+text(x = -59.55, y = 46.37, labels = "4Vn")
+text(x = -61, y = 42, labels = "4W")
+text(x = -64.5, y = 41.5, labels = "4X")
+text(x = -66.25, y = 41.9, labels = "5Zc")
+text(x = -48.75, y = 42.5, labels = "3N")
+text(x = -53.2, y = 43.7, labels = "3O")
+text(x = -55.5, y = 45.9, labels = "3Ps")
+text(x = -58.7, y = 47.35, labels = "3Pn")
+dev.off()
+```
+
 
 ## Update data from database 
 
