@@ -48,7 +48,7 @@ Current.Year <- 2024
 
 ```{r}
 #RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
-RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
+RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
 
 RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:Current.Year, raw=T)
 
