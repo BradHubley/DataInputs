@@ -22,7 +22,7 @@ bins=seq(0,260,5)
 # labelled by upper bound
 
 
-Current.Year <- 2024
+Assessment.Year <- 2024
 
 
 ```
@@ -50,7 +50,7 @@ Current.Year <- 2024
 #RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
 RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
 
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:Current.Year, raw=T)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:Assessment.Year, raw=T)
 
 RVinputs$NSRV_unsexed<-RVinputs$NSRV_combined-(RVinputs$NSRV_males+RVinputs$NSRV_females) # unsexed
 NSRV_Index<-RVinputs$Index
@@ -116,7 +116,7 @@ BarPlotLF(nsrvl[which(names(nsrvl)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
 
   # stratified random index as designed
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year)
   
   # stratified random index without zero strata
   HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, 
@@ -131,13 +131,13 @@ BarPlotLF(nsrvl[which(names(nsrvl)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(
                                                ZeroStrata=T, restratify=T, combine.strata=52:53)
   
   
-  with(subset(HSRandom_Index,Year==Current.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
+  with(subset(HSRandom_Index,Year==Assessment.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
 
 ```
 
 # Harvest Control Rule
 ```{r}
-value <- HSRandom_Index$mean3_biomass[HSRandom_Index$Year==Current.Year]
+value <- HSRandom_Index$mean3_biomass[HSRandom_Index$Year==Assessment.Year]
 HCR(value)
 #HCR(value, q=0.0019) # when using calculated weight
 
