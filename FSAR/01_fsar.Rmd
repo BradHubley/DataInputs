@@ -16,7 +16,7 @@ Context section???
 ::: {custom-style="fsar-bullet"}
 [Mandatory bullet(s)]
 
-The three-year mean exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9BMSY. The probability of the stock being in the healthy zone is very high.
+The three-year mean exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9B~MSY~. The probability of the stock being in the healthy zone is very high.
 :::
 
 ### Trends {-}
@@ -104,7 +104,7 @@ do the below:
 ### Reference Points {-}
 [Mandatory. A table may be used in lieu of bullets for this section. Refer to the Guidance Document for further instructions.]
 
-In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4BMSY, USR = 0.8 BMSY, and 1.2BMSY, Table XX) ref SAR? . 
+In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table XX) ref SAR? . 
 
 - Use Table 2 from last update (but table format)
 Model-estimated Biomass
@@ -142,7 +142,7 @@ Stratified Random Halibut Survey Biomass (B)
 
 ### Harvest Decision Rule {-}
 [Optional (otherwise, do not include). Maximum length 100 words.]
-The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2BMSY. Below the LRP, F is capped at 0.05 and above the USR it is relative to FMSY (i.e., F = 0.8 FMSY when  b = 0.8 BMSY) up to the third control point (1.2 BMSY), above which it is capped at 1.2 FMSY. Second, the percentage change from last year's TAX is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP. (103wrds...max 100)
+The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  b = 0.8 B~MSY~) up to the third control point (1.2 BMSY), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAX is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP. 
 
 Two panel figure of the rule (figure 3 from last year's doc)
 
@@ -177,7 +177,7 @@ The Industry-DFO Halibut Longline Survey (Fixed Station Halibut Survey) on the S
 
 Data changes: [Optional (otherwise, do not include).]
 
-- Data from 2021 was not previously included due lack of conversion factors between new and old vessel have been included in the time series following completion of comparative fishing and calculation of converstion factos. Imcomplete coverage remains in the following years: 2018, 2021, and 2022.
+- Data from 2021 was not previously included due lack of conversion factors between new and old vessel have been included in the time series following completion of comparative fishing and calculation of conversion factors. Imcomplete coverage remains in the following years: 2018, 2021, and 2022.
 
 ## ASSESSMENT {-}
 [Mandatory panel of images comes first – example shown. Refer to the Guidance Document for options and further instructions.]
@@ -219,13 +219,13 @@ Guidance calls this section Stock Status and Trends
 [Provide values and trends for the stock (as applicable).]
 Biomass - Halibut Longline Survey
 
-The Industry-DFO Halibut Longline Survey provides an index of exploitable biomass of Atlantic Halibut. The survey is conducted by commercial fishermen with onboard observers between May and August, and spans NAFO areas 3NOP4VWX5Zc. The biomass index from the previous Fixed Station Halibut Survey (1998–2022) was used to provide harvest advice until 2021. Following the last framework in 2022, harvest advice in interim years is based now based on the three-year mean exploitable biomass index from the Stratified Random Survey. Inter-annual changes in the exploitable biomass index for the Stratified Random Survey have been minimal (Figure XX). NOT SURE HOW MUCH TO SAY ABOUT STRATA CHANGES OVER TIME - below is what we had in the doc last year
+The Industry-DFO Halibut Longline Survey provides an index of exploitable biomass of Atlantic Halibut. The survey is conducted by commercial fishermen with onboard observers between May and August, and spans NAFO areas 3NOP4VWX5Zc. The biomass index from the previous Fixed Station Halibut Survey (1998–2022) was used to provide harvest advice until 2021. Following the last framework in 2022, harvest advice in interim years is based now based on the three-year mean exploitable biomass index from the Stratified Random Survey. Inter-annual changes in the exploitable biomass index for the Stratified Random Survey have been minimal (Figure XX). 
 
 With the switch to an exclusively stratified random design in 2023, there was also a change in the allocation of stations and stratification of the stock area. A new stratum in 2023 was introduced in an area in the northeast where there has been little to no catch of Atlantic Halibut in the Stratified Random Halibut Survey since 2017 (Figure XX). Allocation of stations in the new stratum was reduced, while for the rest of the strata allocation was proportional to area. 
 
 Although not all stations were completed (Figure XX) this year, there was adequate coverage in all strata to effectively calculate the index of exploitable biomass from the Stratified Random survey. The 2024 index of exploitable biomass and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
-The LRP is 0.4 BMSY = 10.9 kt and the USR is 0.8 BMSY = 21.8 kt (Table 2). The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 (Table 2) to be 55.5 kt (95% confidence interval: 42.8, 68.2). Based on the three-year mean (Figure 4), the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9 BMSY, and substantially higher than the USR (Table 2), putting this stock in the healthy zone.
+The LRP is 0.4 BMSY = 10.9 kt and the USR is 0.8 B~MSY~ = 21.8 kt (Table 2). The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 (Table 2) to be 55.5 kt (95% confidence interval: 42.8, 68.2). Based on the three-year mean (Figure 4), the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9 B~MSY~, and substantially higher than the USR (Table 2), putting this stock in the healthy zone.
 
 Include the survey station/strata map (same as last year but with no station locations/completion)
 
