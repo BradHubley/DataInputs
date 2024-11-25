@@ -106,30 +106,16 @@ do the below:
 
 In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table XX) ref SAR? . 
 
-- Use Table 2 from last update (but table format)
-Model-estimated Biomass
-LRP
-USR
-BMSY
-1.2 BMSY
-Catchability q
-Spawning Stock Biomass (female) (SSB)
-5.3 kt
-10.6 kt
-13.3 kt
-16.0 kt
--
-Stratified Random Halibut Survey Biomass (B)
-10.9 kt
-21.8 kt
-27.3 kt
-32.8 kt
-0.002
+Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 BMSY) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability q is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
 
-- Limit Reference Point (LRP): 
-- Upper Stock Reference (USR):
-- Removal Reference (RR): 
-- Target (TRP): 
+```{r}
+refpoints <- read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/data/refpoints.csv")
+
+colnames(refpoints) <- c("Model-estimated Biomass", "LRP", "USR", "BMSY", "1.2 BMSY", "Catability q")
+
+knitr::kable(refpoints)
+```
+
 
 #### Other Stock Reference Points {-}
 [If applicable (otherwise, do not include). A table may be used in lieu of bullets for this section.] 
@@ -156,28 +142,18 @@ Two panel figure of the rule (figure 3 from last year's doc)
 [Mandatory. Maximum length 300 words.] 
 
 Data presented:
-NAFO statistics are used to describe removals up to and including 2023 (1960-2023) because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador [NL]). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). - described in same words below, maybe reduce here to something like "NAFO Atlantic Halibut landings - Canada and international"
 
-Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landings do not include landings in NL. The majority of landgins occur on the Scotian Shelf (NAFO Divs. 4VWX) - copied directly from update 2023 - same wording used below, maybe reduce to something like "2024 Prelimiary Maritimes Region Atlantic Halibut Landings" 
+- Industry-DFO Halibut Longline Survey (Stratified Random Survey) halibut catch per 1000 hooks (2017-2024)
 
-The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) provides an index of recruitment for Atlantic halibut. The median size of Atlantic halibut caught int he trawl survey is between 40-50 cm. The length composition and index of abundance are reviewed annually, exclusively for context and do not directly contribute to the HCR (HDR?) outputs. - described in detail below maybe reduce to something like "DFO Maritimes REgion Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) index of abundance for Atlantic halibut reviewed as index of recruitment"
+- DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey; NAFO Divs. 4VWX) number halibut per tow (1970-2024)
 
-Inputs to the interim year update:
-Stock status in interim years is assessed based on the three-year mean exploitable biomass index from the Industry-DFO Halibut Longline Stratified Random Survey. - probable enough as will be described in detail below
+- Atlantic Halibut landings - Canada and international from Northwest Atlantic Fisheries Organization (NAFO)
 
-OOOORRRRR
-
-The Industry-DFO Halibut Longline Survey provides an index of exploitable biomass of Atlantic Halibut. The survey is conducted by commercial fishermen with onboard observers between May and August, and spans NAFO areas 3NOP4VWX5Zc. This survey transitioned from a Fixed Station Survey (1998-2022) to a Stratified Random Survey (2017-2024), with six years of overlap. Following the last framework, the three-year mean exploitable biomass index from the Stratified Random Survey alone is used to produce harvest advice.
-
-OOORRR
-
-The Industry-DFO Halibut Longline Survey (Fixed Station Halibut Survey) on the Scotian Shelf and southern Grand Banks (NAFO Divs. 3NOPs4VWX5Zc) was initiated in 1998 to provide an index of exploitable Atlantic Halibut. In 2017, a new Stratified Random Industry-DFO Halibut Longline Survey (hereafter referred to as the Stratified Random Halibut Survey) was initiated extending the longline survey into areas and depths that were not well sampled by the Fixed Station Halibut Survey. One hundred fixed stations continued to be fished to calibrate the 153-station Stratified Random Halibut Survey and provide an index for TAC advice (DFO 2020). A new assessment model was adopted in 2022 to inform Resource Management of the status of the Halibut resource and closed-loop simulation was used to evaluate harvest control rules (Johnson et al. 2024). Harvest level advice will be based on the exploitable biomass index from the Stratified Random Halibut Survey
-
-
+- 2024 Preliminary Maritimes Region Atlantic Halibut Landings from MARFIS Database
 
 Data changes: [Optional (otherwise, do not include).]
 
-- Data from 2021 was not previously included due lack of conversion factors between new and old vessel have been included in the time series following completion of comparative fishing and calculation of conversion factors. Imcomplete coverage remains in the following years: 2018, 2021, and 2022.
+- Data from the 2021 RV Summer Survey that was not previously included due lack of conversion factors between new and old vessel have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Imcomplete coverage remains in the following years: 2018, 2021, and 2022.
 
 ## ASSESSMENT {-}
 [Mandatory panel of images comes first – example shown. Refer to the Guidance Document for options and further instructions.]
