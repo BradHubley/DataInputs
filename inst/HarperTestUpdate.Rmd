@@ -508,7 +508,7 @@ dev.off()
 
 
 ```
-Making 2024 map (for Nell's NAFO presentation)
+Making 2024 map
 ```{r}
 ##map of 2023 strata
 
@@ -523,7 +523,9 @@ BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
 BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
  
 library(SpatialHub)
-HalSurvey2024 <- read.csv("C:/Users/harperd/Documents/Halibut/Survey/HalSurvey2024/LongLineSurvey/data/StratifiedRandom_2024final_St38_May27.csv")
+
+HalSurvey2024 <- read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/data/2024 Halibut Longline Survey Stations Assigned.csv")
+completed2024 <- read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/data/2024 Halibut Longline Survey Stations Completed.csv")
 
 png(file.path("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/2024survey_NellNAFOpresentation.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')                            
 xl=c(-68,-47)
@@ -531,7 +533,8 @@ yl=c(40,48)
 bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
 addPolys(BO1,density=20,col='black')
 sp::plot(NAFO,add=T)
-points(lat.DecDeg~lon.DecDeg, HalSurvey2024,pch=21, bg="black",cex=0.5)
+ points(lat.DecDeg~lon.DecDeg,HalSurvey2024,pch=21,bg = "yellow",cex=0.5)
+ points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2024,pch=21, bg = "black",cex=0.5)
 text(x = -56.5, y = 43, labels = "4Vs")
 text(x = -59.55, y = 46.37, labels = "4Vn")
 text(x = -61, y = 42, labels = "4W")
