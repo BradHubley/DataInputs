@@ -74,12 +74,8 @@ A new assessment framework was adopted in 2022. This framework used a catch-at-l
 Stock overview information: [reference to a Research Document or other publication, and/or footnote to the working paper]
 
 [Mandatory. Maximum length 150 words.]
-In 1987, two management units, 4RST and 3NOPs4VWX5Zc, were defined for Atlantic Halibut in Canadian waters, based primarily on tagging studies (McCracken 1958, Bowering 1986, Stobo et al. 1988) and differences in growth rates between fish caught on the Scotian Shelf and in the Gulf of St. Lawrence (Neilson and Bowering 1989). Evidence from genetics studies (Kess et al. 2021), conventional tagging (McCracken 1958, Bowering 1986, Stobo et al. 1988, Kanwit 2007, den Heyer et al. 2012), and recent satellite tagging (Le Bris et al. 2018, James et al. 2019) continues to support the separation. A recent review of the spatial ecology of Atlantic Halibut in the context of climate change summarizes this work, as well as the evidence for subpopulation structure within the existing management units (Shackell et al. 2022).
 
-do the below:
-- text directly from the Data Inputs Res Doc (better to just summarize by saying something like "this is the stock NAFO divisions and it was mostly defined using conventional tagging (ref Data Inputs)"?) - guidence doc looks like it's looking for some reference to ref points (ex: this management area is considered a single stock with a single set of reference points?)
-
-
+In 1987, Atlantic halibut in Canadian waters were separated into two management units, 4RST and 3NOPs4VWX5Zc, based primarily on conventional tagging (ref Data Inputs...not yet published...figure out how to do footnote). The Scotian Shelf and southern Grand Banks stock (3NOPs4VWX5Zc) is managed as a single stock with a single set of reference points.
 
 ### Reference Points {-}
 
@@ -224,7 +220,7 @@ Table of landings
 ### Ecosystem and Climate Change Considerations {-}
 [Mandatory. Maximum 300 words. May be moved earlier in the Assessment section.]
 
-The environmental conditions affecting the stock are currently unknown. Recent work (Czich paper and description!) has identified new information on the relationships between the biology of the fish (growth rates and age at maturation) and the environmental conditions (habitat and temperature). It is DFO’s intent to attempt to use new information in the next Framework Assessment to better inform DFO Science advice and the development of harvest strategies.
+The environmental conditions affecting the stock are currently unknown. Recent work by Czich et al. (2023) suggest that forecasted changes in thermal conditions in the Northwest Atlantic may influence the distribution and abundance of juvenile Atlantic halibut in the near future. It is DFO’s intent to attempt to use new information, along with other available information at the time, in the next Framework Assessment to better inform DFO Science advice and the development of harvest strategies.
 
 ### Stock Advice {-}
 
@@ -252,6 +248,8 @@ conditions. Further, there is uncertainty in the stock recruitment relationship 
 mortality in Halibut which can affect outcomes, especially reference points. <-re work this for something about ecosystem stuff. Potential for shifts in habitat usage/movement-spawning areas, wider distribution/migration <- look at data inputs doc
 
 Data issues: ASO coverage/data quality/reliability issues. Reduced # of stations in some areas (although we had minimum coverage for index).
+
+In the current survey year, there were challenges with survey participation and data collection leading to incomplete station coverage and uncertainty in data quality. Although the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index, there was low coverage in some strata when compared with previous years (something about how those fewer stations then have greater influence than if it were spread across more stations...don't know how to say thing...thinking about it). Data quality was also pour on for some stations, and these stations were dropped from the analysis. Access to capable and qualified At-Sea Observers, which are vital to data collection for the longline survey, appears uncertain. <- idk if I can say that...or really what/how much to say about all this...
 
 
 ## LIST OF MEETING PARTICIPANTS {-}
