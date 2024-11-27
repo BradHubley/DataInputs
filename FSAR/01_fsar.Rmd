@@ -93,7 +93,7 @@ knitr::kable(refpoints)
 
 ### Harvest Decision Rule {-}
 
-The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  b = 0.8 B~MSY~) up to the third control point (1.2 BMSY), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP. 
+The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  b = 0.8 B~MSY~) up to the third control point (1.2 B~MSY~), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP. 
 
 Two panel figure of the rule (figure 3 from last year's doc)
 
