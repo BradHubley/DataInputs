@@ -84,7 +84,7 @@ In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based
 Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability q is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
-refpoints <- read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/data/refpoints.csv")
+refpoints <- read.csv("fsardata/refpoints.csv")
 
 colnames(refpoints) <- c("Model-estimated Biomass", "LRP", "USR", "BMSY", "1.2 BMSY", "Catability q")
 
@@ -171,8 +171,8 @@ BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
 
 BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
 
-HalSurvey2024 <- read.csv("./data/2024 Halibut Longline Survey Stations Assigned.csv")
-completed2024 <- read.csv("./data/2024 Halibut Longline Survey Stations Completed.csv")
+HalSurvey2024 <- read.csv("fsardata/2024 Halibut Longline Survey Stations Assigned.csv")
+completed2024 <- read.csv("fsardata/2024 Halibut Longline Survey Stations Completed.csv")
 
 xl=c(-68,-47)
 yl=c(40,48)
