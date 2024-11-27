@@ -112,7 +112,7 @@ Two panel figure of the rule (figure 3 from last year's doc)
 
 Data changes: 
 
-- Data from the 2021 RV Summer Survey that was not previously included due lack of conversion factors between new and old vessel have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Imcomplete coverage remains in the following years: 2018, 2021, and 2022.
+- Data from the 2021 RV Summer Survey that was not previously included due lack of conversion factors between new and old vessel have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Incomplete coverage remains in the following years: 2018, 2021, and 2022.
 
 ## ASSESSMENT {-}
 
