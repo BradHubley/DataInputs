@@ -200,7 +200,7 @@ The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) ha
 
 The 2018 and 2022 DFO Summer Ecosystem RV Survey did not cover all strata due to mechanical issues with the vessel; therefore, the abundance index from those two years cannot be compared with other years.
 
-A conversion factor for Atlantic halibut was estimated (1:1) and data from the 2021 survey that was not included in previous years has now been incorporated into the time series, however converage remains incomplete.
+A conversion factor for Atlantic halibut was estimated (1:1) and data from the 2021 survey that was not included in previous years has now been incorporated into the time series, however coverage remains incomplete.
 
 
 The abundance index for 2024 is the second highest value in the time series. The length composition and the index of abundance are reviewed annually, exclusively for context and do not directly contribute to the HCR outputs.
@@ -209,8 +209,8 @@ Maybe include length composition figure?
 
 ### History of Landings and Description of the Fishery {-}
 
-Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table XX, Figure XX). Every year since 2017, 100 t of the TAC have been set aside to cover catches by USA and France within the stock area (comment on recent change for france??).
-NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landgins do not include landings in NL. The majority of landgins occur on the Scotian Shelf (NAFO Divs. 4VWX)
+Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table XX, Figure XX). Every year since 2017, 100 t of the TAC have been set aside to cover catches by USA and France within the stock area (comment on recent change for France??).
+NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX)
 
 Table of landings
 
