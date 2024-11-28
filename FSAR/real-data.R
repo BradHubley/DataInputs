@@ -18,13 +18,13 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
   categories <- c("Catch", "Biomass", "Fishing", "Recruitment")
 
   # model output
-  load("data/ModelOuputFSAR.rdata")
+  load("fsardata/ModelOuputFSAR.rdata")
 
   ### Catch
 
   ##update from Landings SCript each year
 
-  Catch=read.csv("data/figuredata_markdown_2024.csv")
+  Catch=read.csv("fsardata/figuredata_markdown_2024.csv")
   ts1=data.frame(
     panel.category = rep(categories[1],nrow(Catch)),
     year = Catch$Year,
