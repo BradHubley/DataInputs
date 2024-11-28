@@ -1,13 +1,3 @@
----
-output: 
-  pdf_document: default
-  word_document: default
-  html_document: default
----
-
-## CONTEXT {-}
-
-Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science advice on the status of the Scotian Shelf and southern Grand Banks (3NOPs4VWX5Zc) Atlantic halibut (*Hippoglossus hippoglossus*) stock based on the articulated harvest control rule adopted at the Scotia-Fundy Groundfish Advisory Committee (SFGAC) meeting in March 2022 ([link to IFMP/rebuilding/management plan(s)]??put IFMP?). A new assessment model was developed for this stock in 2022 (Li et al. XXXX, Johnson et al. 2024, DFO 2024a SAR/FRAMEWORK OR DATA INPUTS too??) and closed-loop simulation was used to evaluate harvest control rules (Johnson et al. 2024).Full assessments for this stock are carried out every FIVE?? years with stock status updates in the intervening years. The next framework assessment is scheduled for 2026. This Science Response Report results from the regional peer review of December 10^th^, 2024 on the Stock Status Update of Atlantic halibut (*Hippoglossus hippoglossus*) on the Scotian Shelf and southern Grand Banks in NAFO Divisions 3NOPs4VWX5Zc for 2024. Additional publications from this meeting will be posted on the Fisheries and Oceans Canada (DFO) Science Advisory Schedule as they become available. <- will there be anymore?!
 
 
 ## SCIENCE ADVICE {-}
@@ -121,23 +111,22 @@ Data changes:
 ```{r base1, message=FALSE, echo = FALSE, warning=FALSE, results="hide", fig.cap="(ref:caption)"}
 
 
-Assessment.Year=2024
-ds_all <- Mar.datawrangling::load_datasources()
+#ds_all <- Mar.datawrangling::load_datasources()
 
-devtools::load_all(".")
+#devtools::load_all(".")
 
-source(file.path(getwd(), "directories.r"))
-source(file.path(wd, "passwords.r")) 
-setwd(file.path(wd,'FSAR'))
+#source(file.path(getwd(), "directories.r"))
+#source(file.path(wd, "passwords.r")) 
+#setwd(file.path(wd,'FSAR'))
 
 source("real-data.R")
 source("plot-timeseries.R")
 
-
+#
 in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
 
 ## English template
-fsar_plot_base(in.df, "English")
+fsar_plot_base(in.df,Assessment.Year=Assessment.Year,language= "English")
 ```
 
 ### Historical and Recent Stock Trajectory and Trends {-}

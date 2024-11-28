@@ -69,7 +69,7 @@ fsar_plot_ggplot <- function(df, language = c("English","French")) {
 #' @importFrom grDevices grey
 #' @importFrom graphics axis box layout legend lines mtext par
 #' @importFrom stats arima.sim rnorm
-fsar_plot_base <- function(in.df, language = c("English","French")) {
+fsar_plot_base <- function(in.df, Assessment.Year=2024, language = c("English","French")) {
 
   language <- match.arg(language)
   colrs<-c('#377eb8','#d53e4f','#7fbc41')
@@ -114,9 +114,11 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
          pch=c(15,15,NA),
          col=c(colrs[1],colrs[2],colrs[3]),
          lwd=c(NA,NA,3),
-         box.lty=0)
+         box.lty=0,
+         bg=NA,
+         cex=0.8)
 
-  mtext(side = 1, x.lab, line = 2.5, cex = 0.75)
+  mtext(side = 1, x.lab, line = 2, cex = 0.75)
   mtext(side = 2, y.lab, line = 3.5, cex = 0.75)
   box()
 
@@ -165,7 +167,9 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
          lwd = c(1, NA, NA, 3, 2, 2),
          pch = c(NA,15,16,NA,NA,NA),
          col = c('grey40','grey',"black", "blue", "forestgreen", "red"),
-         box.lty=0
+         box.lty=0,
+         bg=NA,
+         cex=0.8
   )
 
   axis(side = 1, padj = -0.5)
@@ -220,7 +224,8 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
          pch = c(NA, 15, NA, 15, NA, NA, NA),
          col = c('grey40','grey','red',rgb(1,0,0,0.2), "blue", "forestgreen", "orange"),
          box.lty = 0,
-         bg=NA
+         bg=NA,
+         cex=0.8
   )
 
   axis(side = 1, padj = -0.5)
@@ -266,7 +271,8 @@ fsar_plot_base <- function(in.df, language = c("English","French")) {
          pch = c(NA,15,16),
          col = c('grey40','grey',"black"),
          box.lty = 0,
-         bg=NA
+         bg=NA,
+         cex=0.8
   )
 
 
