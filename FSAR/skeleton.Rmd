@@ -1,18 +1,17 @@
 ---
-report_title: "[Publication Title]"
+report_title: "[STOCK STATUS UPDATE OF ATLANTIC HALIBUT (HIPPOGLOSSUS HIPPOGLOSSUS) ON THE SCOTIAN SHELF AND SOUTHERN GRAND BANKS IN NAFO DIVISIONS 3NOPS4VWX5ZC FOR 2024]"
 report_year: "2024"
-release_month: "January"
+release_month: "???"
 report_number: "XXX"
-meeting_date: "January 25, 2024"
-region: "Region Name"
+meeting_date: "December 10, 2024"
+region: "Maritimes Region"
 phone: "(555) 555-5555"
-email: "email@csa-email.com"
-csa_address: "CSA Address goes here"
-report_title_french: "Fish stock name"
+email: "MaritimesRAP.XMAR@dfo-mpo.gc.ca"
+csa_address: "Center for Science Advice (CSA) Maritimes Region Fisheries and Oceans Canada Bedford Institute of Oceanography 1 Challenger Drive, PO Box 1006 Dartmouth, Nova Scotia B2Y 4A2"
+report_title_french: "Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) du plateau néo-écossais et du sud du Grand Banc dans les divisions 3NOPs4VWX5Zc de l'OPANO pour 2024"
 inuktitut_citation: "Inuktitut citation here"
 context: |
-  [Mandatory. Less than 150 words]
-  Here is the context text. 
+  Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science advice on the status of the Scotian Shelf and southern Grand Banks (3NOPs4VWX5Zc) Atlantic halibut (*Hippoglossus hippoglossus*) stock based on the articulated harvest control rule adopted at the Scotia-Fundy Groundfish Advisory Committee (SFGAC) meeting in March 2022 ([link to IFMP/rebuilding/management plan(s)]??put IFMP?). A new assessment model was developed for this stock in 2022 (Li et al. XXXX, Johnson et al. 2024, DFO 2024 SAR/FRAMEWORK OR DATA INPUTS too??) and closed-loop simulation was used to evaluate harvest control rules (Johnson et al. 2024).Full assessments for this stock are carried out every FIVE?? years with stock status updates in the intervening years. The next framework assessment is scheduled for 2026. This Science Response Report results from the regional peer review of December 10^th^, 2024 on the Stock Status Update of Atlantic halibut (*Hippoglossus hippoglossus*) on the Scotian Shelf and southern Grand Banks in NAFO Divisions 3NOPs4VWX5Zc for 2024. Additional publications from this meeting will be posted on the Fisheries and Oceans Canada (DFO) Science Advisory Schedule as they become available. <- will there be anymore?!
 output:
  csasdown::fsar_word
 link-citations: false
