@@ -42,7 +42,7 @@
 
 #### Year Assessment Approach was Approved: {-}
 
-2022 (Johnson et al., 2024; DFO 2024)
+2022 (Johnson et al., 2024; DFO 2024a)
 
 #### Assessment Type: {-}
 
@@ -69,7 +69,7 @@ In 1987, Atlantic halibut in Canadian waters were separated into two management 
 
 ### Reference Points {-}
 
-In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table XX) (DFO 2024) . 
+In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table XX) (DFO 2024a) . 
 
 Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability q is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
 
