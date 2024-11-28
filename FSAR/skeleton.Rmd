@@ -21,7 +21,7 @@ csl: csl/csas.csl
 # End of options to set
 title: ""
 knit: (function(input, ...) {
-       csasdown::render_sar()
+       csasdown::render_fsar()
       })
 ---
 
