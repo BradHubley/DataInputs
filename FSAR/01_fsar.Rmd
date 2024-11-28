@@ -84,7 +84,7 @@ In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based
 Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability q is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
-refpoints <- read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/data/refpoints.csv")
+refpoints <- read.csv("fsardata/refpoints.csv")
 
 colnames(refpoints) <- c("Model-estimated Biomass", "LRP", "USR", "BMSY", "1.2 BMSY", "Catability q")
 
@@ -93,7 +93,7 @@ knitr::kable(refpoints)
 
 ### Harvest Decision Rule {-}
 
-The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  b = 0.8 B~MSY~) up to the third control point (1.2 BMSY), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP. 
+The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  b = 0.8 B~MSY~) up to the third control point (1.2 B~MSY~), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP. 
 
 Two panel figure of the rule (figure 3 from last year's doc)
 
@@ -112,7 +112,7 @@ Two panel figure of the rule (figure 3 from last year's doc)
 
 Data changes: 
 
-- Data from the 2021 RV Summer Survey that was not previously included due lack of conversion factors between new and old vessel have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Imcomplete coverage remains in the following years: 2018, 2021, and 2022.
+- Data from the 2021 RV Summer Survey that was not previously included due lack of conversion factors between new and old vessel have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Incomplete coverage remains in the following years: 2018, 2021, and 2022.
 
 ## ASSESSMENT {-}
 
@@ -171,8 +171,8 @@ BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
 
 BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
 
-HalSurvey2024 <- read.csv("./data/2024 Halibut Longline Survey Stations Assigned.csv")
-completed2024 <- read.csv("./data/2024 Halibut Longline Survey Stations Completed.csv")
+HalSurvey2024 <- read.csv("fsardata/2024 Halibut Longline Survey Stations Assigned.csv")
+completed2024 <- read.csv("fsardata/2024 Halibut Longline Survey Stations Completed.csv")
 
 xl=c(-68,-47)
 yl=c(40,48)
@@ -200,7 +200,7 @@ The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) ha
 
 The 2018 and 2022 DFO Summer Ecosystem RV Survey did not cover all strata due to mechanical issues with the vessel; therefore, the abundance index from those two years cannot be compared with other years.
 
-A conversion factor for Atlantic halibut was estimated (1:1) and data from the 2021 survey that was not included in previous years has now been incorporated into the time series, however converage remains incomplete.
+A conversion factor for Atlantic halibut was estimated (1:1) and data from the 2021 survey that was not included in previous years has now been incorporated into the time series, however coverage remains incomplete.
 
 
 The abundance index for 2024 is the second highest value in the time series. The length composition and the index of abundance are reviewed annually, exclusively for context and do not directly contribute to the HCR outputs.
@@ -209,8 +209,8 @@ Maybe include length composition figure?
 
 ### History of Landings and Description of the Fishery {-}
 
-Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table XX, Figure XX). Every year since 2017, 100 t of the TAC have been set aside to cover catches by USA and France within the stock area (comment on recent change for france??).
-NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landgins do not include landings in NL. The majority of landgins occur on the Scotian Shelf (NAFO Divs. 4VWX)
+Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table XX, Figure XX). Every year since 2017, 100 t of the TAC have been set aside to cover catches by USA and France within the stock area (comment on recent change for France??).
+NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX)
 
 Table of landings
 
