@@ -31,7 +31,7 @@
 
 ::: {custom-style="fsar-bullet"}
 
-- The three-year mean exploitable biomass of 51.9 kt corresponds to removals of 5,149 t under the Harvest Decision Rule for this stock. - this is word for word from the guidance doc
+- The three-year mean exploitable biomass of 51.9 kt corresponds to removals of 5,149 t under the Harvest Decision Rule for this stock. 
 
 - Removals of 5,149 t is within the maximum annual change of 15% from the 2024-2025 TAC. It is 222 t (4.5%) more than last year's TAC.
 
@@ -42,7 +42,7 @@
 
 #### Year Assessment Approach was Approved: {-}
 
-2022 (Johnson et al., 2024; DFO 2024a)
+2022 [@Johnson2024; @DFO2024a]
 
 #### Assessment Type: {-}
 
@@ -61,15 +61,11 @@ A new assessment framework was adopted in 2022. This framework used a catch-at-l
 
 
 ### Stock Structure Assumption {-}
-Stock overview information: [reference to a Research Document or other publication, and/or footnote to the working paper]
-
-[Mandatory. Maximum length 150 words.]
-
 In 1987, Atlantic halibut in Canadian waters were separated into two management units, 4RST and 3NOPs4VWX5Zc, based primarily on conventional tagging (ref Data Inputs...not yet published...figure out how to do footnote). The Scotian Shelf and southern Grand Banks stock (3NOPs4VWX5Zc) is managed as a single stock with a single set of reference points.
 
 ### Reference Points {-}
 
-In March 2022, the SFGAC adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table XX) (DFO 2024a) . 
+In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table XX) (DFO 2024a) . 
 
 Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability q is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
 
@@ -78,7 +74,8 @@ refpoints <- read.csv("fsardata/refpoints.csv")
 
 colnames(refpoints) <- c("Model-estimated Biomass", "LRP", "USR", "BMSY", "1.2 BMSY", "Catability q")
 
-knitr::kable(refpoints)
+csasdown::csas_table(refpoints)
+#knitr::kable(refpoints)
 ```
 
 ### Harvest Decision Rule {-}
@@ -92,21 +89,20 @@ The HCR has two steps. First, a fishing mortality rate (F) is applied to the exp
 
 - Industry-DFO Halibut Longline Survey (Stratified Random Survey) halibut catch (2017-2024)
 
-- DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey; NAFO Divs. 4VWX) halibut abundance?? (1970-2024)
+- DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey; NAFO Divs. 4VWX) halibut abundance (1970-2024)
 
 - Atlantic Halibut landings - Canada and international from Northwest Atlantic Fisheries Organization (NAFO)
 
 - 2024 Preliminary Maritimes Region Atlantic Halibut Landings from Maritimes Fisheries Information System Database
 
-- mortality??
 
-Data changes: 
+#### Data changes: 
 
 - Data from the 2021 RV Summer Survey that was not previously included due lack of conversion factors between new and old vessel have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Incomplete coverage remains in the following years: 2018, 2021, and 2022.
 
 ## ASSESSMENT {-}
 
-(ref:caption) (A) Catch and Total Allowable Catch, (B) Spawning Stock Biomass (SSB) in relation to the Limit Reference Point (LRP; X) and (proposed) Upper Stock Reference (USR; X), (C) Fishing Mortality (F; X), Removal Reference (RR) and Natural Mortality (M), (D) Recruitment (numbers).
+(ref:caption) (A) Catch and Total Allowable Catch, (B) Halibut Survey Biomass (B) in relation to the Limit Reference Point (LRP; 10.9 kt) and Upper Stock Reference (USR; 21.8 kt), (C) Fishing and Natural Mortality in relation to the F~MSY~ Removal References (D) Recruitment index from the RV survey in numbers.
 
 ```{r base1, message=FALSE, echo = FALSE, warning=FALSE, results="hide", fig.cap="(ref:caption)"}
 
@@ -192,64 +188,51 @@ The 2018 and 2022 DFO Summer Ecosystem RV Survey did not cover all strata due to
 A conversion factor for Atlantic halibut was estimated (1:1) and data from the 2021 survey that was not included in previous years has now been incorporated into the time series, however coverage remains incomplete.
 
 
-The abundance index for 2024 is the second highest value in the time series. The length composition and the index of abundance are reviewed annually, exclusively for context and do not directly contribute to the HCR outputs.
+The abundance index for 2024 is the second highest value in the time series. The index of abundance is reviewed annually, exclusively for context and does not directly contribute to the HCR outputs.
 
-Maybe include length composition figure?
 
 ### History of Landings and Description of the Fishery {-}
 
-Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table XX, Figure XX). Every year since 2017, 100 t of the TAC have been set aside to cover catches by USA and France within the stock area (comment on recent change for France??).
+Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table XX, Figure XX). 
+
 NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX)
 
 Table of landings
 
-### Projections [optional titles: Simulations, Future Scenarios] {-}
-[Mandatory. Title can vary. Tables or figures can be used as necessary to support decision-making.]
 
 ### Ecosystem and Climate Change Considerations {-}
-[Mandatory. Maximum 300 words. May be moved earlier in the Assessment section.]
 
 The environmental conditions affecting the stock are currently unknown. Recent work by Czich et al. (2023) suggest that forecasted changes in thermal conditions in the Northwest Atlantic may influence the distribution and abundance of juvenile Atlantic halibut in the near future. It is DFO’s intent to attempt to use new information, along with other available information at the time, in the next Framework Assessment to better inform DFO Science advice and the development of harvest strategies.
 
 ### Stock Advice {-}
 
-Stock status in interim years is assessed based on the three-year mean exploitable biomass index from the Stratified Random Halibut Survey. Closed-loop simulation testing conducted at the last framework projected a gradual return to B~MSY~. So far, stock status has remained well above BMSY out-performing projections. The next assessment framework review is currently scheduled for 2026. However, if the three-year mean index of exploitable biomass from the Stratified Random Halibut Survey falls above or below the 90% probability envelope from the closed-loop simulation for that index, a new framework will be triggered.
+Stock status in interim years is assessed based on the three-year mean exploitable biomass index from the Stratified Random Halibut Survey. Closed-loop simulation testing conducted at the last framework projected a gradual return to B~MSY~. So far, stock status has remained well above B~MSY~ out-performing projections. The next assessment framework review is currently scheduled for 2026. 
 
 ### Harvest Decision Rule Outputs {-}
 
 As the 2024 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2 B~MSY~ (32.8 kt, Table 1), the highest fishing mortality, 1.2 F~MSY~ (0.104), would be applied using the articulated HCR. This results in a TAC advice for 2025-2026 of 5,149 t. As this is within the maximum annual change of 15% from the 2024-2025 TAC (4,927 t), the 2025-2026 TAC advice is 5,149 t. This application of the HCR assumes all removals from Canadian and international fisheries are included. - directly from previous doc
 
 ### Evaluation of Exceptional Circumstances/Assessment Triggers {-}
-[If applicable (otherwise, do not include).] <- only if it is triggering something? Or should the details of the triggers go here? like we checked that 90% envelope?
-- example from the guidance doc: “Analysis of the indicator(s) for the recent year shows the indicator(s)’s trigger values have not been reached. A stock re-assessment is not warranted and the previous advice for the fishery remains appropriate.” we could say something like that here rather than above under stock advice?
 
+An earlier review could be triggered due to significant changes in data sources, such as, missing indices, new data (e.g., age data), or changes in growth, maturation and fecundity, or natural mortality. An earlier review could also be triggered if stock status deviates significantly from expectations, e.g., the 3-year mean index from the survey falls above or below the 90% probability envelope for that index from the closed-loop simulation.
+ 
 
 ## SOURCES OF UNCERTAINTY {-}
-[Mandatory. Maximum length 500 words.]
 
 The Industry-DFO Halibut Longline Survey indices are the mean catch per tow and do not 
-account for variation associated with hook competition, vessels, and temperature effects.
+account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index, there was low coverage in some strata when compared with previous years 
 
 The interpretation of trends assumes no changes in vital rates, such as, growth or fecundity, 
 that impact the dynamics of the population. Therefore, it is not known if, or how, vital rates and 
 population growth rate will change with changes in stock size and/or variable environmental 
 conditions. Further, there is uncertainty in the stock recruitment relationship and natural 
-mortality in Halibut which can affect outcomes, especially reference points. <-re work this for something about ecosystem stuff. Potential for shifts in habitat usage/movement-spawning areas, wider distribution/migration <- look at data inputs doc
+mortality in Halibut which can affect outcomes, especially reference points. There is also potential for shifts in habitat usage, spawning areas, migration and distribution due to changes in thermal conditions in the Northwest Atlantic.
 
-Data issues: ASO coverage/data quality/reliability issues. Reduced # of stations in some areas (although we had minimum coverage for index).
 
-In the current survey year, there were challenges with survey participation and data collection leading to incomplete station coverage and uncertainty in data quality. Although the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index, there was low coverage in some strata when compared with previous years (something about how those fewer stations then have greater influence than if it were spread across more stations...don't know how to say thing...thinking about it). Data quality was also pour on for some stations, and these stations were dropped from the analysis. Access to capable and qualified At-Sea Observers, which are vital to data collection for the longline survey, appears uncertain. <- idk if I can say that...or really what/how much to say about all this...
 
 
 ## LIST OF MEETING PARTICIPANTS {-}
 [Mandatory. The list is to include the name of each participant and their affiliation.]
 
 ## SOURCES OF INFORMATION {-}
-[Mandatory.]
 
-
-[References should only be included to understand the advice, and should not be included to give credit to the work as they are done in the Research Document. References to the unpublished working paper should be integrated as footnotes through this document.]
-
-[References must be formatted according to the Guide for the Production of Fisheries and Oceans Canada Reports.]
-
-[References listed in the References Cited section should be publicly available when the report is posted on the website. The only exception is for books or articles that have been accepted for publication (page proof stage or where there is an acceptance letter). These can be listed followed by the notation “in press”. All others should be included in the text as unpublished data or working papers.]
