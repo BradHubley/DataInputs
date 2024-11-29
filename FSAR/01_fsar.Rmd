@@ -1,3 +1,8 @@
+---
+output:
+  html_document: default
+  word_document: default
+---
 
 
 ## SCIENCE ADVICE {-}
@@ -49,8 +54,8 @@
 Interim Year Update
 
 #### Most Recent Assessment Date {-}
-1.	Last Full Assessment: March 1-4, 2022 (Johnson et al., 2024; DFO 2024a)
-2.	Last Interim Year Update: December 6, 2023 (DFO 2024b)
+1.	Last Full Assessment: March 1-4, 2022 (@Johnson2024; @DFO2024a)
+2.	Last Interim Year Update: December 6, 2023 (@DFO2024b)
 
 #### Assessment Approach {-}
 1.	Broad category: index-based (trends in empirical indices only), single stock assessment model, MSE-lite
@@ -61,13 +66,13 @@ A new assessment framework was adopted in 2022. This framework used a catch-at-l
 
 
 ### Stock Structure Assumption {-}
-In 1987, Atlantic halibut in Canadian waters were separated into two management units, 4RST and 3NOPs4VWX5Zc, based primarily on conventional tagging (ref Data Inputs...not yet published...figure out how to do footnote). The Scotian Shelf and southern Grand Banks stock (3NOPs4VWX5Zc) is managed as a single stock with a single set of reference points.
+In 1987, Atlantic halibut in Canadian waters were separated into two management units, 4RST and 3NOPs4VWX5Zc, based primarily on conventional tagging^[Li, L., Hubley, B., Harper, D.L., Wilson, G., and C.E. den Heyer. In prep. Data Inputs for the Assessment Framework Review of Atlantic Halibut on the Scotian Shelf and Southern Grand Banks in Northwest Atlantic Fisheries Organization Divisions 3NOPs4VWX5Zc. DFO Can. Sci. Advis. Sec. Res. Doc. Presented and reviewed at the November 23–26, 2021 (Part 1) Framework Review for Atlantic Halibut.]. The Scotian Shelf and southern Grand Banks stock (3NOPs4VWX5Zc) is managed as a single stock with a single set of reference points.
 
 ### Reference Points {-}
 
-In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Fig HCR XX), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table XX) (DFO 2024a) . 
+In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Figure 1), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table 1) (@DFO2024a) . 
 
-Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability q is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
+Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability *q* is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
 refpoints <- read.csv("fsardata/refpoints.csv")
@@ -80,10 +85,10 @@ csasdown::csas_table(refpoints)
 
 ### Harvest Decision Rule {-}
 
-The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  b = 0.8 B~MSY~) up to the third control point (1.2 B~MSY~), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP. 
+The HCR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimated from the three-year mean of the Stratified Random Halibut Survey to calculate TAC. The articulated HCR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  b = 0.8 B~MSY~) up to the third control point (1.2 B~MSY~), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP (Figure 1). 
 
-![The articulated harvest control rules with reference points and control points used for determining target harvest rates for Atlantic Halibut based on biomass estimates from the Stratified Random Industry-DFO Halibut Longline Survey. LRP = limit reference point, USR = upper stock reference, F = fishing mortality rate, LCP = limit control point, B~MSY~ = Biomass at maximum sustainable yield.](fsardata/HCR.png)
 
+![Figure 1. The articulated harvest control rules with reference points and control points used for determining target harvest rates for Atlantic Halibut based on biomass estimates from the Stratified Random Industry-DFO Halibut Longline Survey. LRP = limit reference point, USR = upper stock reference, F = fishing mortality rate, LCP = limit control point, B~MSY~ = Biomass at maximum sustainable yield.](fsardata/HCR.png)
 
 ### Data {-}
 
@@ -96,24 +101,25 @@ The HCR has two steps. First, a fishing mortality rate (F) is applied to the exp
 - 2024 Preliminary Maritimes Region Atlantic Halibut Landings from Maritimes Fisheries Information System Database
 
 
-#### Data changes: 
+#### Data changes: {-}
 
 - Data from the 2021 RV Summer Survey that was not previously included due lack of conversion factors between new and old vessel have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Incomplete coverage remains in the following years: 2018, 2021, and 2022.
 
 ## ASSESSMENT {-}
 
-(ref:caption) (A) Catch and Total Allowable Catch, (B) Halibut Survey Biomass (B) in relation to the Limit Reference Point (LRP; 10.9 kt) and Upper Stock Reference (USR; 21.8 kt), (C) Fishing and Natural Mortality in relation to the F~MSY~ Removal References (D) Recruitment index from the RV survey in numbers.
+(ref:caption)
 
 ```{r base1, message=FALSE, echo = FALSE, warning=FALSE, results="hide", fig.cap="(ref:caption)"}
 
 
-#ds_all <- Mar.datawrangling::load_datasources()
+ds_all <- Mar.datawrangling::load_datasources()
 
-#devtools::load_all(".")
+devtools::load_all(".")
 
-#source(file.path(getwd(), "directories.r"))
-#source(file.path(wd, "passwords.r")) 
-#setwd(file.path(wd,'FSAR'))
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r")) 
+setwd(file.path(wd,'FSAR'))
+Assessment.Year <- 2024
 
 source("real-data.R")
 source("plot-timeseries.R")
@@ -124,23 +130,23 @@ in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
 ## English template
 fsar_plot_base(in.df,Assessment.Year=Assessment.Year,language= "English")
 ```
+Figure 2. (A) Catch and Total Allowable Catch, (B) Halibut Survey Biomass (B) in relation to the Limit Reference Point (LRP; 10.9 kt) and Upper Stock Reference (USR; 21.8 kt), (C) Fishing and Natural Mortality in relation to the F~MSY~ Removal References (D) Recruitment index from the RV survey in numbers.
 
 ### Historical and Recent Stock Trajectory and Trends {-}
 
 #### Index of Exploitable Biomass - Industry-DFO Halibut Longline Survey {-}
 
 
-The Industry-DFO Halibut Longline Survey provides an index of exploitable biomass of Atlantic Halibut. The survey is conducted by commercial fishermen with onboard observers between May and August, and spans NAFO areas 3NOP4VWX5Zc. The biomass index from the previous Fixed Station Halibut Survey (1998–2022) was used to provide harvest advice until 2021. Following the last framework in 2022, harvest advice in interim years is based now based on the three-year mean exploitable biomass index from the Stratified Random Survey. Inter-annual changes in the exploitable biomass index for the Stratified Random Survey have been minimal (Figure XX). 
+The Industry-DFO Halibut Longline Survey provides an index of exploitable biomass of Atlantic Halibut. The survey is conducted by commercial fishermen with onboard observers between May and August, and spans NAFO areas 3NOP4VWX5Zc. The biomass index from the previous Fixed Station Halibut Survey (1998–2022) was used to provide harvest advice until 2021. Following the last framework in 2022, harvest advice in interim years is based now based on the three-year mean exploitable biomass index from the Stratified Random Survey. Inter-annual changes in the exploitable biomass index for the Stratified Random Survey have been minimal (Figure 2B). 
 
 
-With the switch to an exclusively stratified random design in 2023, there was also a change in the allocation of stations and stratification of the stock area. A new stratum in 2023 was introduced in an area in the northeast where there has been little to no catch of Atlantic Halibut in the Stratified Random Halibut Survey since 2017 (Figure XX). Allocation of stations in the new stratum was reduced, while for the rest of the strata allocation was proportional to area. 
+With the switch to an exclusively stratified random design in 2023, there was also a change in the allocation of stations and stratification of the stock area. A new stratum in 2023 was introduced in an area in the northeast where there has been little to no catch of Atlantic Halibut in the Stratified Random Halibut Survey since 2017 (Figure 3). Allocation of stations in the new stratum was reduced, while for the rest of the strata allocation was proportional to area. 
 
 
-Although not all stations were completed (Figure XX) this year, there was adequate coverage in all strata to effectively calculate the index of exploitable biomass from the Stratified Random survey. The 2024 index of exploitable biomass and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
+Although not all stations were completed (Figure 3) this year, there was adequate coverage in all strata to effectively calculate the index of exploitable biomass from the Stratified Random survey. The 2024 index of exploitable biomass and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
 
-The LRP is 0.4 BMSY = 10.9 kt and the USR is 0.8 B~MSY~ = 21.8 kt (Table 2). The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 (Table 2) to be 55.5 kt (95% confidence interval: 42.8, 68.2). Based on the three-year mean (Figure 4), the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9 B~MSY~, and substantially higher than the USR (Table 2), putting this stock in the healthy zone.
-
+The LRP is 0.4 BMSY = 10.9 kt and the USR is 0.8 B~MSY~ = 21.8 kt (Table 1). The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 (Table 1) to be 55.5 kt (95% confidence interval: 42.8, 68.2). Based on the three-year mean (Figure 2B), the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9 B~MSY~, and substantially higher than the USR (Table 1), putting this stock in the healthy zone.
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE, results="hide", fig.cap="(ref:caption)"}
  
@@ -176,12 +182,12 @@ text(x = -53.2, y = 43.7, labels = "3O")
 text(x = -55.5, y = 45.9, labels = "3Ps")
 text(x = -58.7, y = 47.35, labels = "3Pn")
 ```
-Figure XX. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into three depth strata, shown in different shades of each colour. The hatched area is a new strata with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2024 survey, black dots indicate completed stations and yellow dots indicate incomplete stations. Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
+Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into three depth strata, shown in different shades of each colour. The hatched area is a new strata with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2024 survey, black dots indicate completed stations and yellow dots indicate incomplete stations. Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
 
 
 #### Index of Recruitment - DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) {-}
 
-The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) has been conducted typically between July–August since 1970. The RV survey provides an index of recruitment for Atlantic Halibut. The median size of Atlantic Halibut caught in the trawl survey is between 40–50 cm. The catch of Atlantic Halibut in this survey increased between 2000 and 2011 (Figure 4) but then declined to the lowest value since 2011 in 2020. Since 2020, catch has been increasing.
+The DFO Maritimes Region Summer Ecosystem Survey (RV Survey; NAFO Divs. 4VWX) has been conducted typically between July–August since 1970. The RV survey provides an index of recruitment for Atlantic Halibut. The median size of Atlantic Halibut caught in the trawl survey is between 40–50 cm. The catch of Atlantic Halibut in this survey increased between 2000 and 2011 (Figure 2D) but then declined to the lowest value since 2011 in 2020. Since 2020, catch has been increasing.
 
 The 2018 and 2022 DFO Summer Ecosystem RV Survey did not cover all strata due to mechanical issues with the vessel; therefore, the abundance index from those two years cannot be compared with other years.
 
@@ -193,16 +199,43 @@ The abundance index for 2024 is the second highest value in the time series. The
 
 ### History of Landings and Description of the Fishery {-}
 
-Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table XX, Figure XX). 
+Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within this management unit, Atlantic halibut are fished mainly by longline. A TAC of 3,200 t was first established in 1998 and, in response to an eight-year decline in landgins, was reduced to a low of 850 t in 1995. Since 1995, management plans and license conditions have required the released of Atlantic halibut less than 81 cm. Beginning in 1999, the TAC has increased and peaked at 5,507t in 2020 (Table 2, Figure 2A). 
 
-NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX)
+NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX).
 
-Table of landings
+Table 2. Total reported Canadian and foreign landings (tonnes) of Atlantic Halibut from Northwest Atlantic Fisheries Organization (NAFO) Divisions 3NOPs4VWX5Zc1 and total allowable catch (TAC) for these divisions. Ten-year annual average landings are presented for 1960 to 2009. The [NAFO 21A table](https://www.nafo.int/Data/STATLANT-21A) of landings by country are reported by calendar year; however, the TAC for the stock is set for the period of April–March. Data were extracted from the NAFO 21A database on October 31, 2024. An 'NA' indicates where data are not available.
+
+```{r, message=FALSE, echo = FALSE, warning=FALSE}
+library(kableExtra)
+landingstable <- read.csv("fsardata/landingstable.csv")
+csasdown::csas_table(landingstable)
+# 
+# names(landingstable)[c(3, 6)] <- paste0(names(landingstable)[c(3,6)],
+#                                 footnote_marker_symbol(1))
+# 
+# landingstable$Year[3] <- paste0(landingstable$Year[3],
+#                                 footnote_marker_alphabet(1))
+# landingstable$Year[3] <- paste0(landingstable$Year[3],
+#                                 footnote_marker_alphabet(2))
+# 
+# landingstable$Year[20] <- paste0(landingstable$Year[20],
+#                                 footnote_marker_alphabet(3))
+# 
+# csasdown::csas_table(landingstable)
+# 
+# kbl(landingstable, align = "c",
+#       # Remember this escape = F
+#       escape = F) %>%
+#   kable_paper(full_width = F) %>%
+#   footnote(symbol = "Canadian landings in 5Y are assumed to have been in the Canadian portion and are included in the 4VWX+5Zc value. Foreign/US landings in 5Y are not included.",
+#            alphabet = c("Landings were first listed in 5Zc in 1986; 5Zc and 5Ze are used to indicate same area.", "Prior to 1988 the Atlantic Halibut catch was unregulated.", "Landings from the Maritimes Fisheries Information System (MARFIS) for 2024 are preliminary, as of October 31, 2024. Landings for NL in 2024 are not included as they are not yet available."),
+#            footnote_as_chunk = F)
+```
 
 
 ### Ecosystem and Climate Change Considerations {-}
 
-The environmental conditions affecting the stock are currently unknown. Recent work by Czich et al. (2023) suggest that forecasted changes in thermal conditions in the Northwest Atlantic may influence the distribution and abundance of juvenile Atlantic halibut in the near future. It is DFO’s intent to attempt to use new information, along with other available information at the time, in the next Framework Assessment to better inform DFO Science advice and the development of harvest strategies.
+The environmental conditions affecting the stock are currently unknown. Recent work by @Czich2023 suggest that forecasted changes in thermal conditions in the Northwest Atlantic may influence the distribution and abundance of juvenile Atlantic halibut in the near future. It is DFO’s intent to attempt to use new information, along with other available information at the time, in the next Framework Assessment to better inform DFO Science advice and the development of harvest strategies.
 
 ### Stock Advice {-}
 
@@ -219,16 +252,9 @@ An earlier review could be triggered due to significant changes in data sources,
 
 ## SOURCES OF UNCERTAINTY {-}
 
-The Industry-DFO Halibut Longline Survey indices are the mean catch per tow and do not 
-account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index, there was low coverage in some strata when compared with previous years 
+The Industry-DFO Halibut Longline Survey indices are the mean catch per tow and do not account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index, there was low coverage in some strata when compared with previous years 
 
-The interpretation of trends assumes no changes in vital rates, such as, growth or fecundity, 
-that impact the dynamics of the population. Therefore, it is not known if, or how, vital rates and 
-population growth rate will change with changes in stock size and/or variable environmental 
-conditions. Further, there is uncertainty in the stock recruitment relationship and natural 
-mortality in Halibut which can affect outcomes, especially reference points. There is also potential for shifts in habitat usage, spawning areas, migration and distribution due to changes in thermal conditions in the Northwest Atlantic.
-
-
+The interpretation of trends assumes no changes in vital rates, such as, growth or fecundity, that impact the dynamics of the population. Therefore, it is not known if, or how, vital rates and population growth rate will change with changes in stock size and/or variable environmental conditions. Further, there is uncertainty in the stock recruitment relationship and natural mortality in Halibut which can affect outcomes, especially reference points. There is also potential for shifts in habitat usage, spawning areas, migration and distribution due to changes in thermal conditions in the Northwest Atlantic.
 
 
 ## LIST OF MEETING PARTICIPANTS {-}
