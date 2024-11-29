@@ -1,7 +1,7 @@
 ---
 output:
-  html_document: default
   word_document: default
+  html_document: default
 ---
 
 
@@ -72,14 +72,15 @@ In 1987, Atlantic halibut in Canadian waters were separated into two management 
 
 In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest control rule (HCR) based on the index of exploitable biomass from the stratified Random Halibut Survey (Figure 1), Although reference points have been defined based on SSB, reference points and control points for the HCR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table 1) (@DFO2024a) . 
 
-Table 1. MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability *q* is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
 refpoints <- read.csv("fsardata/refpoints.csv")
 
 colnames(refpoints) <- c("Model-estimated Biomass", "LRP", "USR", "BMSY", "1.2 BMSY", "Catability q")
 
-csasdown::csas_table(refpoints)
+csasdown::csas_table(refpoints, caption = "MSY-based reference points (limit reference point [LRP] and upper stock reference [USR]) and control points (LRP, USR, and 1.2 B~MSY~) for Atlantic Halibut spawning stock biomass (female) and Stratified Random Industry-DFO Halibut Longline Survey Biomass. Survey biomass estimates are derived from model equilibrium survey biomass at long-term fishing mortality rates that produce the corresponding female spawning stock biomass estimates shown. Catchability *q* is used to convert the index of exploitable biomass from the Stratified Random Halibut Survey (kg/1,000 hooks) to the Stratified Random Halibut Survey Biomass (kt).
+                     
+                     ")
 #knitr::kable(refpoints)
 ```
 
@@ -203,12 +204,12 @@ Until 1988, the Atlantic halibut fishery in 3NOPs4VWX5Zc was unregulated. Within
 
 NAFO statistics are used to describe removals up to and including 2023 because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)). Other countries including Portugal, Spain, France, and the United States of America harvest Atlantic halibut from within the stock area as well, but outside Canada's Exclusive Economic Zone (EEZ). Landings from the Maritimes Fisheries Information System (MARFIS) database are reported as preliminary Canadian landings for 2024. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX).
 
-Table 2. Total reported Canadian and foreign landings (tonnes) of Atlantic Halibut from Northwest Atlantic Fisheries Organization (NAFO) Divisions 3NOPs4VWX5Zc1 and total allowable catch (TAC) for these divisions. Ten-year annual average landings are presented for 1960 to 2009. The [NAFO 21A table](https://www.nafo.int/Data/STATLANT-21A) of landings by country are reported by calendar year; however, the TAC for the stock is set for the period of April–March. Data were extracted from the NAFO 21A database on October 31, 2024. An 'NA' indicates where data are not available.
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
 library(kableExtra)
 landingstable <- read.csv("fsardata/landingstable.csv")
-csasdown::csas_table(landingstable)
+csasdown::csas_table(landingstable, caption = "Total reported Canadian and foreign landings (tonnes) of Atlantic Halibut from Northwest Atlantic Fisheries Organization (NAFO) Divisions 3NOPs4VWX5Zc and total allowable catch (TAC) for these divisions. Ten-year annual average landings are presented for 1960 to 2009. The [NAFO 21A table](https://www.nafo.int/Data/STATLANT-21A) of landings by country are reported by calendar year; however, the TAC for the stock is set for the period of April–March. Data were extracted from the NAFO 21A database on October 31, 2024. An 'NA' indicates where data are not available.
+                     ")
 # 
 # names(landingstable)[c(3, 6)] <- paste0(names(landingstable)[c(3,6)],
 #                                 footnote_marker_symbol(1))

@@ -1,5 +1,5 @@
 ---
-report_title: "Stock Status Update of Atlantic Halibut (hippoglossus hippoglossus) on the Scotian Shelf and Southern Grand Banks in NAFO Divisions 3NOPs4VWX5Zc"
+report_title: "Stock Status Update of Atlantic Halibut (Hippoglossus hippoglossus) on the Scotian Shelf and Southern Grand Banks in NAFO Divisions 3NOPs4VWX5Zc"
 report_year: "2024"
 release_month: "December"
 report_number: "XXX"
