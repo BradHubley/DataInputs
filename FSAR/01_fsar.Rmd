@@ -20,7 +20,7 @@ output:
 
 - The 2024 index of exploitable biomass from the Stratified Random Halibut Survey and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
-- Atlantic halibut catch per tow in 2024 from the DFO Maritimes Region Summer Ecosystem Survey (RV Survey) was the second highest value in the time series. Catch from this survey, which provides an index of recruitment for Atlantic halibut, increased between 2000 and 2011, followed by a decline, but has been increasing again since 2020.
+- Atlantic halibut catch per tow in 2024 from the DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey) was the second highest value in the time series. Catch from this survey, which provides an index of recruitment for Atlantic halibut, increased between 2000 and 2011, followed by a decline, but has been increasing again since 2020.
 
 :::
 
