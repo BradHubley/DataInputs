@@ -70,7 +70,7 @@ In 1987, Atlantic halibut in Canadian waters were separated into two management 
 
 ### Reference Points {-}
 
-In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest decision rule (HDR) based on the index of exploitable biomass from the Stratified Random Halibut Survey (Figure 1). Although reference points have been defined based on spawning stock biomass (SSB), reference points and control points for the HDR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table 1) [@DFO2024a] . 
+In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest decision rule (HDR) based on the index of exploitable biomass from the Stratified Random Halibut Survey (Figure 1). Although reference points have been defined based on spawning stock biomass (SSB), reference points and control points for the HDR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table 1) [@DFO2024a]. 
 
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
@@ -147,7 +147,7 @@ With the switch to an exclusively stratified random design in 2023, there was al
 Although not all stations were completed this year (Figure 3), there was adequate coverage in all strata to effectively calculate the index of exploitable biomass from the Stratified Random Halibut Survey. The 2024 index of exploitable biomass and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
 
-The LRP is 0.4 BMSY = 10.9 kt and the USR is 0.8 B~MSY~ = 21.8 kt (Table 1). The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 (Table 1) to be 55.5 kt (95% confidence interval: 42.8, 68.2). Based on the three-year mean (Figure 2B), the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9 B~MSY~, and substantially higher than the USR (Table 1), putting this stock in the healthy zone.
+The LRP is 0.4 B~MSY~ = 10.9 kt and the USR is 0.8 B~MSY~ = 21.8 kt (Table 1). The 2024 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 (Table 1) to be 55.5 kt (95% confidence interval: 42.8, 68.2). Based on the three-year mean (Figure 2B), the exploitable biomass index from the Stratified Random Halibut Survey for 2024 is 51.9 kt which is 1.9 B~MSY~, and substantially higher than the USR (Table 1), putting this stock in the healthy zone.
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE, results="hide", fig.cap="(ref:caption)"}
  
