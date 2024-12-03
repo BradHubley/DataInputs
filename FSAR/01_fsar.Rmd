@@ -20,7 +20,11 @@ output:
 
 - The 2024 index of exploitable biomass from the Stratified Random Halibut Survey and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
+<<<<<<< HEAD
 - Atlantic halibut catch per tow in 2024 from the DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey) was the second highest value in the time series. Catch from this survey, which provides an index of recruitment for Atlantic halibut, increased between 2000 and 2011, followed by a decline, but has been increasing again since 2020.
+=======
+- Atlantic halibut abundance in 2024 from the DFO Maritimes Region Summer Ecosystem Survey (RV Survey) was the second highest value in the time series. Catch from this survey, which provides an index of recruitment for Atlantic halibut, increased between 2000 and 2011, followed by a decline, but has been increasing again since 2020.
+>>>>>>> 4de4ab1a0fb6e902d9c656fb9e1c0b59818726d3
 
 :::
 
@@ -36,7 +40,7 @@ output:
 
 ::: {custom-style="fsar-bullet"}
 
-- The three-year mean exploitable biomass of 51.9 kt corresponds to removals of 5,149 t under the Harvest Decision Rule for this stock. 
+- The three-year mean exploitable biomass of 51.9 kt corresponds to removals of 5,149 t under the Harvest Decision Rule (HDR) for this stock. 
 
 - Removals of 5,149 t is within the maximum annual change of 15% from the 2024-2025 TAC. It is 222 t (4.5%) more than last year's TAC.
 
@@ -89,7 +93,7 @@ csasdown::csas_table(refpoints, caption = "MSY-based reference points (limit ref
 The HDR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass (B) estimated from the three-year mean of the Stratified Random Halibut Survey to calculate total allowable catch (TAC) advice. The articulated HDR includes three control points, the LRP, USR, and 1.2B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  B = 0.8 B~MSY~) up to the third control point (1.2 B~MSY~), above which it is capped at 1.2 F~MSY~. Second, the percentage change from last year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP (Figure 1). 
 
 
-![Figure 1. The articulated harvest decision rules with reference points and control points used for determining target harvest rates for Atlantic Halibut based on biomass estimates from the Stratified Random Industry-DFO Halibut Longline Survey. LRP = limit reference point, USR = upper stock reference, F = fishing mortality rate, LCP = limit control point, B~MSY~ = Biomass at maximum sustainable yield.](fsardata/HCR.png)
+![Figure 1. The articulated harvest decision rules with reference points and control points used for determining target harvest rates for Atlantic Halibut based on biomass estimates from the Stratified Random Industry-DFO Halibut Longline Survey. LRP = limit reference point, USR = upper stock reference, B~MSY~ = Biomass at maximum sustainable yield.](fsardata/HCR.png)
 
 ### Data {-}
 
@@ -248,12 +252,12 @@ As the 2024 three-year mean exploitable biomass based on the Stratified Random H
 
 ### Evaluation of Exceptional Circumstances/Assessment Triggers {-}
 
-An earlier review could be triggered due to significant changes in data sources, such as, missing indices, new data (e.g., age data), or changes in growth, maturation and fecundity, or natural mortality. An earlier review could also be triggered if stock status deviates significantly from expectations, e.g., the 3-year mean index from the survey falls above or below the 90% probability envelope for that index from the closed-loop simulation.
+An earlier review could be triggered due to significant changes in data sources, such as, missing indices, new data (e.g., age data), or changes in growth, maturation and fecundity, or natural mortality. An earlier review could also be triggered if stock status deviates significantly from expectations, e.g., the 3-year mean index from the survey falls above or below the 90% probability envelope for that index from the closed-loop simulation.The value of the 3-year mean index in 2024 was near the upper end but still within the 90% probability envelope from the closed-loop simulation.
  
 
 ## SOURCES OF UNCERTAINTY {-}
 
-The Industry-DFO Halibut Longline Survey indices are the mean catch per tow and do not account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index, there was low coverage in some strata when compared with previous years 
+The Industry-DFO Halibut Longline Survey index uses the stratified mean catch per tow and does not account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index, there was low coverage in some strata when compared with previous years 
 
 The interpretation of trends assumes no changes in vital rates, such as, growth or fecundity, that impact the dynamics of the population. Therefore, it is not known if, or how, vital rates and population growth rate will change with changes in stock size and/or variable environmental conditions. Further, there is uncertainty in the stock recruitment relationship and natural mortality in Atlantic Halibut which can affect outcomes, especially reference points. There is also potential for shifts in habitat usage, spawning areas, migration, and distribution due to changes in thermal conditions in the Northwest Atlantic.
 
