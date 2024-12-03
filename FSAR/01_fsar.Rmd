@@ -20,11 +20,7 @@ output:
 
 - The 2024 index of exploitable biomass from the Stratified Random Halibut Survey and the three-year mean are the highest in the time series. Inter-annual changes in the three-year mean have remained relatively stable through the time series with a small increase in 2024 from the previous year.
 
-<<<<<<< HEAD
 - Atlantic halibut catch per tow in 2024 from the DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey) was the second highest value in the time series. Catch from this survey, which provides an index of recruitment for Atlantic halibut, increased between 2000 and 2011, followed by a decline, but has been increasing again since 2020.
-=======
-- Atlantic halibut abundance in 2024 from the DFO Maritimes Region Summer Ecosystem Survey (RV Survey) was the second highest value in the time series. Catch from this survey, which provides an index of recruitment for Atlantic halibut, increased between 2000 and 2011, followed by a decline, but has been increasing again since 2020.
->>>>>>> 4de4ab1a0fb6e902d9c656fb9e1c0b59818726d3
 
 :::
 
@@ -58,8 +54,8 @@ output:
 Interim Year Update
 
 #### Most Recent Assessment Date {-}
-1.	Last Full Assessment: March 1-4, 2022 (@Johnson2024; @DFO2024a)
-2.	Last Interim Year Update: December 6, 2023 (@DFO2024b)
+1.	Last Full Assessment: March 1-4, 2022 [@Johnson2024; @DFO2024a]
+2.	Last Interim Year Update: December 6, 2023 [@DFO2024b]
 
 #### Assessment Approach {-}
 1.	Broad category: index-based (trends in empirical indices only), single stock assessment model, MSE-lite
@@ -74,7 +70,7 @@ In 1987, Atlantic halibut in Canadian waters were separated into two management 
 
 ### Reference Points {-}
 
-In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest decision rule (HDR) based on the index of exploitable biomass from the Stratified Random Halibut Survey (Figure 1). Although reference points have been defined based on spawning stock biomass (SSB), reference points and control points for the HDR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table 1) (@DFO2024a) . 
+In March 2022, the Scotia-Fundy Groundfish Advisory Committee (SFGAC) adopted an articulated harvest decision rule (HDR) based on the index of exploitable biomass from the Stratified Random Halibut Survey (Figure 1). Although reference points have been defined based on spawning stock biomass (SSB), reference points and control points for the HDR use the Stratified Random Halibut Survey biomass that correspond to SSB (LRP = 0.4B~MSY~, USR = 0.8 B~MSY~, and 1.2B~MSY~, Table 1) [@DFO2024a] . 
 
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
@@ -97,9 +93,9 @@ The HDR has two steps. First, a fishing mortality rate (F) is applied to the exp
 
 ### Data {-}
 
-- Stratified Random Halibut Survey (Industry-DFO Halibut Longline Survey) halibut catch (2017-2024)
+- Stratified Random Halibut Survey (Industry-DFO Halibut Longline Survey) Halibut catch (2017-2024)
 
-- DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey; NAFO Divs. 4VWX) halibut abundance (1970-2024)
+- DFO Maritimes Region Summer Ecosystem Survey (RV Summer Survey; NAFO Divs. 4VWX) Halibut abundance (1970-2024)
 
 - Atlantic Halibut landings - Canadian and international from Northwest Atlantic Fisheries Organization (NAFO)
 
