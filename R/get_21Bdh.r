@@ -25,7 +25,10 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2024, type=1, datadir){
   names(nafo.10.19)[3]<-"GearCode"
   names(nafo.10.19)[6]<-"Divcode"
   names(nafo.10.19)[7]<-"Code"
-  sort(unique(nafo.10.18$Divcode))
+  names(nafo.20.23)[3]<-"GearCode"
+  names(nafo.20.23)[6]<-"Divcode"
+  names(nafo.20.23)[7]<-"Code" #this is "SpeciesEffort"
+  sort(unique(nafo.10.19$Divcode))
 
   division <- read.csv(file.path(datadir,"divisions.txt"), header = F)
   colnames(division)=c("Divcode", "Div")
