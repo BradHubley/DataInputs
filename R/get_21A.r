@@ -8,7 +8,7 @@
 
 
 get_21A <- function(count, yearstart,datadir){
-  landA = read.csv(file.path(datadir,"Export.csv"))
+  landA = read.csv(file.path(datadir,"NAFO-21A-2025updated.csv"))
   #  names(landA)
   names(landA)[5]="Catch"
   names(landA)[1]="Year"
