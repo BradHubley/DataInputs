@@ -1,0 +1,109 @@
+---
+title: "Soaktime"
+author: "Brad"
+date: "2024-11-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ROracle)
+library(devtools)
+library(tidyverse)
+library(PBSmapping)
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r")) 
+
+ds_all <- Mar.datawrangling::load_datasources()
+
+devtools::load_all(".")
+
+bins=seq(0,260,5)
+# labelled by upper bound
+
+
+Current.Year <- 2024
+
+```
+
+## Get data
+
+
+```{r, echo=F }
+FSindexData <- FixedSurveyData(datadir=datadir, by.sex=F,adj.calc.wt=F,add.LF=F)
+FSindexData<-subset(FSindexData,!is.na(SOAKMINP3P1))
+FSindexData$SOAKMINP3P1[FSindexData$SOAKMINP3P1>3000]<-FSindexData$SOAKMINP3P2[FSindexData$SOAKMINP3P1>3000]+20  
+FSindexData<-subset(FSindexData,SOAKMINP3P1>350)
+  
+  RSindexData <- RandomSurveyData(datadir=datadir, add.LF=F,by.sex=F)
+RSindexData<-subset(RSindexData,SOAKMINP3P1>350)
+
+BSData<-CommercialIndexData(datadir=datadir,by.sex=F,add.portsampling=F,add.LF = F)
+BSData<-subset(BSData,SOAKMINP3P1<2880&SOAKMINP3P1>350)
+  
+```
+
+## Plots
+
+
+
+```{r }
+
+hist(as.numeric(FSindexData$SOAKMINP3P1),breaks=100)
+hist(as.numeric(RSindexData$SOAKMINP3P1),breaks=100)
+hist(as.numeric(BSData$SOAKMINP3P1),breaks=100)
+
+```
+
+```{r}
+#MData<-FSindexData
+MData<-BSData
+#MData<-RSindexData
+MData<-na.omit(subset(MData,EST_COMBINED_WT>0,c("YEAR","EST_COMBINED_WT","SOAKMINP3P1","NUM_HOOK_HAUL")))
+
+MData$logWEIGHT<-log(MData$EST_COMBINED_WT)
+MData$logHOOKS<-log(MData$NUM_HOOK_HAUL)
+MData$fYEAR<-as.factor(MData$YEAR)
+
+     G = glm(logWEIGHT ~ fYEAR + as.numeric(SOAKMINP3P1) , offset= logHOOKS, family=gaussian(link='identity'),data = MData)
+
+     summary(G)
+
+```
+```{r}
+      pData=with(G$data,data.frame(fYEAR=as.factor(2010),SOAKMINP3P1=350:1500,logHOOKS=log(1000)))
+source("C:/Users/hubleyb/OneDrive - DFO-MPO/Documents/Lobster/git/bio.lobster/R/glmCIs.r")
+      PG = glmCIs(G,pData)
+      with(MData,plot(SOAKMINP3P1,logWEIGHT,pch=16,col=rgb(0,0,0,0.1)))
+      with(PG,lines(SOAKMINP3P1,fit,col='blue',lwd=2))
+      with(PG,lines(SOAKMINP3P1,lwr,lty=2,col='blue'))
+      with(PG,lines(SOAKMINP3P1,upr,lty=2,col='blue'))
+      abline(v=60*c(12,18),lty=3,col='orange')
+      exp(PG$fit[PG$SOAKMINP3P1==720])
+      exp(PG$fit[PG$SOAKMINP3P1==1080])
+
+```
+
+
+
+```{r}
+      pData=with(G$data,data.frame(fYEAR=as.factor(2000:2022),SOAKMINP3P1=1000,logHOOKS=log(1000)))
+source("C:/Users/hubleyb/OneDrive - DFO-MPO/Documents/Lobster/git/bio.lobster/R/glmCIs.r")
+      PG = glmCIs(G,pData)
+      with(PG,plot(fYEAR,fit,type='l',ylim=c(0,10)))
+      with(PG,lines(fYEAR,lwr,lty=2))
+      with(PG,lines(fYEAR,upr,lty=2))
+
+```
+```{r}
+#MData<-FSindexData
+#MData<-BSData
+#MData<-RSindexData
+
+RSindexData$PA<-as.numeric(RSindexData$EST_COMBINED_WT>0)
+FSindexData$PA<-as.numeric(FSindexData$EST_COMBINED_WT>0)
+BSData$PA<-as.numeric(!is.na(BSData$EST_COMBINED_WT))
+boxplot(SOAKMINP3P1~PA,RSindexData,main="RANDOM")
+boxplot(SOAKMINP3P1~PA,FSindexData,main="FIXED")
+boxplot(SOAKMINP3P1~PA,BSData,main="BS")
+```
+

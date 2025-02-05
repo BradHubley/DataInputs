@@ -1,5 +1,5 @@
 #' @export
-FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
+FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F,nafo){
 
   FSindexData <- FixedSurveyData(datadir=datadir, by.sex=F,adj.calc.wt=use.calc.wt,add.LF=use.calc.wt)
 
@@ -7,7 +7,8 @@ FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
     load(file.path(datadir,"Survey","HSFixed100Stations.rdata"))
     FSindexData<- subset(FSindexData,STATION%in%stations100)
   }
-  FSindexData<- subset(FSindexData,YEAR%in%yrs)
+  if(missing(nafo))nafo<-unique(FSindexData$NAFAREA_ID)
+  FSindexData<- subset(FSindexData,YEAR%in%yrs&NAFAREA_ID%in%nafo)
 #browser()
   FSindexData$EST_NUM_CAUGHT[is.na(FSindexData$EST_NUM_CAUGHT)]<-0
   FSindexData$EST_COMBINED_WT[is.na(FSindexData$EST_COMBINED_WT)]<-0
@@ -31,7 +32,7 @@ FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F){
 
     out<-makeOldFSIndex(FSindexData,do.plot=F)$index
   }
-
+#browser()
   out$mean3_biomass <- mavg(out$KgPKH)
 
 

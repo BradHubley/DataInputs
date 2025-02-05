@@ -68,12 +68,12 @@ conflict_prefer("select", "dplyr")
 #HookOccupancyDataRaw<-PrepareDataHookModel(datadir=datadir, getrawdata=TRUE)
 
 #sp=220 #dogfish
-#sp=15 #cusk
-sp=30 #halibut
+sp=15 #cusk
+#sp=30 #halibut
 #sp=10 #cod
 
 
-RandomSurveyLandmark<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
+RandomSurveyLandmark<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
 RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
 RandomSurveyRaph$STATION <- RandomSurveyRaph$ASSIGNED_STATION
 RandomSurveyRaph$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA

@@ -49,14 +49,14 @@ MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
 MARFISdataOT$CLASS <-"OT"
 
 MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
-
+MARFISdata$SET<-1
 ```
 
 # Make Tables by class
 
 ```{r }
-yrs1<-2002:2011
-yrs2<-2012:2021
+yrs1<-2004:2013
+yrs2<-2014:2023
 
 table1<- MARFISdata %>% filter(!is.na(CLASS)&YEAR%in%yrs1&!is.na(NAFO)) %>% group_by(NAFO,CLASS) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = CLASS,values_from = Landings) %>% tibble()
 table1<-table1[c("NAFO","LL35", "LL35-45", "LL45-65", "LL65", "OT")]
@@ -112,13 +112,13 @@ write.csv(table1,file.path(datadir,paste0("MARFIS_nafo3PS_month_",range(yrs1)[1]
 write.csv(table2,file.path(datadir,paste0("MARFIS_nafo3PS_month_",range(yrs2)[1],'-',range(yrs2)[2],".csv")),row.names=F)
 
 
-table1<- MARFISdata %>% filter(YEAR%in%yrs1&NAFO=='3PS') %>% group_by(QUARTER) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
+table1<- MARFISdata %>% filter(YEAR%in%yrs1&NAFO=='4VN') %>% group_by(QUARTER) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
 
 
-table2<- MARFISdata %>% filter(YEAR%in%yrs2&NAFO=='3PS') %>% group_by(QUARTER) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
+table2<- MARFISdata %>% filter(YEAR%in%yrs2&NAFO=='4VN') %>% group_by(QUARTER) %>% summarise(Catch_Kg = round(sum(RND_WEIGHT_KGS,na.rm=T)),Effort_Sets=sum(SET),CPUE=Catch_Kg/Effort_Sets)  %>% tibble()
 
-write.csv(table1,file.path(datadir,paste0("MARFIS_nafo3PS_quarter_",range(yrs1)[1],'-',range(yrs1)[2],".csv")),row.names=F)
-write.csv(table2,file.path(datadir,paste0("MARFIS_nafo3PS_quarter_",range(yrs2)[1],'-',range(yrs2)[2],".csv")),row.names=F)
+write.csv(table1,file.path(datadir,paste0("MARFIS_nafo4VN_quarter_",range(yrs1)[1],'-',range(yrs1)[2],".csv")),row.names=F)
+write.csv(table2,file.path(datadir,paste0("MARFIS_nafo4VN_quarter_",range(yrs2)[1],'-',range(yrs2)[2],".csv")),row.names=F)
 
 with(subset(MARFISdata,!is.na(QUARTER)&!is.na(RND_WEIGHT_KGS)&NAFO=='3PS'),tapply(YEAR,RND_WEIGHT_KGS))
 
@@ -546,6 +546,18 @@ with(subset(ObserverData,NAFAREA_ID=='5ZJ'&GEAR=="LL"&YEAR==2020),points(LONGITU
 ```
 
 
+## season
+```{r}
+ 
+  yrs= 2015:2023
+  par(mfrow=c(3,3),mar=c(0,0,0,0))
+  for (i in 1:length(yrs)) {
+      fishing.season(subset(MARFISdata,YEAR==yrs[i],c('DATE_FISHED','RND_WEIGHT_KGS')),smooth=0.05,title="")
+      mtext("Relative catch",3,-2,cex=1.2,outer=T)
+    }
+    
+
+```
 
 
 
