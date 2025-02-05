@@ -13,15 +13,16 @@
 #' @export
 
 
-get_21B <- function(count="CDN",yearstart=1970, yearend=2024, type=1, datadir){
+get_21Bdh <- function(count="CDN",yearstart=1970, yearend=2024, type=1, datadir){
   nafo.70.79 <- read.csv(file.path(datadir,"NAFO21B-70-79.txt"), header = TRUE)
   nafo.80.89 <- read.csv(file.path(datadir,"NAFO21B-80-89.txt"), header = TRUE)
   nafo.90.99 <- read.csv(file.path(datadir,"NAFO21B-90-99.txt"), header = TRUE)
   nafo.00.09 <- read.csv(file.path(datadir,"NAFO21B-2000-09.txt"), header = TRUE)
   nafo.10.19 <- read.csv(file.path(datadir,"NAFO-21B-2010-2019.txt"), header = TRUE)
   nafo.20.23 <- read.csv(file.path(datadir,"NAFO-21B-2020-2023.txt"), header = TRUE)
-  #names(nafo.00.09)[9]<-"Catches"
-  #names(nafo.10.18)[9]<-"Catches"
+  names(nafo.00.09)[9]<-"Catches"
+  names(nafo.10.19)[9]<-"Catches"
+  names(nafo.20.23)[9]<-"Catches"
   names(nafo.10.19)[3]<-"GearCode"
   names(nafo.10.19)[6]<-"Divcode"
   names(nafo.10.19)[7]<-"Code"

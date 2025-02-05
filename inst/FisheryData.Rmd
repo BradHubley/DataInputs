@@ -77,11 +77,11 @@ write.csv(table2,file.path(datadir,"MARFIStable2.csv"),row.names=F)
 
 ```{r }
 yrs1<-2016:2018
-yrs2<-2019:2021
+yrs2<-2023:2024
 
 MARFISdata$MONTH<-month(MARFISdata$DATE_FISHED)
 
-table1<- MARFISdata %>% filter(YEAR%in%yrs1&!is.na(NAFO)) %>% group_by(NAFO,MONTH) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = MONTH,values_from = Landings) %>% tibble()
+table1<- MARFISdata %>% filter(YEAR%in%yrs2&!is.na(NAFO)) %>% group_by(NAFO,MONTH) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = MONTH,values_from = Landings) %>% tibble()
 
 
 table2<- MARFISdata %>% filter(!is.na(CLASS)&YEAR%in%yrs2&!is.na(NAFO)) %>% group_by(NAFO,CLASS) %>% summarise(Landings = round(sum(RND_WEIGHT_KGS,na.rm=T)/1000)) %>% pivot_wider(names_from = CLASS,values_from = Landings) %>% tibble()
