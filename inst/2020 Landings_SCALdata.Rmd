@@ -39,7 +39,7 @@ source(file.path(getwd(), "directories.r"))
 # source(file.path(wd, "passwords.r"))
 
 # wd ="C:/Users/LiLi/Documents"
-
+datadir="C:/Users/harperd/Documents/Halibut/RDataVault/Landings_2025update"
 
 # NAFO divisions
 nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
@@ -53,9 +53,9 @@ ystart =1970
 # 21B last year
 yendB=2016
 # 21A last year(assessment year)
-yend=2020
+yend=2024
 # annual TAC table
-TAC = data.frame(Year=1988:2020,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507))
+TAC = data.frame(Year=1988:2024,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807, 4744, 4927))
 # figure width and height
 width1=8
 height1=8
@@ -64,7 +64,7 @@ height2=5
 
 ## Landings Data: NAFO landings data 21A
 
-To get the NAFO landings data 21A, download from here: https://www.nafo.int/Data/STATLANT. Select HAL - ATLANTIC HALIBUT as the species and save the exported data as Export.csv. 
+To get the NAFO landings data 21A, download from here: https://www.nafo.int/Data/STATLANT-21A. Select HAL - ATLANTIC HALIBUT as the species and save the exported data as Export.csv. 
 
 To get the NAFO landings data 21B, download from here:
 https://www.nafo.int/Data/Catch-Statistics. There are multiple zipped files each with  one decade's data except the most recent one. Save and unzip all of them.
