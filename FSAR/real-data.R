@@ -19,6 +19,11 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
 
   # model output
   load("fsardata/ModelOuputFSAR.rdata")
+  load("fsardata/envelope90.rdata")
+  yrs<-1970:2050
+  projyrs<-2022:2032
+  proj<-envelope90[,,,which(yrs%in%projyrs)]
+
 
   ### Catch
 
@@ -62,7 +67,22 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
       panel.category = rep(categories[2],length(vulnB)),
       year = as.numeric(names(vulnB)),
       ts.name = rep("HSpredhigh",length(vulnB)),
-      ts.value = vulnB_ci[2,])
+      ts.value = vulnB_ci[2,]),
+    data.frame(
+      panel.category = rep(categories[2],length(projyrs)),
+      year = projyrs,
+      ts.name = rep("HSproj",length(projyrs)),
+      ts.value = proj[2,]),
+    data.frame(
+      panel.category = rep(categories[2],length(projyrs)),
+      year = projyrs,
+      ts.name = rep("HSprojlow",length(projyrs)),
+      ts.value = proj[1,]),
+    data.frame(
+      panel.category = rep(categories[2],length(projyrs)),
+      year = projyrs,
+      ts.name = rep("HSprojhigh",length(projyrs)),
+      ts.value = proj[3,])
   )
 
 

@@ -100,7 +100,7 @@ fsar_plot_base <- function(in.df, Assessment.Year=2024, language = c("English","
   plm[is.na(plm)]<-0
 
 
-  barplot(plm,ylim=yl, axes = FALSE, col=c(colrs[1],colrs[2],colrs[1]),border=NA,density=c(NA,NA,40),axisnames=F)
+  barplot(plm,ylim=yl,xlim=c(0,(Assessment.Year-y1+4)*1.2), axes = FALSE, col=c(colrs[1],colrs[2],colrs[1]),border=NA,density=c(NA,NA,40),axisnames=F)
   #axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,1.2),lab=F,tck=-0.01) ##change to 77 in sequence to increase axis length (ticks)
   axis(1,at=seq(0.7,(Assessment.Year-y1+1)*1.2,12),lab=seq(y1,Assessment.Year,10))##75 remains (no change) since 2023 not a multiple of 10
   axis(2, at = seq(0, yl[2], 1000), las = 1,
@@ -127,18 +127,19 @@ fsar_plot_base <- function(in.df, Assessment.Year=2024, language = c("English","
   idx <- which(in.df$panel.category == "Biomass")
   yl <- c(0, max(in.df[idx, "ts.value"]) * 1.2)
   tr.df <- in.df[idx, ]
-  xl <- range(tr.df$year)
+  #xl <- range(tr.df$year)
+  xl <- c(1970,Assessment.Year+3)
 
   if (language == "English") {
     y.lab <- "Biomass (KT)"
-    legend.text <- c("Halibut Survey (modelled)","95% confidence", "Halibut Survey (index)", "3-year mean of index","USR", "LRP")
+    legend.text <- c("Halibut Survey (modelled)","95% confidence","Halibut Survey (projection)","90% projection envelope", "Halibut Survey (index)", "3-year mean of index","USR", "LRP")
   }
   if (language == "French") {
     y.lab <- "Biomasse KT"
     legend.text <- c("BSR-tonne", "confiance à 95%", "NRS-tonne", "NRL-tonne")
   }
 
-  plot(ts.value ~ year, data = tr.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl)
+  plot(ts.value ~ year, data = tr.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl,xlim=xl)
 
   ## Vulnerable Biomass
   ## lower and upper
@@ -146,14 +147,27 @@ fsar_plot_base <- function(in.df, Assessment.Year=2024, language = c("English","
   cil<-tr.df$ts.value[tr.df$ts.name == "HSpredlow"]
   cih<-tr.df$ts.value[tr.df$ts.name == "HSpredhigh"]
 
-  polygon(  x = c(yrs,rev(yrs)),y = c(cil,rev(cih)), col = 'grey', border = NA )
+  polygon(  x = c(yrs,rev(yrs)),y = c(cil,rev(cih)), col = 'grey50', border = NA )
   #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpredlow"), ], type = "l", lty = 2)
   #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpredhigh"), ], type = "l", lty = 2)
-  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpred"), ], type = "l", lwd = 1,col='grey40',lty=1)
+  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpred"), ], type = "l", lwd = 1,col='grey30',lty=1)
+
+  ## Vulnerable Biomass projection
+  ## lower and upper
+  yrs<-tr.df$year[tr.df$ts.name == "HSprojlow"]
+  cil<-tr.df$ts.value[tr.df$ts.name == "HSprojlow"]
+  cih<-tr.df$ts.value[tr.df$ts.name == "HSprojhigh"]
+
+  polygon(  x = c(yrs,rev(yrs)),y = c(cil,rev(cih)), col ='grey80', border = NA )
+  #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpredlow"), ], type = "l", lty = 2)
+  #lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSpredhigh"), ], type = "l", lty = 2)
+  lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSproj"), ], type = "l", lwd = 1,col='grey50',lty=2)
 
   ## SurveyBiomass
   lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSobs"), ], type = "p",pch=16)
   lines(ts.value ~ year, data = tr.df[which(tr.df$ts.name == "HSobs_3yrm"), ], type = "l", lwd = 3,col='blue')
+
+
   ## LRP and USR
   abline(h=10.9, lty = 3, lwd = 2, col = "red")
   abline(h=21.8, lty = 3, lwd = 2, col = "forestgreen")
@@ -163,10 +177,10 @@ fsar_plot_base <- function(in.df, Assessment.Year=2024, language = c("English","
   legend("topright","(B)", bty = "n", cex=1.25)
   legend("topleft",
          legend.text,
-         lty = c(1, NA, NA, 1, 3, 3),
-         lwd = c(1, NA, NA, 3, 2, 2),
-         pch = c(NA,15,16,NA,NA,NA),
-         col = c('grey40','grey',"black", "blue", "forestgreen", "red"),
+         lty = c(1, NA, 2, NA, NA, 1, 3, 3),
+         lwd = c(1, NA, 1, NA, NA, 3, 2, 2),
+         pch = c(NA,15,NA,15,16,NA,NA,NA),
+         col = c('grey30','grey50','grey50','grey80',"black", "blue", "forestgreen", "red"),
          box.lty=0,
          bg=NA,
          cex=0.8
@@ -250,7 +264,7 @@ fsar_plot_base <- function(in.df, Assessment.Year=2024, language = c("English","
     y.lab <- "Recrutement"
     legend.text <- c("R-E06", "confiance à 95%")
   }
-  plot(ts.value ~ year, data = br.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl)
+  plot(ts.value ~ year, data = br.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl,xlim=xl)
   ## Vulnerable Abundance
   ## lower and upper
   yrs<-br.df$year[br.df$ts.name == "RVpredlow"]

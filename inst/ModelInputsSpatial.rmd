@@ -1,0 +1,581 @@
+---
+title: "ModelRuns"
+author: "Brad"
+date: "8/17/2021"
+output: html_document
+---
+
+## Use this script to update data for assessment model, check final year as you go through each chunk
+
+```{r setup, include=FALSE}
+library(ROracle)
+library(devtools)
+library(tidyverse)
+library(SpatialHub)
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r")) 
+
+scaldir<-file.path(datadir,"scal")
+#scaldir<-"R:/Science/Population Ecology Division/Shared/Atlantic Halibut/Assessments & Updates/2021 Framework/Data/Model Inputs"
+#scaldir<-"C:/Users/hubleyb/Documents/Halibut/git/siscal-ah/Data/AtlHal"
+
+ds_all <- Mar.datawrangling::load_datasources()
+
+devtools::load_all(".")
+
+
+bins=seq(0,260,5)
+# labelled by upper bound
+
+```
+
+
+## Update data from database 
+
+```{r }
+
+
+# Update data from database 
+
+# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# open and check setprofile_wide to confirm that you have year, latitude & longitude
+
+# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+
+#get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+
+#  Mar.datawrangling::get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+
+```
+
+
+# read in data from old inputs
+
+```{r }
+old_data_inputs<-getOldScalInputs(scaldir=scaldir)
+
+# Old Model Starting parameters
+#old_ipars<-lisread(file.path(scaldir,'scal_base.pin'))
+
+```
+
+
+
+# Output biological parameters table
+```{r }
+bioPars<-old_data_inputs[c("lInf_m","lInf_f","vonK_m","vonK_f","wt_a","wt_b","aMat_50","aMat_95","prior_initM","dM")]
+bioPars$dM2<-bioPars$dM[3]
+bioPars$dM<-bioPars$dM[1]
+bioPars$wt_a=0.006803616
+bioPars$wt_b=3.119924
+bioParsTab<-tibble(data.frame(Parameter=names(bioPars),Value=unlist(bioPars)))
+write.csv(bioParsTab,file.path(scaldir,"bioPars.csv"),row.names=F)
+
+BiologicalParameters<-bioPars
+BiologicalParameters$bins<-bins
+```
+
+#NS RV survey
+
+```{r}
+RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
+
+# for spatial model
+allStrata<-sort(unique(RVdata[[1]]$STRAT))
+Strata4VW<-allStrata[1:25]
+Strata4X<-allStrata[26:46]
+
+RVinputs4X<-prepRVdata(RVdata,years=1970:2024,strat= Strata4X,bins=bins, raw=T)
+RVinputs4X$NSRV_unsexed<-RVinputs4X$NSRV_combined-(RVinputs4X$NSRV_males+RVinputs4X$NSRV_females) # unsexed
+NSRV_Index4X<-RVinputs4X$Index
+NSRV_Lengths4X<-list(NSRV4X_males=RVinputs4X$NSRV_males,
+                   NSRV4X_females=RVinputs4X$NSRV_females,
+                   NSRV4X_combined=RVinputs4X$NSRV_combined,
+                   NSRV4X_unsexed=RVinputs4X$NSRV_unsexed)
+
+
+
+RVinputs4VW<-prepRVdata(RVdata,years=1970:2024,strat= Strata4VW,bins=bins, raw=T)
+RVinputs4VW$NSRV_unsexed<-RVinputs4VW$NSRV_combined-(RVinputs4VW$NSRV_males+RVinputs4VW$NSRV_females) # unsexed
+NSRV_Index4VW<-RVinputs4VW$Index
+NSRV_Lengths4VW<-list(NSRV4VW_males=RVinputs4VW$NSRV_males,
+                   NSRV4VW_females=RVinputs4VW$NSRV_females,
+                   NSRV4VW_combined=RVinputs4VW$NSRV_combined,
+                   NSRV4VW_unsexed=RVinputs4VW$NSRV_unsexed)
+
+
+
+BubblePlotLF(NSRV_Lengths4X,bins=bins,yrs=1970:2024,path=file.path(wd,'figures'),filen='RVSurvey4X',inches=0.1)
+BubblePlotLF(NSRV_Lengths4VW,bins=bins,yrs=1970:2024,path=file.path(wd,'figures'),filen='RVSurvey4VW',inches=0.1)
+```
+
+#NL RV Survey
+```{r}
+
+#NLRV_ny<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_n_yr.csv"))
+#NLRV_nys<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_n_yrsex.csv"))
+
+NLRV_males<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_m_LF_obs.csv"))
+NLRV_males<-data.frame(pivot_wider(NLRV_males,names_from = length,values_from = obs))
+row.names(NLRV_males)<-NLRV_males$year
+NLRV_males<-NLRV_males[,-1]
+names(NLRV_males)<-paste0("L",bins[-1])
+NLRV_females<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_f_LF_obs.csv"))
+NLRV_females<-data.frame(pivot_wider(NLRV_females,names_from = length,values_from = obs))
+row.names(NLRV_females)<-NLRV_females$year
+NLRV_females<-NLRV_females[,-1]
+names(NLRV_females)<-paste0("L",bins[-1])
+NLRV_combined<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_mfu_LF_obs.csv"))
+NLRV_combined<-data.frame(pivot_wider(NLRV_combined,names_from = length,values_from = obs))
+row.names(NLRV_combined)<-NLRV_combined$year
+NLRV_combined<-NLRV_combined[,-1]
+names(NLRV_combined)<-paste0("L",bins[-1])
+NLRV_unsexed<-NLRV_combined-(NLRV_males+NLRV_females) # unsexed
+
+NLRV_Lengths3NOP<-list(NLRV3NOP_males=NLRV_males,
+                   NLRV3NOP_females=NLRV_females,
+                   NLRV3NOP_combined=NLRV_combined,
+                   NLRV3NOP_unsexed=NLRV_unsexed)
+
+NLRV_SCAL<-read.csv(file.path(scaldir,"NLSurveyCAL.csv"))
+row.names(NLRV_SCAL)<-NLRV_SCAL$year
+NLRV_SCAL<-NLRV_SCAL[,-1]
+names(NLRV_SCAL)<-paste0("L",bins[-1])
+
+
+#BubblePlotLF(NLRV_Lengths3NOP,bins=bins,yrs=1996:2019,path=file.path(wd,'figures'),filen='RVSurvey3NOP',inches=0.3)
+
+NLRV_SumData<-read.csv(file.path(datadir,"Newfoundland Data","strat2_abundance_summary.csv"))
+NLRV_Index3NOP<-subset(NLRV_SumData,select=c("survey.year","total","sample.units","mean","var"))
+NLRV_Index3NOP$CV<-sqrt(NLRV_Index3NOP$var)/NLRV_Index3NOP$mean
+#NLRV_Index<-rowSums(NLRV_SCAL)
+
+```
+
+
+
+#Halibut Survey Catch Composition
+```{r}
+  Yrs1 = 2000:2020        
+  Yrs2 = 2017:2024        
+ 
+   # for spatial model
+
+  FixedSurvey <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=T)
+  nafo4X<-unique(FixedSurvey$NAFAREA_ID[substr(FixedSurvey$NAFAREA_ID,1,2)%in%c("5Z","5Y","4X")])
+  nafo4VW<-unique(FixedSurvey$NAFAREA_ID[substr(FixedSurvey$NAFAREA_ID,1,2)%in%c("4V","4W")])
+  nafo3NOP<-unique(FixedSurvey$NAFAREA_ID[substr(FixedSurvey$NAFAREA_ID,1,2)%in%c("3O","3N","3P")])
+  
+  bioMap(nafo = T)
+  points(LAT1~LONG1,data=subset(FixedSurvey,NAFAREA_ID%in%nafo4X),col=rgb(0,0,1,0.2),pch=16)
+  points(LAT1~LONG1,data=subset(FixedSurvey,NAFAREA_ID%in%nafo4VW),col=rgb(1,0,0,0.2),pch=16)
+  points(LAT1~LONG1,data=subset(FixedSurvey,NAFAREA_ID%in%nafo3NOP),col=rgb(0,1,0,0.2),pch=16)
+
+  
+  RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
+
+  allStrata<-sort(unique(RandomSurvey$ASSIGNED_STRATUM_ID))
+  Strata4VW<-allStrata[4:10]
+  Strata4X<-allStrata[1:3]
+  Strata3NOP<-allStrata[11:20]
+  
+  bioMap(nafo = T)
+  points(LAT1~LONG1,data=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata4X),col=rgb(0,0,1,0.2),pch=16)
+  points(LAT1~LONG1,data=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata4VW),col=rgb(1,0,0,0.2),pch=16)
+  points(LAT1~LONG1,data=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata3NOP),col=rgb(0,1,0,0.2),pch=16)
+
+  
+
+  # Construct CLF
+  # Fixed survey numbers at length    
+  FixedLF4X <- constructLF(LFdata=subset(FixedSurvey,NAFAREA_ID%in%nafo4X),bins=bins, Yrs = Yrs1)
+  FixedLF4VW <- constructLF(LFdata=subset(FixedSurvey,NAFAREA_ID%in%nafo4VW),bins=bins, Yrs = Yrs1)
+  FixedLF3NOP <- constructLF(LFdata=subset(FixedSurvey,NAFAREA_ID%in%nafo3NOP),bins=bins, Yrs = Yrs1)
+  
+
+  HSFixed_males<-getNAL(FixedLF4X,sex=1)
+  HSFixed_females<-getNAL(FixedLF4X,sex=2)
+  HSFixed_combined<-getNAL(FixedLF4X,sex='all')
+  HSFixed_unsexed<-getNAL(FixedLF4X,sex=0)
+  
+  HSFixed_Lengths4X<-list(HSFixed_males=HSFixed_males,
+                        HSFixed_females=HSFixed_females,
+                        HSFixed_combined=HSFixed_combined,
+                        HSFixed_unsexed=HSFixed_unsexed)
+  
+ 
+  HSFixed_males<-getNAL(FixedLF4VW,sex=1)
+  HSFixed_females<-getNAL(FixedLF4VW,sex=2)
+  HSFixed_combined<-getNAL(FixedLF4VW,sex='all')
+  HSFixed_unsexed<-getNAL(FixedLF4VW,sex=0)
+  
+  HSFixed_Lengths4VW<-list(HSFixed_males=HSFixed_males,
+                        HSFixed_females=HSFixed_females,
+                        HSFixed_combined=HSFixed_combined,
+                        HSFixed_unsexed=HSFixed_unsexed)
+  
+ 
+  HSFixed_males<-getNAL(FixedLF3NOP,sex=1)
+  HSFixed_females<-getNAL(FixedLF3NOP,sex=2)
+  HSFixed_combined<-getNAL(FixedLF3NOP,sex='all')
+  HSFixed_unsexed<-getNAL(FixedLF3NOP,sex=0)
+  
+  HSFixed_Lengths3NOP<-list(HSFixed_males=HSFixed_males,
+                        HSFixed_females=HSFixed_females,
+                        HSFixed_combined=HSFixed_combined,
+                        HSFixed_unsexed=HSFixed_unsexed)
+  
+  # Random survey numbers at length    
+  RandomLF4VW <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata4VW),bins=bins, Yrs = Yrs2)
+  RandomLF4X <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata4X),bins=bins, Yrs = Yrs2)
+  RandomLF3NOP <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata3NOP),bins=bins, Yrs = Yrs2)
+  
+  HSRandom_males<-getNAL(RandomLF4VW,sex=1)
+  HSRandom_females<-getNAL(RandomLF4VW,sex=2)
+  HSRandom_combined<-getNAL(RandomLF4VW,sex='all')
+  HSRandom_unsexed<-getNAL(RandomLF4VW,sex=0)
+  
+  HSRandom_Lengths4VW<-list(HSRandom_males=HSRandom_males,
+                         HSRandom_females=HSRandom_females,
+                         HSRandom_combined=HSRandom_combined,
+                         HSRandom_unsexed=HSRandom_unsexed)
+  
+  HSRandom_males<-getNAL(RandomLF4X,sex=1)
+  HSRandom_females<-getNAL(RandomLF4X,sex=2)
+  HSRandom_combined<-getNAL(RandomLF4X,sex='all')
+  HSRandom_unsexed<-getNAL(RandomLF4X,sex=0)
+  
+  HSRandom_Lengths4X<-list(HSRandom_males=HSRandom_males,
+                         HSRandom_females=HSRandom_females,
+                         HSRandom_combined=HSRandom_combined,
+                         HSRandom_unsexed=HSRandom_unsexed)
+  
+  HSRandom_males<-getNAL(RandomLF3NOP,sex=1)
+  HSRandom_females<-getNAL(RandomLF3NOP,sex=2)
+  HSRandom_combined<-getNAL(RandomLF3NOP,sex='all')
+  HSRandom_unsexed<-getNAL(RandomLF3NOP,sex=0)
+  
+  HSRandom_Lengths3NOP<-list(HSRandom_males=HSRandom_males,
+                         HSRandom_females=HSRandom_females,
+                         HSRandom_combined=HSRandom_combined,
+                         HSRandom_unsexed=HSRandom_unsexed)
+  
+  #HSRandom_Index<-data.frame(Year= 2017:2020,
+   #                          Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
+   #                          se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
+  
+  HSFixed_Index4X<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022,nafo=nafo4X)
+  HSFixed_Index4VW<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022,nafo=nafo4VW)
+  HSFixed_Index3NOP<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022,nafo=nafo3NOP)
+  
+  
+  HSRandom_Index4VW<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2023,use.calc.weight = F, select.strata = as.numeric(substr(Strata4VW,2,3)))
+  HSRandom_Index4X<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2023,use.calc.weight = F, select.strata = as.numeric(substr(Strata4X,2,3)))
+  HSRandom_Index3NOP<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2023,use.calc.weight = F, select.strata = as.numeric(substr(Strata3NOP,2,3)))
+
+ # Cusk
+  HSRandom_IndexCusk<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2023,use.calc.weight = F, select.strata = as.numeric(substr(allStrata[1:10],2,3)),sp=15) 
+
+  BubblePlotLF(Fishery_Lengths,bins=bins,yrs=CCyrs,path=file.path(wd,'figures'),filen='Commercial',inches=0.1)
+
+  
+```
+
+
+
+#Landings
+```{r}
+#Landings_t<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
+#Landings_t<-rbind(Landings_t,data.frame(X=52,Year=2021,Landings_t[51,3:6]))
+
+# updated to 2021
+Landings_t<-read.csv(file.path(scaldir,"nafoSISCAL.csv"))
+```
+
+
+#Fishery Catch Composition
+```{r}
+CCyrs=1978:2024
+
+ nafo3NOP = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PS", "3U")
+ nafo4VW = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX")
+ nafo4X5Z = c("4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
+
+PortData<-PortSampleData(datadir=datadir,by.sex=T, bins=bins)
+portNAFO3NOPOT=constructLF(LFdata=subset(PortData,NAFO%in%nafo3NOP&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+portNAFO4X5ZOT=constructLF(LFdata=subset(PortData,NAFO%in%nafo4X5Z&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+portNAFO4VWOT=constructLF(LFdata=subset(PortData,NAFO%in%nafo4VW&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+portNAFO3NOPLL=constructLF(LFdata=subset(PortData,NAFO%in%nafo3NOP&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+portNAFO4X5ZLL=constructLF(LFdata=subset(PortData,NAFO%in%nafo4X5Z&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+portNAFO4VWLL=constructLF(LFdata=subset(PortData,NAFO%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+
+
+ObserverData<-ObsData(datadir=datadir,by.sex=T, bins=bins,min.length=0)
+obsNAFO3NOPOT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3NOP&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+obsNAFO4X5ZOT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4X5Z&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+obsNAFO4VWOT=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4VW&GEAR=="OT"),bins=bins, Yrs = CCyrs)
+obsNAFO3NOPLL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo3NOP&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+obsNAFO4X5ZLL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4X5Z&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+obsNAFO4VWLL=constructLF(LFdata=subset(ObserverData,NAFO%in%nafo4VW&GEAR=="LL"),bins=bins, Yrs = CCyrs)
+
+
+# Long Line
+LLNafo4X5Z_males<-getNAL(portNAFO4X5ZLL,sex=1)+getNAL(obsNAFO4X5ZLL,sex=1)
+LLNafo4X5Z_females<-getNAL(portNAFO4X5ZLL,sex=2)+getNAL(obsNAFO4X5ZLL,sex=2)
+LLNafo4X5Z_combined<-getNAL(portNAFO4X5ZLL,sex='all')+getNAL(obsNAFO4X5ZLL,sex='all')
+LLNafo4X5Z_unsexed<-getNAL(portNAFO4X5ZLL,sex=0)+getNAL(obsNAFO4X5ZLL,sex=0)
+
+LLNafo4VW_males<-getNAL(portNAFO4VWLL,sex=1)+getNAL(obsNAFO4VWLL,sex=1)
+LLNafo4VW_females<-getNAL(portNAFO4VWLL,sex=2)+getNAL(obsNAFO4VWLL,sex=2)
+LLNafo4VW_combined<-getNAL(portNAFO4VWLL,sex='all')+getNAL(obsNAFO4VWLL,sex='all')
+LLNafo4VW_unsexed<-getNAL(portNAFO4VWLL,sex=0)+getNAL(obsNAFO4VWLL,sex=0)
+
+# add NL observer data
+NLmalesLL<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesLLobs_binned2022.csv"))
+NLmalesLL<-merge(data.frame(year=CCyrs),NLmalesLL,all=T)[,-1]
+NLmalesLL[is.na(NLmalesLL)]<-0
+dimnames(NLmalesLL)<-list(CCyrs,paste0("L",bins[-1]))
+NLfemalesLL<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesLLobs_binned2022.csv"))
+NLfemalesLL<-merge(data.frame(year=CCyrs),NLfemalesLL,all=T)[,-1]
+NLfemalesLL[is.na(NLfemalesLL)]<-0
+dimnames(NLfemalesLL)<-list(CCyrs,paste0("L",bins[-1]))
+NLunknownLL<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownLLobs_binned2022.csv"))
+NLunknownLL<-merge(data.frame(year=CCyrs),NLunknownLL,all=T)[,-1]
+NLunknownLL[is.na(NLunknownLL)]<-0
+dimnames(NLunknownLL)<-list(CCyrs,paste0("L",bins[-1]))
+
+LLNafo3NOP_males<-getNAL(portNAFO3NOPLL,sex=1)+getNAL(obsNAFO3NOPLL,sex=1)+NLmalesLL
+LLNafo3NOP_females<-getNAL(portNAFO3NOPLL,sex=2)+getNAL(obsNAFO3NOPLL,sex=2)+NLfemalesLL
+LLNafo3NOP_combined<-getNAL(portNAFO3NOPLL,sex='all')+getNAL(obsNAFO3NOPLL,sex='all')+NLmalesLL+NLfemalesLL+NLunknownLL
+LLNafo3NOP_unsexed<-getNAL(portNAFO3NOPLL,sex=0)+getNAL(obsNAFO3NOPLL,sex=0)+NLunknownLL
+
+# Otter Trawl
+OTNafo4X5Z_males<-getNAL(portNAFO4X5ZOT,sex=1)+getNAL(obsNAFO4X5ZOT,sex=1)
+OTNafo4X5Z_females<-getNAL(portNAFO4X5ZOT,sex=2)+getNAL(obsNAFO4X5ZOT,sex=2)
+OTNafo4X5Z_combined<-getNAL(portNAFO4X5ZOT,sex='all')+getNAL(obsNAFO4X5ZOT,sex='all')
+OTNafo4X5Z_unsexed<-getNAL(portNAFO4X5ZOT,sex=0)+getNAL(obsNAFO4X5ZOT,sex=0)
+
+OTNafo4VW_males<-getNAL(portNAFO4VWOT,sex=1)+getNAL(obsNAFO4VWOT,sex=1)
+OTNafo4VW_females<-getNAL(portNAFO4VWOT,sex=2)+getNAL(obsNAFO4VWOT,sex=2)
+OTNafo4VW_combined<-getNAL(portNAFO4VWOT,sex='all')+getNAL(obsNAFO4VWOT,sex='all')
+OTNafo4VW_unsexed<-getNAL(portNAFO4VWOT,sex=0)+getNAL(obsNAFO4VWOT,sex=0)
+
+# add NL observer data
+NLmalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesOTobs_binned2022.csv"))
+NLmalesOT<-merge(data.frame(year=CCyrs),NLmalesOT,all=T)[,-1]
+NLmalesOT[is.na(NLmalesOT)]<-0
+dimnames(NLmalesOT)<-list(CCyrs,paste0("L",bins[-1]))
+NLfemalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesOTobs_binned2022.csv"))
+NLfemalesOT<-merge(data.frame(year=CCyrs),NLfemalesOT,all=T)[,-1]
+NLfemalesOT[is.na(NLfemalesOT)]<-0
+dimnames(NLfemalesOT)<-list(CCyrs,paste0("L",bins[-1]))
+NLunknownOT<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownOTobs_binned2022.csv"))
+NLunknownOT<-merge(data.frame(year=CCyrs),NLunknownOT,all=T)[,-1]
+NLunknownOT[is.na(NLunknownOT)]<-0
+dimnames(NLunknownOT)<-list(CCyrs,paste0("L",bins[-1]))
+
+OTNafo3NOP_males<-getNAL(portNAFO3NOPOT,sex=1)+getNAL(obsNAFO3NOPOT,sex=1)+NLmalesOT
+OTNafo3NOP_females<-getNAL(portNAFO3NOPOT,sex=2)+getNAL(obsNAFO3NOPOT,sex=2)+NLfemalesOT
+OTNafo3NOP_combined<-getNAL(portNAFO3NOPOT,sex='all')+getNAL(obsNAFO3NOPOT,sex='all')+NLmalesOT+NLfemalesOT+NLunknownOT
+OTNafo3NOP_unsexed<-getNAL(portNAFO3NOPOT,sex=0)+getNAL(obsNAFO3NOPOT,sex=0)+NLunknownOT
+
+Fishery_Lengths<-list(LLNafo4X5Z_males=LLNafo4X5Z_males,
+                      LLNafo4X5Z_females=LLNafo4X5Z_females,
+                      LLNafo4X5Z_combined=LLNafo4X5Z_combined,
+                      LLNafo4X5Z_unsexed=LLNafo4X5Z_unsexed,
+                      
+                      LLNafo4VW_males=LLNafo4VW_males,
+                      LLNafo4VW_females=LLNafo4VW_females,
+                      LLNafo4VW_combined=LLNafo4VW_combined,
+                      LLNafo4VW_unsexed=LLNafo4VW_unsexed,
+                      
+                      LLNafo3NOP_males=LLNafo3NOP_males,
+                      LLNafo3NOP_females=LLNafo3NOP_females,
+                      LLNafo3NOP_combined=LLNafo3NOP_combined,
+                      LLNafo3NOP_unsexed=LLNafo3NOP_unsexed,
+                      
+                      OTNafo4X5Z_males=OTNafo4X5Z_males,
+                      OTNafo4X5Z_females=OTNafo4X5Z_females,
+                      OTNafo4X5Z_combined=OTNafo4X5Z_combined, 
+                      OTNafo4X5Z_unsexed=OTNafo4X5Z_unsexed,
+                      
+                      OTNafo4VW_males=OTNafo4VW_males,
+                      OTNafo4VW_females=OTNafo4VW_females,
+                      OTNafo4VW_combined=OTNafo4VW_combined, 
+                      OTNafo4VW_unsexed=OTNafo4VW_unsexed,
+                      
+                      OTNafo3NOP_males=OTNafo3NOP_males,
+                      OTNafo3NOP_females=OTNafo3NOP_females,
+                      OTNafo3NOP_combined=OTNafo3NOP_combined, 
+                      OTNafo3NOP_unsexed=OTNafo3NOP_unsexed) 
+
+BubblePlotLF(Fishery_Lengths,bins=bins,yrs=CCyrs,path=file.path(wd,'figures'),filen='Commercial',inches=0.1)
+
+```
+```{r}
+HAST<-read.csv(file.path(datadir,"HASTdataJan2025.csv"))
+HAST$rel_date<-as.Date(HAST$rel_date,"%d/%m/%Y")
+HAST$rel_date<-as.Date(HAST$rec_date,"%d/%m/%Y")
+HAST$rel_lon<-HAST$rel_lon*-1
+HAST$rel_lon<-HAST$rec_lon*-1
+
+
+```
+
+
+# Put it all together
+```{r}
+
+save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2024.rdata"))
+
+load(file=file.path(scaldir,"SCALmodeldata2024.rdata"))
+
+```
+
+
+# Bubble plots
+```{r}
+
+BubblePlotLF(NSRV_Lengths,bins=bins,yrs=1970:2020,path=file.path(wd,'figures'),filen='NSRVSurvey',inches=0.3,graphic='png')
+BubblePlotLF(list(NLRV_Lengths),bins=bins,yrs=1996:2019,path=file.path(wd,'figures'),filen='NLRVSurvey',inches=0.3,graphic='png')
+BubblePlotLF(HSFixed_Lengths,bins=bins,yrs=2000:2022,path=file.path(wd,'figures'),filen='FixedSurvey',inches=0.3,graphic='png')
+BubblePlotLF(HSRandom_Lengths,bins=bins,yrs=2017:2022,path=file.path(wd,'figures'),filen='RandomSurvey',inches=0.3,graphic='png')
+BubblePlotLF(Fishery_Lengths,bins=bins,yrs=1978:2022,path=file.path(wd,'figures'),filen='Commercial',inches=0.3,graphic='png')
+
+
+```
+
+# bubble for doc
+```{r}
+combinedLengths<-list(Fishery_Lengths$LLNafo3_combined,Fishery_Lengths$LLNafo4_combined,Fishery_Lengths$OTNafo3_combined,Fishery_Lengths$OTNafo4_combined,NSRV_Lengths$NSRV_combined,NLRV_Lengths$NLRV_combined,HSFixed_Lengths$HSFixed_combined,HSRandom_Lengths$HSRandom_combined)
+names(combinedLengths)<-c("LL_NAFO3","LL_NAFO4","OT_NAFO3","OT_NAFO4","RV_4VWX","RV_3NOP","HS_Fixed","HS_Random")
+
+BubblePannelPlotLF(combinedLengths,bins=bins,yrs=1970:2024,path=file.path(wd,'figures'),filen='Combined',inches=0.1,graphic='png',ht=11,wd=8)
+
+# French version
+BubblePannelPlotLF(combinedLengths,bins=bins,yrs=1970:2022,path=file.path(wd,'figures'),filen='CombinedFr',inches=0.1,graphic='png',ht=11,wd=8,lang='fr')
+
+```
+
+# Plots for Data Inputs Doc
+```{r}
+    
+    pltYrs1=2000:2022
+    pltYrs2=2017:2024
+   
+    BarPlotLF(FixedLF4X[which(names(FixedLF4X)%in%pltYrs1)],yrs=pltYrs1,rel=F,filen=file.path(wd,"figures","HSLFfixed4X"),graphic='png')
+  
+    BarPlotLF(FixedLF4VW[which(names(FixedLF4VW)%in%pltYrs1)],yrs=pltYrs1,rel=F,filen=file.path(wd,"figures","HSLFfixed4VW"),graphic='png')
+  
+    BarPlotLF(FixedLF3NOP[which(names(FixedLF3NOP)%in%pltYrs1)],yrs=pltYrs1,rel=F,filen=file.path(wd,"figures","HSLFfixed3NOP"),graphic='png')
+  
+    BarPlotLF(RandomLF4X[which(names(RandomLF4X)%in%pltYrs2)],yrs=pltYrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom4X"),graphic='png')
+
+    BarPlotLF(RandomLF4VW[which(names(RandomLF4VW)%in%pltYrs2)],yrs=pltYrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom4VW"),graphic='png')
+
+    BarPlotLF(RandomLF3NOP[which(names(RandomLF3NOP)%in%pltYrs2)],yrs=pltYrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom3NOP"),graphic='png')
+
+    
+        #BarPlotLF(FixedLF[which(names(FixedLF)%in%pltYrs1)],yrs=pltYrs1,rel=F,filen=file.path(wd,"figures","HSLFfixed_fr"),graphic='png',xlab="Longueur (cm)",ylab="Nombre de flétans")
+  
+    #BarPlotLF(RandomLF[which(names(RandomLF)%in%pltYrs2)],yrs=pltYrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom_fr"),graphic='png',xlab="Longueur (cm)",ylab="Nombre de flétans")
+
+```
+## plot all survey indices used in model ResDoc
+```{r}
+# switch for language version
+lang="en"
+#lang="fr"
+
+if(lang=="en"){
+  ylab1="Number / tow"
+  ylab2="Kg / 1000 hooks"
+  options(OutDec = ".")
+}
+
+if(lang=="fr"){
+  ylab1="Nombre / trait"
+  ylab2="Kg / 1 000 hameçons"
+  options(OutDec = ",")
+}
+
+png(file.path(wd,'figures',paste0("ModelindicesSpatial",lang,".png")), width =8, height = 8,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+plot(NPT~year,subset(NSRV_Index,year<2021), ylab=ylab1, xlab = '', ylim=c(0,max(NPT)*1.2), type='b',pch=16,xlim=c(1970,2021),xaxt='n')
+axis(1,lab=F)
+points(2018,NSRV_Index$NPT[NSRV_Index$year==2018],col='red',cex=2)
+#points(2021,NSRV_Index$NPT[NSRV_Index$year==2021],col='red',cex=2)
+#lines(mean~survey.year,NLRV_Index,type='b',pch=16,col='green3')
+plot(KgPKH~Year,subset(HSFixed_Index,Year<2022),type='b',pch=16,col='red',ylim=c(0,255),xlim=c(1970,2021), ylab=ylab2)
+lines(KgPKH~Year,subset(HSRandom_Index,Year<2022),type='b',pch=16,col='blue')
+#lines(KgPKH+KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
+#lines(KgPKH-KgPKHse~Year,HSRandom_Index,lty=2,col='blue')
+
+
+dev.off()
+
+```
+
+## plot all survey indices used in model SAR version
+```{r}
+# switch for language version
+lang="en"
+#lang="fr"
+
+if(lang=="en"){
+  ylab1="Number / tow"
+  ylab2="Kg / 1000 hooks"
+  options(OutDec = ".")
+}
+
+if(lang=="fr"){
+  ylab1="Nombre / trait"
+  ylab2="Kg / 1 000 hameçons"
+  options(OutDec = ",")
+}
+
+png(file.path(wd,'figures',paste0("ModelindicesSpatial",lang,".png")), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+par(mfcol=c(2,1), mar = c(0,4,0,0.5), omi = c(0.5, 0.25, 0.5, 0.25),las=1)
+
+plot(NPT~year,NSRV_Index4X, ylab=ylab1, xlab = '', ylim=c(0,1.25), type='b', pch=16, xaxt='n', col='blue',xlim=c(1970,2024))
+axis(1,lab=F)
+points(NPT~year,NSRV_Index4VW,type='b',col='red',pch=15)
+points(mean~survey.year,NLRV_Index3NOP,type='b',col='green',pch=17)
+
+
+plot(KgPKH~Year,HSFixed_Index4X,type='b',pch=1,lty=3,col='blue',ylim=c(0,320),xlim=c(1970,2024), ylab=ylab2)
+lines(KgPKH~Year,HSFixed_Index4VW,type='b',pch=0,lty=3,col='red')
+lines(KgPKH~Year,HSFixed_Index3NOP,type='b',pch=2,lty=3,col='green')
+
+
+lines(KgPKH~Year,HSRandom_Index4X,type='b',pch=16,col='blue')
+lines(KgPKH~Year,HSRandom_Index4VW,type='b',pch=15,col='red')
+lines(KgPKH~Year,HSRandom_Index3NOP,type='b',pch=17,col='green')
+
+
+dev.off()
+
+```
+
+HCR plot
+```{r}
+
+
+  refs=c(LRP=7.88,  USR=20,  BMSY=25,  BMSY1.2=30)
+  
+  hcr1=data.frame(B=c(0,refs,40),F=c(0.05,0.05,0.1,0.1,0.1,0.1))
+  hcr2=data.frame(B=c(0,refs,40),F=c(0.05,0.05,0.14,0.14,0.14,0.14))
+  
+  plot(F~B,hcr1,type='l',lwd=2,ylim=c(0,0.15))
+  #grid()
+  abline(v=refs,lty=2,col=c('red','yellow','green','blue'))
+
+  plot(F~B,hcr2,type='l',lwd=2,ylim=c(0,0.15))
+  #grid()
+  abline(v=refs,lty=2,col=c('red','yellow','green','blue'))
+  
+```
+

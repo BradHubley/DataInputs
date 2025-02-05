@@ -1,5 +1,5 @@
 #' @export
-BubblePlotLF<-function(LF,bins,yrs,log.trans=F,filen='',prop=F,LS=81,window=NULL,graphic='pdf',wd=11,ht=8,path=file.path(wd,'figures'),label=NULL,...){
+BubblePlotLF<-function(LF,bins,yrs,trans='sqrt',filen='',prop=F,LS=81,window=NULL,graphic='pdf',wd=11,ht=8,path=file.path(wd,'figures'),label=NULL,...){
 
 
   mids<-bins[-1]-diff(bins)/2
@@ -13,8 +13,10 @@ BubblePlotLF<-function(LF,bins,yrs,log.trans=F,filen='',prop=F,LS=81,window=NULL
     if(prop)LF[[i]]<-proportions(LF[[i]],1)
     z=as.vector(unlist(LF[[i]]))
     z[z==0]<-NA
-    if(log.trans)z=log(z)
+    if(trans=='log')z=log(z)
+    if(trans=='sqrt') z=sqrt(z/pi)
     #browser()
+
     symbols(rep(yrs,length(mids)),rep(mids,each=length(yrs)),circles=z,ylab="Length (cm)",xlab="Year",main=names(LF)[i],...)
     abline(h=LS,col='red')
     if(!is.null(window)){
