@@ -51,7 +51,7 @@ nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
 # 21B start year
 ystart =1970
 # 21B last year
-yendB=2016
+yendB=2024
 # 21A last year(assessment year)
 yend=2024
 # annual TAC table
@@ -76,6 +76,7 @@ nafoA = get_21A(count="others", yearstart = ystart, datadir=file.path(datadir,"L
 sort(unique(nafoA$Year))
 
 nafoB=get_21B(count="others",ystart,yend,type=1, datadir=file.path(datadir,"Landings"))
+nafoB=get_21Bdh(count="others",ystart,yend,type=1, datadir=datadir)
 # unique(nafoB$Division)
 nafoBdiv = get_21B(count="others",ystart,yend,type=2, datadir=file.path(datadir,"Landings"))
 

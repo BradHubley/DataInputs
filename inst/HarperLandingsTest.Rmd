@@ -146,8 +146,8 @@ Canadian Maritimes Landings only
 ```{r landings MARFIS}
 
 # MARFIS
-
-#get_data(db='marfis',data.dir=datadir,fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
+# 
+get_data(db='marfis',data.dir=datadir,fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
 
 get_data(db='marfis',data.dir=datadir)
 SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]
