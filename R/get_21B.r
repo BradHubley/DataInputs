@@ -13,18 +13,18 @@
 #' @export
 
 
-get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
+get_21B <- function(count="CDN",yearstart=1970, yearend=2024, type=1, datadir){
   nafo.70.79 <- read.csv(file.path(datadir,"NAFO21B-70-79.txt"), header = TRUE)
   nafo.80.89 <- read.csv(file.path(datadir,"NAFO21B-80-89.txt"), header = TRUE)
   nafo.90.99 <- read.csv(file.path(datadir,"NAFO21B-90-99.txt"), header = TRUE)
   nafo.00.09 <- read.csv(file.path(datadir,"NAFO21B-2000-09.txt"), header = TRUE)
-  nafo.10.18 <- read.csv(file.path(datadir,"NAFO-21B-2010-18.txt"), header = TRUE)
-  names(nafo.00.09)[9]<-"Catches"
-  names(nafo.10.18)[9]<-"Catches"
-  names(nafo.10.18)[3]<-"GearCode"
-  names(nafo.10.18)[6]<-"Divcode"
-  names(nafo.10.18)[7]<-"Code"
-  sort(unique(nafo.10.18$Divcode))
+  nafo.10.19 <- read.csv(file.path(datadir,"NAFO-21B-2010-2019.txt"), header = TRUE)
+  nafo.20.23 <- read.csv(file.path(datadir,"NAFO-21B-2020-2023.txt"), header = TRUE)
+  names(nafo.90.99)<-names(nafo.70.79)
+  names(nafo.00.09)<-names(nafo.70.79)
+  names(nafo.10.19)<-names(nafo.70.79)
+  names(nafo.20.23)<-names(nafo.70.79)
+  #sort(unique(nafo.10.19$Divcode))
 
   division <- read.csv(file.path(datadir,"divisions.txt"), header = F)
   colnames(division)=c("Divcode", "Div")
@@ -35,17 +35,17 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
   divCAN<-division$Divcode[division$Div%in%c("3N","3O","3P","3PS","3NK","4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")]
 
   #get gear and divsion data for the landing
-  nafoall<-rbind(nafo.70.79, nafo.80.89, nafo.90.99, nafo.00.09, nafo.10.18)
+  nafoall<-rbind(nafo.70.79, nafo.80.89, nafo.90.99, nafo.00.09, nafo.10.19, nafo.20.23)
   nafoall = merge(nafoall, division)
   nafoall = merge(nafoall, gear)
 
-  # estimate annual catch as a sum of monthly catch
+               # estimate annual catch as a sum of monthly catch
   #nafoall$total<-rowSums(nafoall[,10:21])
   nafoall$total<-rowSums(apply(nafoall[,10:21],2,as.numeric),na.rm=T) # did this to deal with some bad data in NAFO-21B-2010-18.txt
 
   #filter divisions; zone 5 includes CDN landings only in "5ZC","5ZE","5Y"
   nafoAH5 = nafoall   %>%
-    filter (Code=="120",Divcode%in%divCAN,Div%in%c("5ZC","5ZE","5Y"),Country%in%c(2,3,27,28))
+    filter (Code=="120",Divcode%in%divCAN,Div%in%c("5ZC","5ZE","5Y"),Country%in%c(2,3,27,28,39,40)) ##39+40...no data in them but still include? incase it ever happens??
   nafoAH34 = nafoall   %>%
     filter (Code=="120",Divcode%in%divCAN,!Div%in%c("5ZC","5ZE","5Y") )
   # unique(nafoAH34$Div)
@@ -61,14 +61,13 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
 
   # NAFO 21B all country landing by year/division/gear(>10)
   # manage areas: 5ZC, 5ZE,5Y assigned to 4X
-  # 3NK only has 2004 (not known), 2016(OT)of minor catch. assign3NK to 3N
+  # 3NK only has 2004 (not known), 2016(OT)of minor catch. assign3NK to 3N - to check in new years of data
 
   nafoB1=nafoAH  %>%
     dplyr::select(Year, Div,GearName,total )  %>%
     filter(Year >= yearstart)  %>%
-    mutate( Division=replace(Div, Div=="5ZC", "4X")) %>%
-    mutate( Division=replace(Division, Div=="5ZE", "4X"))  %>%
-    mutate( Division=replace(Division, Div=="5Y", "4X")) %>%
+    mutate( Division=replace(Div, Div=="5ZC", "5Z")) %>%
+    mutate( Division=replace(Division, Div=="5ZE", "5Z"))  %>%
     mutate( Division=replace(Division, Div=="3NK", "3N"), Div=NULL)  %>%
     rename(Gear=2)
   # sort(unique(nafoB1$Division))
@@ -102,13 +101,13 @@ get_21B <- function(count="CDN",yearstart=1970, yearend=2016, type=1, datadir){
     group_by(Year, Division, Gear) %>%
     summarise(Catch=sum(total))
 
-  Division=rep(sort(unique(nafoB$Division)),each=3,times=yearend-1970+1)
-  Year=rep(c(1970:yearend), each=21)
-  Gear=rep(c("LL", "OT", "Other"), times=(yearend-1970+1)*7)
-  Divyear70=cbind(Year, Division, Gear)
+  #Division=rep(sort(unique(nafoB$Division)),each=3,times=yearend-1970+1)
+  #Year=rep(c(1970:yearend), each=21)
+  #Gear=rep(c("LL", "OT", "Other"), times=(yearend-1970+1)*7)
+  #Divyear70=data.frame(Year, Division, Gear)
 
   #21B catch by Division and gear
-  nafoB = merge(nafoB, Divyear70, all.y = T)
+  #nafoB = merge(nafoB, Divyear70, all.y = T)
 
   if (type==1 ){
     retdata=nafoB

@@ -7,8 +7,12 @@
 #' @export
 
 
-get_21A <- function(count, yearstart,datadir){
-  landA = read.csv(file.path(datadir,"NAFO-21A-2025updated.csv"))
+get_21A <- function(count, yearstart, datadir, fn="NAFO-21A-2025updated.csv"){
+
+  nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
+  nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
+
+  landA = read.csv(file.path(datadir,fn))
   #  names(landA)
   names(landA)[5]="Catch"
   names(landA)[1]="Year"
@@ -47,10 +51,8 @@ get_21A <- function(count, yearstart,datadir){
 
   nafoA = nafoA %>%
     filter(Year >=yearstart)%>%
-    mutate( Division=replace(Division, Division=="5ZC", "4X")) %>%
-    mutate( Division=replace(Division, Division=="5ZE", "4X"))  %>%
-    mutate( Division=replace(Division, Division=="5Z", "4X"))  %>%
-    mutate( Division=replace(Division, Division=="5Y", "4X")) %>%
+    mutate( Division=replace(Division, Division=="5ZC", "5Z")) %>%
+    mutate( Division=replace(Division, Division=="5ZE", "5Z"))  %>%
     mutate( Division=replace(Division, Division=="3NK", "3N"))   %>%
     group_by(Year, Division) %>%
     summarize(CatchA=sum(Catch))

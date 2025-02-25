@@ -403,4 +403,8 @@ points(Y~X,RC,bg='green',cex=0.5,pch=21)
 
 ```
 
+#ggplot
+```{r}
+p <- ggplot2::ggplot() +    ggplot2::geom_sf(data=Mar.data::NAFOSubunitsLnd_sf, colour="black", fill=NA) +    ggplot2::geom_sf(data = thisData, ggplot2::aes(colour="#D5DBDBE6",fill = get(fld))) +    ggplot2::scale_fill_viridis_c(direction = -1, na.value = NA, name =fld) +    ggplot2::scale_colour_identity() +    ggplot2::coord_sf(xlim = c(thisbbox$xmin, thisbbox$xmax), ylim = c(thisbbox$ymin, thisbbox$ymax))  return(p)
+```
 

@@ -39,7 +39,7 @@ source(file.path(getwd(), "directories.r"))
 # source(file.path(wd, "passwords.r"))
 
 # wd ="C:/Users/LiLi/Documents"
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault/Landings_2025update"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault/Landings_2025update"
 
 # NAFO divisions
 nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
@@ -72,12 +72,12 @@ https://www.nafo.int/Data/Catch-Statistics. There are multiple zipped files each
 Additionally, the 2014 version of 21B data is available in the 2014 Assessment. 
 
 ```{r all-country landings NAFO 21A and 21B;  2014 SCAL}
-nafoA = get_21A(count="others", yearstart = ystart, datadir=datadir)  #1970
+nafoA = get_21A(count="others", yearstart = ystart, datadir=file.path(datadir,"Landings"))  #1970
 sort(unique(nafoA$Year))
 
-nafoB=get_21B(count="others",ystart,yend,type=1, datadir=datadir)
+nafoB=get_21B(count="others",ystart,yend,type=1, datadir=file.path(datadir,"Landings"))
 # unique(nafoB$Division)
-nafoBdiv = get_21B(count="others",ystart,yend,type=2, datadir=datadir)
+nafoBdiv = get_21B(count="others",ystart,yend,type=2, datadir=file.path(datadir,"Landings"))
 
 # current 21B with the version in the  2014 Assessment  
 
@@ -87,7 +87,7 @@ nafoBtotal= nafoB %>%
   summarise(CatchT=sum(Catch)  )
 
 # 21B data in the 2014 Assessment
-nafoBprev= read.csv(file.path(datadir,"nafoBprevious.csv"), header=T) 
+nafoBprev= read.csv(file.path(datadir,"Landings","nafoBprevious.csv"), header=T) 
 # compare current 21B with the previous 21B
 nafoBtp= merge(nafoBtotal, nafoBprev)   %>%
   mutate(CatchD=CatchAss-CatchT)
@@ -101,12 +101,13 @@ dev.off()
 
 
 ## Scal format of 21B  
-nafoBg = get_21B(count="others",ystart,yendB,type=4,datadir=datadir)
+nafoBg = get_21B(count="others",ystart,yendB,type=4,datadir=file.path(datadir,"Landings"))
 
 # import scal data from 2014 assessment
-scal=read.table(file.path(datadir,"scal_catch.dat"), header=F)
+scal=read.table(file.path(datadir,"scal","scal_catch.dat"), header=F)
 colnames(scal)= c("code","Year","LL3scal", "LL4scal", "OT3scal", "OT4scal")
 scal=scal[, 2:6]
+
 
 
 ```

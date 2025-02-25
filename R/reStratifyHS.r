@@ -1,5 +1,5 @@
 #' @export
-reStratify <- function(sets,strata,lines=F){
+reStratifyHS <- function(sets,strata,lines=F){
 
 
   sets$EID<-sets$FISHSET_ID
