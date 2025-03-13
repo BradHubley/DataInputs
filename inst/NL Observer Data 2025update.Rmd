@@ -1,0 +1,459 @@
+---
+title: "NL Observer Data"
+author: "Danni Harper"
+date: "1/7/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+ library(Mar.datawrangling)
+ library(tidyverse)
+ library(lubridate)
+ library(stringr)
+ library(data.table)
+
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/"
+#wd=file.path(datadir,"Newfoundland Data/DataInputs/"
+source(file.path(getwd(), "inst/directories.r"))
+source(file.path(wd, "passwords.r"))
+```
+
+
+Changing LF data from text file to data frame
+```{r}
+NLobs_LF24 <- read.fwf(file.path(datadir,"NLdata_received2021/maritimes_Ahal_LF_21-24.lfdata"), widths=c(1,4,2,4,1,3,8,1,2,3,3,2,5,3,4,1,2,2,2,1,3,4,6,4,3,1,4,1,rep((3),times=250)))
+                  
+
+colnames(NLobs_LF24) <- c("data_source", "set_no", "country_q", "sample_spp", "sex", "deployment_no", "vessel", "ton_class", "gear", "mesh_size", "NAFO_div", "unit_area", "ASOC", "num_measured", "start_time", "sample_type", "year", "month", "day", "quarter", "country", "depth_m", "total_wt_kg", "sample_wt_kg", "otoliths", "len_gr_int", "spp_sought", "blank",  seq(1,250))
+
+write.csv(NLobs_LF24, file.path(datadir,"NLdata_received2021/NLobserver_lf24.csv"))
+```
+
+Changing set info from text file to data frame
+```{r}
+NLobs_set24 <- read.fwf(file.path(datadir,"NLdata_received2021/maritimes_Ahal_SC_21_24.sdet"), widths=c(2,2,10,4,4,3,2,2,3,3,3,1,3,4,1,1,2,2,2,3,2,4,4,4,4,4,1,4,2,2,2,3,4,1,1,1,4,5,4,1,3,3,3,3,3,3,8,3,5,6,6,6,6,6,5,5,2,2,1,3,5))
+
+colnames(NLobs_set24) <- c("year", "country", "side_no", "hpwr","deployment_no", "set_no","vessel_class", "gear", "codend_mesh", "body_mesh_size", "roller_size", "chafing_gear", "num_gillnets", "num_hooks", "net_damage", "in_out_eez", "day", "month", "NAFO_div", "unit_area", "tow_speed", "lat_ddmm", "long_ddmm", "av_fishing_depth_m", "start_time", "set_dur", "data_type", "directed_spp", "num_spp", "quota", "trip_type", "av_len_gillnet", "num_pots", "window", "num_windows", "record_type", "species", "kept_wt_kg", "discard_wt_kg", "blank1", "num_ind", "blank2", "blank3", "blank4", "blank5", "blank6", "stratarea", "pots", "est_wt_crab", "ASOC", "start_lat_ddmmmm", "start_long_ddmmmm", "end_lat_ddmmmm", "end_long_ddmmmm", "logbook_id", "logbook_id2", "haul_day", "haul_month", "catch_comp", "subtrip_no", "ASO_company")
+
+write.csv(NLobs_set24, file.path(datadir,"NLdata_received2021/NLobserver_setdetail24.csv"))
+```
+
+NAFO divisions and unit areas need fixing for NLobs_set (DO WE NEED UNIT AREAS(subdivisions within NAFO divisions??)
+```{r}
+NLobs_set24 <- NLobs_set24 %>%
+  mutate(NAFO_div= replace(NAFO_div, NAFO_div == 34, "3N")) %>%
+  mutate(NAFO_div= replace(NAFO_div, NAFO_div == 35, "3O")) %>%
+  mutate(NAFO_div= replace(NAFO_div, NAFO_div == 36, "3Pn")) %>%
+  mutate(NAFO_div= replace(NAFO_div, NAFO_div == 37, "3Ps")) %>%
+  mutate(NAFO_div= replace(NAFO_div, NAFO_div == 44, "4Vn")) %>%
+  mutate(NAFO_div= replace(NAFO_div, NAFO_div == 45, "4Vs")) %>%
+  mutate(NAFO_div= replace(NAFO_div, NAFO_div == 46, "4W"))
+
+```
+
+Convert coordinates from ddmm.mm to dec deg (NLobs_set)...position data more available for just ddmm
+ddmm.mm = NA for 10,381 out of 20,681
+ddmm = NA for 4 out of 20,681
+worth it to use less precise to have more available data?
+```{r}
+#column of just degrees
+NLobs_set24 <- NLobs_set24 %>%
+  mutate(lat_deg = substr(lat_ddmm, 1, 2))
+
+#column that has mmmm
+
+#adding decimal into mm.mm
+
+#dividing mm.mm by 60 to get decimal column
+
+#combining degree and decimal column to get decimal degrees
+
+
+```
+
+Combine set and LF info into 1 useful DF with only useful columns
+```{r}
+
+```
+
+Check LF against #measured (I assume they created the "# measured" column by just adding the LF by we'll see...)
+```{r}
+
+```
+
+Question: there are 20,681 set observations and only 13,440 LF observations. Assuming reach row or each table corresponds to a set, where are there more sets than LF? Did they include all sets for all trips that caught halibut (including sets on those trips that didn't catch halibut?)
+
+Question: LF goes to 250...ours goes to 260, do we need the extra columns here to make this work?
+
+Question: do you want it binned like how our other data is binned (right now it's in 1cm intervals)
+
+
+Data for Brad (3 tables (one for each sex category), years as row, columns are LF bins)
+
+## Otter Trawl
+
+```{r}
+NLobs_lf24<-NLobs_LF24
+NLobs_malesOT24 <- NLobs_lf24 %>% 
+  filter(sex == 1 & gear == 1)
+NLobs_femalesOT24 <- NLobs_lf24 %>% 
+  filter(sex == 5 & gear == 1)
+NLobs_unknownOT24 <- NLobs_lf24 %>%
+  filter(is.na(sex) & gear == 1)
+
+
+#males
+NLmalesOT_LF24 <- NLobs_malesOT24 %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLmalesOT_LF24 <- NLmalesOT_LF24 %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLmalesOT_LF24 <- NLmalesOT_LF24 %>%
+  mutate(year= replace(year, year == 21, 2021)) %>%
+  mutate(year= replace(year, year == 22, 2022)) %>%
+  mutate(year= replace(year, year == 23, 2023)) %>%
+  mutate(year= replace(year, year == 24, 2024))
+
+#females
+NLfemalesOT_LF24 <- NLobs_femalesOT24 %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLfemalesOT_LF24 <- NLfemalesOT_LF24 %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLfemalesOT_LF24 <- NLfemalesOT_LF24 %>%
+  mutate(year= replace(year, year == 21, 2021)) %>%
+  mutate(year= replace(year, year == 22, 2022)) %>%
+  mutate(year= replace(year, year == 23, 2023)) %>%
+  mutate(year= replace(year, year == 24, 2024))
+
+##unknown sex
+NLunknownOT_LF24 <- NLobs_unknownOT24 %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLunknownOT_LF24 <- NLunknownOT_LF24 %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLunknownOT_LF24 <- NLunknownOT_LF24 %>%
+  mutate(year= replace(year, year == 21, 2021)) %>%
+  mutate(year= replace(year, year == 22, 2022)) %>%
+  mutate(year= replace(year, year == 23, 2023)) %>%
+  mutate(year= replace(year, year == 24, 2024))
+
+write.csv(NLmalesOT_LF24, file.path(datadir,"NLdata_received2021/NLmaleOTLF2024.csv"),row.names=F)
+write.csv(NLfemalesOT_LF24, file.path(datadir,"NLdata_received2021/NLfemaleOTLF2024.csv"),row.names=F)
+write.csv(NLunknownOT_LF24, file.path(datadir,"NLdata_received2021/NLunknownOTLF2024.csv"),row.names=F)
+
+
+##bin by 5cm (0,250) 
+
+## added this in case no observation in a year
+    yrs<-2021:2024
+    NLmalesOT_LF24 <- merge(NLmalesOT_LF24,data.frame(year=yrs),all=T)
+    NLmalesOT_LF24[is.na(NLmalesOT_LF24)]<-0
+
+#male
+NLmales2_24 <- transpose(NLmalesOT_LF24, keep.names = "", make.names = "year") 
+NLmales2_24 <-NLmales2_24 %>% rename_with( ~ paste0("yr", .x))
+NLmales2_24 <- NLmales2_24 %>%
+  rename(length = yrV1)
+
+NLmales2_24$length <- as.numeric(NLmales2_24$length)
+
+## changed code here to do it as a loop
+    NLmalesOT24<-list()
+    for(i in 1:length(yrs)){
+      NLmalesOT24[[i]]<-binNumAtLen(num.at.len = NLmales2_24[,paste0("yr",yrs[i])], len = NLmales2_24$length, bins = seq(0, 260, 5))
+    }
+    NLmalesOT.tab24 <- data.frame(do.call("cbind",NLmalesOT24))
+    names(NLmalesOT.tab24)<-yrs
+    
+## to here
+
+NLmalesOT.tab24 <- tibble::rownames_to_column(NLmalesOT.tab24, "length")
+
+NLmalesOT.tab24$length<-gsub("L"," ", as.character(NLmalesOT.tab24$length))
+
+NLmalesOT.tab24$length <- as.numeric(NLmalesOT.tab24$length)
+
+NLmalesOT.tab24 <- transpose(NLmalesOT.tab24, keep.names = "yr", make.names = "length")
+
+NLmalesOT.tab24$yr <- gsub("yr"," ", as.character(NLmalesOT.tab24$yr))
+
+NLmalesOT.tab24 <- NLmalesOT.tab24 %>%
+   rename(year = yr)
+
+write.csv(NLmalesOT.tab24, file.path(datadir,"NLdata_received2021/NLmalesOTobs_binned2024.csv"), row.names = FALSE)
+
+#female
+
+
+## added this in case no observation in a year
+    yrs<-2021:2024
+    NLfemalesOT_LF24 <- merge(NLfemalesOT_LF24,data.frame(year=yrs),all=T)
+    NLfemalesOT_LF24[is.na(NLfemalesOT_LF24)]<-0
+
+NLfemales2_24 <- transpose(NLfemalesOT_LF24, keep.names = "", make.names = "year") 
+NLfemales2_24 <-NLfemales2_24 %>% rename_with( ~ paste0("yr", .x))
+NLfemales2_24 <- NLfemales2_24 %>%
+  rename(length = yrV1)
+
+NLfemales2_24$length <- as.numeric(NLfemales2_24$length)
+
+
+## changed code here to do it as a loop
+    NLfemalesOT24<-list()
+    for(i in 1:length(yrs)){
+      NLfemalesOT24[[i]]<-binNumAtLen(num.at.len = NLfemales2_24[,paste0("yr",yrs[i])], len = NLfemales2_24$length, bins = seq(0, 260, 5))
+    }
+    NLfemalesOT.tab24 <- data.frame(do.call("cbind",NLfemalesOT24))
+    names(NLfemalesOT.tab24)<-yrs
+    
+## to here
+
+
+NLfemalesOT.tab24 <- tibble::rownames_to_column(NLfemalesOT.tab24, "length")
+
+NLfemalesOT.tab24$length<-gsub("L"," ", as.character(NLfemalesOT.tab24$length))
+
+NLfemalesOT.tab24$length <- as.numeric(NLfemalesOT.tab24$length)
+
+NLfemalesOT.tab24 <- transpose(NLfemalesOT.tab24, keep.names = "yr", make.names = "length")
+
+NLfemalesOT.tab24$yr <- gsub("yr"," ", as.character(NLfemalesOT.tab24$yr))
+
+NLfemalesOT.tab24 <- NLfemalesOT.tab24 %>%
+   rename(year = yr)
+
+write.csv(NLfemalesOT.tab24, file.path(datadir,"NLdata_received2021/NLfemalesOTobs_binned2024.csv"), row.names = FALSE)
+
+#unknown sex
+
+## added this in case no observation in a year
+    yrs<-2021:2024
+    NLunknownOT_LF24 <- merge(NLunknownOT_LF24,data.frame(year=yrs),all=T)
+    NLunknownOT_LF24[is.na(NLunknownOT_LF24)]<-0
+
+NLunknown2_24 <- transpose(NLunknownOT_LF24, keep.names = "", make.names = "year") 
+NLunknown2_24 <-NLunknown2_24 %>% rename_with( ~ paste0("yr", .x))
+NLunknown2_24 <- NLunknown2_24 %>%
+  rename(length = yrV1)
+
+NLunknown2_24$length <- as.numeric(NLunknown2_24$length)
+
+
+## changed code here to do it as a loop
+    NLunknownOT24<-list()
+    for(i in 1:length(yrs)){
+      NLunknownOT24[[i]]<-binNumAtLen(num.at.len = NLunknown2_24[,paste0("yr",yrs[i])], len = NLunknown2_24$length, bins = seq(0, 260, 5))
+    }
+    NLunknownOT.tab24 <- data.frame(do.call("cbind",NLunknownOT24))
+    names(NLunknownOT.tab24)<-yrs
+    
+## to here
+
+NLunknownOT.tab24 <- tibble::rownames_to_column(NLunknownOT.tab24, "length")
+
+NLunknownOT.tab24$length<-gsub("L"," ", as.character(NLunknownOT.tab24$length))
+
+NLunknownOT.tab24$length <- as.numeric(NLunknownOT.tab24$length)
+
+NLunknownOT.tab24 <- transpose(NLunknownOT.tab24, keep.names = "yr", make.names = "length")
+
+NLunknownOT.tab24$yr <- gsub("yr"," ", as.character(NLunknownOT.tab24$yr))
+
+NLunknownOT.tab24 <- NLunknownOT.tab24 %>%
+   rename(year = yr)
+
+write.csv(NLunknownOT.tab24, file.path(datadir,"NLdata_received2021/NLunknownOTobs_binned2024.csv"), row.names = FALSE)
+```
+
+## Longline
+
+Data for Brad (3 tables (one for each sex category), years as row, columns are LF bins)
+```{r}
+
+NLobs_malesLL24 <- NLobs_lf24 %>% 
+  filter(sex == 1 & gear == 7)
+NLobs_femalesLL24 <- NLobs_lf24 %>% 
+  filter(sex == 5 & gear == 7)
+NLobs_unknownLL24 <- NLobs_lf24 %>%
+  filter(is.na(sex) & gear == 7)
+
+
+#males
+NLmalesLL_LF24 <- NLobs_malesLL24 %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLmalesLL_LF24 <- NLmalesLL_LF24 %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLmalesLL_LF24 <- NLmalesLL_LF24 %>%
+  mutate(year= replace(year, year == 21, 2021)) %>%
+  mutate(year= replace(year, year == 22, 2022)) %>%
+  mutate(year= replace(year, year == 23, 2023)) %>%
+  mutate(year= replace(year, year == 24, 2024)) 
+
+#females
+NLfemalesLL_LF24 <- NLobs_femalesLL24 %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLfemalesLL_LF24 <- NLfemalesLL_LF24 %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLfemalesLL_LF24 <- NLfemalesLL_LF24 %>%
+    mutate(year= replace(year, year == 21, 2021)) %>%
+  mutate(year= replace(year, year == 22, 2022)) %>%
+  mutate(year= replace(year, year == 23, 2023)) %>%
+  mutate(year= replace(year, year == 24, 2024)) 
+
+##unknown sex
+NLunknownLL_LF24 <- NLobs_unknownOT24 %>% 
+  select(-"data_source", -"set_no", -"country_q", -"sample_spp", -"sex", -"deployment_no", -"vessel", -"ton_class", -"gear", -"mesh_size", -"NAFO_div", -"unit_area", -"ASOC", -"num_measured", -"start_time", -"sample_type", -"month", -"day", -"quarter", -"country", -"depth_m", -"sample_wt_kg", -"total_wt_kg", -"otoliths", -"len_gr_int", -"spp_sought", -"blank")
+
+NLunknownLL_LF24 <- NLunknownLL_LF24 %>%
+  group_by(year) %>%
+  summarise_each(funs(sum))
+
+NLunknownLL_LF24 <- NLunknownLL_LF24 %>%
+    mutate(year= replace(year, year == 21, 2021)) %>%
+  mutate(year= replace(year, year == 22, 2022)) %>%
+  mutate(year= replace(year, year == 23, 2023)) %>%
+  mutate(year= replace(year, year == 24, 2024)) 
+
+write.csv(NLmalesLL_LF24, file.path(datadir,"NLdata_received2021/NLmaleLLLF2024.csv"))
+write.csv(NLfemalesLL_LF24, file.path(datadir,"NLdata_received2021/NLfemaleLLLF2024.csv"))
+write.csv(NLunknownLL_LF24, file.path(datadir,"NLdata_received2021/NLunknownLLLF2024.csv"))
+
+
+##bin by 5cm (0,250) yrs<-1995:2020 NLmalesOT_LF <- merge(NLmalesOT_LF,data.frame(year=yrs),all=T) NLmalesOT_LF[is.na(NLmalesOT_LF)]<-0
+
+#male
+
+## added this in case no observation in a year
+    yrs<-2021:2024
+    NLmalesLL_LF24 <- merge(NLmalesLL_LF24,data.frame(year=yrs),all=T)
+    NLmalesLL_LF24[is.na(NLmalesLL_LF24)]<-0
+
+#male
+NLmales2_24 <- transpose(NLmalesLL_LF24, keep.names = "", make.names = "year") 
+NLmales2_24 <-NLmales2_24 %>% rename_with( ~ paste0("yr", .x))
+NLmales2_24 <- NLmales2_24 %>%
+  rename(length = yrV1)
+
+NLmales2_24$length <- as.numeric(NLmales2_24$length)
+
+## changed code here to do it as a loop
+    NLmalesLL24<-list()
+    for(i in 1:length(yrs)){
+      NLmalesLL24[[i]]<-binNumAtLen(num.at.len = NLmales2_24[,paste0("yr",yrs[i])], len = NLmales2_24$length, bins = seq(0, 260, 5))
+    }
+    NLmalesLL.tab24 <- data.frame(do.call("cbind",NLmalesLL24))
+    names(NLmalesLL.tab24)<-yrs
+    
+## to here
+    
+NLmalesLL.tab24 <- tibble::rownames_to_column(NLmalesLL.tab24, "length")
+
+NLmalesLL.tab24$length<-gsub("L"," ", as.character(NLmalesLL.tab24$length))
+
+NLmalesLL.tab24$length <- as.numeric(NLmalesLL.tab24$length)
+
+NLmalesLL.tab24 <- transpose(NLmalesLL.tab24, keep.names = "yr", make.names = "length")
+
+NLmalesLL.tab24$yr <- gsub("yr"," ", as.character(NLmalesLL.tab24$yr))
+
+NLmalesLL.tab24 <- NLmalesLL.tab24 %>%
+   rename(year = yr)
+
+write.csv(NLmalesLL.tab24, file.path(datadir,"NLdata_received2021/NLmalesLLobs_binned2024.csv"), row.names = FALSE)
+
+#female
+
+## added this in case no observation in a year
+    yrs<-2021:2024
+    NLfemalesLL_LF24 <- merge(NLfemalesLL_LF24,data.frame(year=yrs),all=T)
+    NLfemalesLL_LF24[is.na(NLfemalesLL_LF24)]<-0
+
+#female
+NLfemales2_24 <- transpose(NLfemalesLL_LF24, keep.names = "", make.names = "year") 
+NLfemales2_24 <-NLfemales2_24 %>% rename_with( ~ paste0("yr", .x))
+NLfemales2_24 <- NLfemales2_24 %>%
+  rename(length = yrV1)
+
+NLfemales2_24$length <- as.numeric(NLfemales2_24$length)
+
+## changed code here to do it as a loop
+    NLfemalesLL24<-list()
+    for(i in 1:length(yrs)){
+      NLfemalesLL24[[i]]<-binNumAtLen(num.at.len = NLfemales2_24[,paste0("yr",yrs[i])], len = NLfemales2_24$length, bins = seq(0, 260, 5))
+    }
+    NLfemalesLL.tab24 <- data.frame(do.call("cbind",NLfemalesLL24))
+    names(NLfemalesLL.tab24)<-yrs
+    
+## to here
+    
+NLfemalesLL.tab24 <- tibble::rownames_to_column(NLfemalesLL.tab24, "length")
+
+NLfemalesLL.tab24$length<-gsub("L"," ", as.character(NLfemalesLL.tab24$length))
+
+NLfemalesLL.tab24$length <- as.numeric(NLfemalesLL.tab24$length)
+
+NLfemalesLL.tab24 <- transpose(NLfemalesLL.tab24, keep.names = "yr", make.names = "length")
+
+NLfemalesLL.tab24$yr <- gsub("yr"," ", as.character(NLfemalesLL.tab24$yr))
+
+NLfemalesLL.tab24 <- NLfemalesLL.tab24 %>%
+   rename(year = yr)
+
+write.csv(NLfemalesLL.tab24, file.path(datadir,"NLdata_received2021/NLfemalesLLobs_binned2024.csv"), row.names = FALSE)
+
+#unknown sex
+
+## added this in case no observation in a year
+    yrs<-2021:2024
+    NLunknownLL_LF24 <- merge(NLunknownLL_LF24,data.frame(year=yrs),all=T)
+    NLunknownLL_LF24[is.na(NLunknownLL_LF24)]<-0
+
+#unknown
+NLunknown2_24 <- transpose(NLunknownLL_LF24, keep.names = "", make.names = "year") 
+NLunknown2_24 <-NLunknown2_24 %>% rename_with( ~ paste0("yr", .x))
+NLunknown2_24 <- NLunknown2_24 %>%
+  rename(length = yrV1)
+
+NLunknown2_24$length <- as.numeric(NLunknown2_24$length)
+
+## changed code here to do it as a loop
+    NLunknownLL24<-list()
+    for(i in 1:length(yrs)){
+      NLunknownLL24[[i]]<-binNumAtLen(num.at.len = NLunknown2_24[,paste0("yr",yrs[i])], len = NLunknown2_24$length, bins = seq(0, 260, 5))
+    }
+    NLunknownLL.tab24 <- data.frame(do.call("cbind",NLunknownLL24))
+    names(NLunknownLL.tab24)<-yrs
+    
+## to here
+    
+NLunknownLL.tab24 <- tibble::rownames_to_column(NLunknownLL.tab24, "length")
+
+NLunknownLL.tab24$length<-gsub("L"," ", as.character(NLunknownLL.tab24$length))
+
+NLunknownLL.tab24$length <- as.numeric(NLunknownLL.tab24$length)
+
+NLunknownLL.tab24 <- transpose(NLunknownLL.tab24, keep.names = "yr", make.names = "length")
+
+NLunknownLL.tab24$yr <- gsub("yr"," ", as.character(NLunknownLL.tab24$yr))
+
+NLunknownLL.tab24 <- NLunknownLL.tab24 %>%
+   rename(year = yr)
+
+write.csv(NLunknownLL.tab24, file.path(datadir,"NLdata_received2021/NLunknownLLobs_binned2024.csv"), row.names = FALSE)
+```
+
+
