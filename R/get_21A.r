@@ -1,6 +1,6 @@
 # Function 2 :
 # get 21A Atlantic halibut landing, unit ton
-# Download from here: https://www.nafo.int/Data/STATLANT. Select HAL - ATLANTIC HALIBUT as the species, select all countries,  and save the .csv
+# Download from here: https://www.nafo.int/Data/STATLANT-21A. Select HAL - ATLANTIC HALIBUT as the species, select all countries,  and save the .csv
 # count="CDN" for Canada; "Foreign" for foreign countries; others for all countries
 # zone 5 ("5ZC","5ZE","5Z","5Y") is restricted to CDN landings only
 # landings in "5Z" only occurred in 1960s.
@@ -51,8 +51,7 @@ get_21A <- function(count, yearstart, datadir, fn="NAFO-21A-2025updated.csv"){
 
   nafoA = nafoA %>%
     filter(Year >=yearstart)%>%
-    mutate( Division=replace(Division, Division=="5ZC", "5Z")) %>%
-    mutate( Division=replace(Division, Division=="5ZE", "5Z"))  %>%
+    mutate( Division=replace(Division, Division%in%c("5ZC","5ZE","5Y"), "4X"))  %>%
     mutate( Division=replace(Division, Division=="3NK", "3N"))   %>%
     group_by(Year, Division) %>%
     summarize(CatchA=sum(Catch))

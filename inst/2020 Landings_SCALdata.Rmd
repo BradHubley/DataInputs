@@ -76,9 +76,9 @@ nafoA = get_21A(count="others", yearstart = ystart, datadir=file.path(datadir,"L
 sort(unique(nafoA$Year))
 
 nafoB=get_21B(count="others",ystart,yend,type=1, datadir=file.path(datadir,"Landings"))
-nafoB=get_21Bdh(count="others",ystart,yend,type=1, datadir=datadir)
+#nafoB=get_21Bdh(count="others",ystart,yend,type=1, datadir=datadir)
 # unique(nafoB$Division)
-nafoBdiv = get_21B(count="others",ystart,yend,type=2, datadir=file.path(datadir,"Landings"))
+nafoBdiv = get_21B(count="others",ystart,yend,type=2,datadir=file.path(datadir,"Landings"))
 
 # current 21B with the version in the  2014 Assessment  
 
@@ -120,7 +120,7 @@ Download MARFIS data since 2000.
 ```{r MARFIS}
 # no need to run this, if you just ran 2020Landings_CDNdata.rmd
 
-# get_data(db='marfis',data.dir=file.path(wd,'data'),fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
+ #get_data(db='marfis',data.dir=datadir,fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
 
   get_data(db='marfis',data.dir=datadir)
   SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]
@@ -165,7 +165,7 @@ Download MARFIS data since 2000.
   
   # MARFIS: Canada landing by year/division/gear
   
-  div<-c("3N","3O","3P","4VN","4VS","4W","4X","5")
+  div<-c("3N","3O","3P","4VN","4VS","4W","4X","5Z","5Y")
   mar2=NULL
   for (i in (1:length(div))) {
     data1= mar1   %>%
@@ -177,7 +177,7 @@ Download MARFIS data since 2000.
   }
   
   mar2 =data.frame(mar2)   %>%
-    mutate( Division=replace(Division, Division=="5", "4X"))   %>%
+    #mutate( Division=replace(Division, Division=="5", "4X"))   %>%
     group_by(Year,Division,Gear)  %>%
     summarize(CatchM=sum(CatchM)) 
   mar=as.data.frame(mar2)
@@ -214,15 +214,17 @@ Landings were inconsistent among different datasets. NAFO landing 21A contains d
 # MARFIS: catch by year/division aggregating gear
 mardiv = mar   %>%
   group_by(Year,Division)  %>%
-  summarize(CatchM=round(sum(CatchM)))
+  summarize(CatchM=round(sum(CatchM))) 
 mardiv$Year=as.numeric(mardiv$Year) 
 
 #compare landing by year/division (7) from 21A, 21B, and MARFIS
 # 21A: every year has 7 divisions.
 # missing in both LL and OT for each division
 
-nafoAB=merge(nafoA, nafoBdiv, all.x = T)
+nafoAB=merge(nafoA, nafoBdiv, all.x = T)%>%
+  replace(is.na(.), 0)
 nafoABM=  merge(nafoAB, mardiv, all.x=T)%>%
+  replace(is.na(.), 0) %>%
   mutate(CatchMA = CatchM-CatchA)  %>%
   mutate(CatchBA = CatchB-CatchA) 
 

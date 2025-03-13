@@ -136,6 +136,8 @@ write.csv(table2,"C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_20
 write.csv(table1,"C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/figuredata_2024.csv",row.names = F)
 table2
 
+table2<-read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/update_table1_2024.csv")
+
 ```
 
 ### from MARFIS for recent data

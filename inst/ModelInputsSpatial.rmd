@@ -295,8 +295,52 @@ NLRV_Index3NOP$CV<-sqrt(NLRV_Index3NOP$var)/NLRV_Index3NOP$mean
 #Landings_t<-read.csv(file.path(scaldir,"nafoSCAL.csv"))
 #Landings_t<-rbind(Landings_t,data.frame(X=52,Year=2021,Landings_t[51,3:6]))
 
+
 # updated to 2021
-Landings_t<-read.csv(file.path(scaldir,"nafoSISCAL.csv"))
+Landings_old<-read.csv(file.path(scaldir,"nafoSISCAL.csv"))
+
+Landings_old <- Landings_old |>
+  mutate(p3LL=LL3/(OT3+LL3),p3OT=OT3/(OT3+LL3),p4LL=LL4/(OT4+LL4),p4OT=OT4/(OT4+LL4))
+
+# updated to 2023
+Landings_t<-read.csv(file.path(datadir, "Landings", "LandingsByGear2024.csv"))
+
+SISCAL.Catch <-Landings_t |>   
+  mutate( Division=replace(Division, Division%in%c("4VN","4VS","4W"), "4VW"))  |>
+  mutate( Division=replace(Division, Division%in%c("3N","3O","3PS"), "3NOP"))  |>
+  group_by(Year,Division, Gear) |>
+  summarize(Catch=sum(Catch)) |>
+  pivot_wider(names_from = c(Division,Gear),values_from = Catch,names_prefix ="c") |>
+  as.data.frame()
+
+SISCAL.Catch <-SISCAL.Catch |> 
+   mutate(p4VW=c4VW_LL/(c4VW_LL+c4X_LL)) |>
+   mutate(p4X=c4X_LL/(c4VW_LL+c4X_LL)) |>
+   mutate(p3LL=c3NOP_LL   /(c3NOP_LL   +c3NOP_OT   )) |>
+   mutate(p3OT=c3NOP_OT/(c3NOP_LL+c3NOP_OT)) 
+
+nafoA = get_21A(count="others", yearstart = ystart, datadir=file.path(datadir,"Landings"), fn="NAFO-21A-2025updated.csv") 
+
+SISCAL.nafoA <- nafoA |>
+  mutate( Division=replace(Division, Division%in%c("4VN","4VS","4W"), "4VW"))  |>
+  mutate( Division=replace(Division, Division%in%c("3N","3O","3PS"), "3NOP"))  |>
+  group_by(Year,Division) |>
+  summarize(Catch=sum(CatchA)) |>
+  pivot_wider(names_from = c(Division),values_from = Catch,names_prefix ="c") |>
+  as.data.frame()
+
+SISCAL.Landings <-SISCAL.nafoA |>
+  left_join( dplyr::select(SISCAL.Catch,Year,pLL4VW,pOT4VW,pLL4X,pOT4X))|>
+  left_join( dplyr::select(Landings_old,Year,p3LL,p3OT,p4LL,p4OT))
+
+
+  p3LL<-Landings_old$p3LL[Landings_old$Year%in%2017:2021]
+  p3LL<-c(p3LL,rep(mean(p3LL),2))
+SISCAL.Catch$c3NOP_LL[SISCAL.Catch$Year%in%2017:2023]<-SISCAL.nafoA$c3NOP[SISCAL.Catch$Year%in%2017:2023]*p3LL
+SISCAL.Catch$c3NOP_OT[SISCAL.Catch$Year%in%2017:2023]<-SISCAL.nafoA$c3NOP[SISCAL.Catch$Year%in%2017:2023]*(1-p3LL)
+
+write.csv(SISCAL.Catch[,1:7],file.path(datadir, "Landings", "SISCAL_Catch_2023.csv"),row.names=F)
+SISCAL.Catch<-read.csv(file.path(datadir, "Landings", "SISCAL_Catch_2023.csv"))
 ```
 
 
@@ -368,15 +412,21 @@ OTNafo4VW_combined<-getNAL(portNAFO4VWOT,sex='all')+getNAL(obsNAFO4VWOT,sex='all
 OTNafo4VW_unsexed<-getNAL(portNAFO4VWOT,sex=0)+getNAL(obsNAFO4VWOT,sex=0)
 
 # add NL observer data
-NLmalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesOTobs_binned2022.csv"))
+NLmalesOT1<-read.csv(file.path(datadir,"Newfoundland Data/NLmalesOTobs_binned2022.csv"))
+NLmalesOT2<-read.csv(file.path(datadir,"Newfoundland Data/OBS 2024 update/NLmalesOTobs_binned2024.csv"))
+NLmalesOT<-rbind(NLmalesOT1,NLmalesOT2)
 NLmalesOT<-merge(data.frame(year=CCyrs),NLmalesOT,all=T)[,-1]
 NLmalesOT[is.na(NLmalesOT)]<-0
 dimnames(NLmalesOT)<-list(CCyrs,paste0("L",bins[-1]))
-NLfemalesOT<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesOTobs_binned2022.csv"))
+NLfemalesOT1<-read.csv(file.path(datadir,"Newfoundland Data/NLfemalesOTobs_binned2022.csv"))
+NLfemalesOT2<-read.csv(file.path(datadir,"Newfoundland Data/OBS 2024 update/NLfemalesOTobs_binned2024.csv"))
+NLfemalesOT<-rbind(NLfemalesOT1,NLfemalesOT2)
 NLfemalesOT<-merge(data.frame(year=CCyrs),NLfemalesOT,all=T)[,-1]
 NLfemalesOT[is.na(NLfemalesOT)]<-0
 dimnames(NLfemalesOT)<-list(CCyrs,paste0("L",bins[-1]))
-NLunknownOT<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownOTobs_binned2022.csv"))
+NLunknownOT1<-read.csv(file.path(datadir,"Newfoundland Data/NLunknownOTobs_binned2022.csv"))
+NLunknownOT2<-read.csv(file.path(datadir,"Newfoundland Data/OBS 2024 update/NLunknownOTobs_binned2024.csv"))
+NLunknownOT<-rbind(NLunknownOT1,NLunknownOT2)
 NLunknownOT<-merge(data.frame(year=CCyrs),NLunknownOT,all=T)[,-1]
 NLunknownOT[is.na(NLunknownOT)]<-0
 dimnames(NLunknownOT)<-list(CCyrs,paste0("L",bins[-1]))
@@ -453,6 +503,7 @@ rec_points$rec_nafo <- apply(within, 1, function(x) ifelse(any(x), NAFO.sf$ZONE[
 HAST<-merge(merge(HAST,st_drop_geometry(rel_points),all.x=T),st_drop_geometry(rec_points),all.x=T)
 
 write.csv(HAST,file.path(datadir,"HASTdataJan2025_BH.csv"),row.names=F)
+HAST<-read.csv(file.path(datadir,"HASTdataJan2025_BH.csv"))
 
 
 ```
@@ -553,7 +604,22 @@ dev.off()
 # Put it all together
 ```{r}
 
-save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2024.rdata"))
+save(
+  BiologicalParameters,
+  NSRV_Index4X,
+  NSRV_Index4VW,
+  NLRV_Index3NOP,
+  HSFixed_Index4X,
+  HSFixed_Index4VW,
+  HSFixed_Index3NOP,
+  HSRandom_Index4X,
+  HSRandom_Index4VW,
+  HSRandom_Index3NOP,
+  Survey_Lengths,
+  SISCAL.Catch,
+  Fishery_Lengths,
+  
+  file=file.path(scaldir,"SCALmodeldata2024.rdata"))
 
 load(file=file.path(scaldir,"SCALmodeldata2024.rdata"))
 

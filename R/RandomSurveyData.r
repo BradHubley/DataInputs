@@ -44,7 +44,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
     baitcodes<-isdb$ISGEARFEATURECODES$GEARFCD_ID[isdb$ISGEARFEATURECODES$GEARFCL_ID=="BAIT TYPES"]
     isdb$ISGEARFEATURES$FEATURE_VALUE[isdb$ISGEARFEATURES$GEARFCD_ID %in%baitcodes]<-1
     gear <- left_join(isdb$ISGEARFEATURES[,c("GEAR_ID","GEARFCD_ID","FEATURE_VALUE")], isdb$ISGEARFEATURECODES[,c("GEARFCD_ID","FEATURE")]) %>%
-      select(.,GEAR_ID,FEATURE_VALUE,FEATURE) %>%
+      dplyr::select(.,GEAR_ID,FEATURE_VALUE,FEATURE) %>%
       pivot_wider(.,names_from = FEATURE,values_from = FEATURE_VALUE) %>%
       left_join(.,isdb$ISGEARS[,c("GEAR_ID","TRIP_ID","GEARCD_ID", "HOOKCD_ID","HOOKSIZE")])%>% data.frame()
 
@@ -54,7 +54,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
     names(gear)<-gsub(".", "_", names(gear), fixed = TRUE)
 
 
-    sets <- left_join(sets,select(gear,!c(MUSTAD)),by=c('GEAR_ID','TRIP_ID'))
+    sets <- left_join(sets,dplyr::select(gear,!c(MUSTAD)),by=c('GEAR_ID','TRIP_ID'))
   }
 
   ##### Fish
@@ -75,7 +75,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
       LFnosex <- isdb$ISFISH %>%
         group_by(CATCH_ID) %>%
         mutate(calc_weight=sum(FISH_WEIGHT)/1000) %>%
-        select(CATCH_ID,calc_weight) %>%
+        dplyr::select(CATCH_ID,calc_weight) %>%
         filter(!duplicated(CATCH_ID)) %>%
         right_join(LFnosex)
 
