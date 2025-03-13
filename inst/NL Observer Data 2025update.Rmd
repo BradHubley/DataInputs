@@ -12,31 +12,35 @@ knitr::opts_chunk$set(echo = TRUE)
  library(lubridate)
  library(stringr)
  library(data.table)
+ library(SpatialHub)
 
 #datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021/"
 #wd=file.path(datadir,"Newfoundland Data/DataInputs/"
-source(file.path(getwd(), "inst/directories.r"))
+source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r"))
+datadir<-file.path(datadir,"Newfoundland Data")
 ```
 
 
 Changing LF data from text file to data frame
 ```{r}
-NLobs_LF24 <- read.fwf(file.path(datadir,"NLdata_received2021/maritimes_Ahal_LF_21-24.lfdata"), widths=c(1,4,2,4,1,3,8,1,2,3,3,2,5,3,4,1,2,2,2,1,3,4,6,4,3,1,4,1,rep((3),times=250)))
+NLobs_LF24 <- read.fwf(file.path(datadir,"OBS 2024 update/maritimes_Ahal_LF_21-24.lfdata"), widths=c(1,4,2,4,1,3,8,1,2,3,3,2,5,3,4,1,2,2,2,1,3,4,6,4,3,1,4,1,rep((3),times=250)))
                   
 
 colnames(NLobs_LF24) <- c("data_source", "set_no", "country_q", "sample_spp", "sex", "deployment_no", "vessel", "ton_class", "gear", "mesh_size", "NAFO_div", "unit_area", "ASOC", "num_measured", "start_time", "sample_type", "year", "month", "day", "quarter", "country", "depth_m", "total_wt_kg", "sample_wt_kg", "otoliths", "len_gr_int", "spp_sought", "blank",  seq(1,250))
 
-write.csv(NLobs_LF24, file.path(datadir,"NLdata_received2021/NLobserver_lf24.csv"))
+write.csv(NLobs_LF24, file.path(datadir,"OBS 2024 update/NLobserver_lf24.csv"))
+NLobs_LF24<-read.csv( file.path(datadir,"OBS 2024 update/NLobserver_lf24.csv"))
 ```
 
 Changing set info from text file to data frame
 ```{r}
-NLobs_set24 <- read.fwf(file.path(datadir,"NLdata_received2021/maritimes_Ahal_SC_21_24.sdet"), widths=c(2,2,10,4,4,3,2,2,3,3,3,1,3,4,1,1,2,2,2,3,2,4,4,4,4,4,1,4,2,2,2,3,4,1,1,1,4,5,4,1,3,3,3,3,3,3,8,3,5,6,6,6,6,6,5,5,2,2,1,3,5))
+NLobs_set24 <- read.fwf(file.path(datadir,"OBS 2024 update/maritimes_Ahal_SC_21_24.sdet"), widths=c(2,2,10,4,4,3,2,2,3,3,3,1,3,4,1,1,2,2,2,3,2,4,4,4,4,4,1,4,2,2,2,3,4,1,1,1,4,5,4,1,3,3,3,3,3,3,8,3,5,6,6,6,6,6,5,5,2,2,1,3,5))
 
 colnames(NLobs_set24) <- c("year", "country", "side_no", "hpwr","deployment_no", "set_no","vessel_class", "gear", "codend_mesh", "body_mesh_size", "roller_size", "chafing_gear", "num_gillnets", "num_hooks", "net_damage", "in_out_eez", "day", "month", "NAFO_div", "unit_area", "tow_speed", "lat_ddmm", "long_ddmm", "av_fishing_depth_m", "start_time", "set_dur", "data_type", "directed_spp", "num_spp", "quota", "trip_type", "av_len_gillnet", "num_pots", "window", "num_windows", "record_type", "species", "kept_wt_kg", "discard_wt_kg", "blank1", "num_ind", "blank2", "blank3", "blank4", "blank5", "blank6", "stratarea", "pots", "est_wt_crab", "ASOC", "start_lat_ddmmmm", "start_long_ddmmmm", "end_lat_ddmmmm", "end_long_ddmmmm", "logbook_id", "logbook_id2", "haul_day", "haul_month", "catch_comp", "subtrip_no", "ASO_company")
 
-write.csv(NLobs_set24, file.path(datadir,"NLdata_received2021/NLobserver_setdetail24.csv"))
+write.csv(NLobs_set24, file.path(datadir,"OBS 2024 update/NLobserver_setdetail24.csv"))
+NLobs_set24<-read.csv(file.path(datadir,"OBS 2024 update/NLobserver_setdetail24.csv"))
 ```
 
 NAFO divisions and unit areas need fixing for NLobs_set (DO WE NEED UNIT AREAS(subdivisions within NAFO divisions??)
@@ -57,9 +61,13 @@ ddmm.mm = NA for 10,381 out of 20,681
 ddmm = NA for 4 out of 20,681
 worth it to use less precise to have more available data?
 ```{r}
+#using spatialHub
+NLobs_set24$slat_deg<-SpatialHub::convertDecDeg(NLobs_set24$start_lat_ddmmmm)
+NLobs_set24$slon_deg<-SpatialHub::convertDecDeg(NLobs_set24$start_long_ddmmmm ) *-1
+NLobs_set24$elat_deg<-SpatialHub::convertDecDeg(NLobs_set24$end_lat_ddmmmm )
+NLobs_set24$elon_deg<-SpatialHub::convertDecDeg(NLobs_set24$end_long_ddmmmm ) *-1
+
 #column of just degrees
-NLobs_set24 <- NLobs_set24 %>%
-  mutate(lat_deg = substr(lat_ddmm, 1, 2))
 
 #column that has mmmm
 
@@ -79,6 +87,8 @@ Combine set and LF info into 1 useful DF with only useful columns
 
 Check LF against #measured (I assume they created the "# measured" column by just adding the LF by we'll see...)
 ```{r}
+NLobs_LF24$total<-rowSums(NLobs_LF24[,which(names(NLobs_LF24)%in%paste0("X",1:250))],na.rm=T)
+NLobs_LF24$total-NLobs_LF24$num_measured
 
 ```
 
@@ -145,9 +155,10 @@ NLunknownOT_LF24 <- NLunknownOT_LF24 %>%
   mutate(year= replace(year, year == 23, 2023)) %>%
   mutate(year= replace(year, year == 24, 2024))
 
-write.csv(NLmalesOT_LF24, file.path(datadir,"NLdata_received2021/NLmaleOTLF2024.csv"),row.names=F)
-write.csv(NLfemalesOT_LF24, file.path(datadir,"NLdata_received2021/NLfemaleOTLF2024.csv"),row.names=F)
-write.csv(NLunknownOT_LF24, file.path(datadir,"NLdata_received2021/NLunknownOTLF2024.csv"),row.names=F)
+write.csv(NLmalesOT_LF24, file.path(datadir,"OBS 2024 update/NLmaleOTLF2024.csv"),row.names=F)
+write.csv(NLfemalesOT_LF24, file.path(datadir,"OBS 2024 update/NLfemaleOTLF2024.csv"),row.names=F)
+write.csv(NLunknownOT_LF24, file.path(datadir,"OBS 2024 update/NLunknownOTLF2024.csv"),row.names=F)
+NLunknownOT_LF24<-read.csv(file.path(datadir,"OBS 2024 update/NLunknownOTLF2024.csv"))
 
 
 ##bin by 5cm (0,250) 
@@ -188,7 +199,7 @@ NLmalesOT.tab24$yr <- gsub("yr"," ", as.character(NLmalesOT.tab24$yr))
 NLmalesOT.tab24 <- NLmalesOT.tab24 %>%
    rename(year = yr)
 
-write.csv(NLmalesOT.tab24, file.path(datadir,"NLdata_received2021/NLmalesOTobs_binned2024.csv"), row.names = FALSE)
+write.csv(NLmalesOT.tab24, file.path(datadir,"OBS 2024 update/NLmalesOTobs_binned2024.csv"), row.names = FALSE)
 
 #female
 
@@ -230,7 +241,7 @@ NLfemalesOT.tab24$yr <- gsub("yr"," ", as.character(NLfemalesOT.tab24$yr))
 NLfemalesOT.tab24 <- NLfemalesOT.tab24 %>%
    rename(year = yr)
 
-write.csv(NLfemalesOT.tab24, file.path(datadir,"NLdata_received2021/NLfemalesOTobs_binned2024.csv"), row.names = FALSE)
+write.csv(NLfemalesOT.tab24, file.path(datadir,"OBS 2024 update/NLfemalesOTobs_binned2024.csv"), row.names = FALSE)
 
 #unknown sex
 
@@ -270,7 +281,7 @@ NLunknownOT.tab24$yr <- gsub("yr"," ", as.character(NLunknownOT.tab24$yr))
 NLunknownOT.tab24 <- NLunknownOT.tab24 %>%
    rename(year = yr)
 
-write.csv(NLunknownOT.tab24, file.path(datadir,"NLdata_received2021/NLunknownOTobs_binned2024.csv"), row.names = FALSE)
+write.csv(NLunknownOT.tab24, file.path(datadir,"OBS 2024 update/NLunknownOTobs_binned2024.csv"), row.names = FALSE)
 ```
 
 ## Longline
@@ -328,9 +339,9 @@ NLunknownLL_LF24 <- NLunknownLL_LF24 %>%
   mutate(year= replace(year, year == 23, 2023)) %>%
   mutate(year= replace(year, year == 24, 2024)) 
 
-write.csv(NLmalesLL_LF24, file.path(datadir,"NLdata_received2021/NLmaleLLLF2024.csv"))
-write.csv(NLfemalesLL_LF24, file.path(datadir,"NLdata_received2021/NLfemaleLLLF2024.csv"))
-write.csv(NLunknownLL_LF24, file.path(datadir,"NLdata_received2021/NLunknownLLLF2024.csv"))
+write.csv(NLmalesLL_LF24, file.path(datadir,"OBS 2024 update/NLmaleLLLF2024.csv"))
+write.csv(NLfemalesLL_LF24, file.path(datadir,"OBS 2024 update/NLfemaleLLLF2024.csv"))
+write.csv(NLunknownLL_LF24, file.path(datadir,"OBS 2024 update/NLunknownLLLF2024.csv"))
 
 
 ##bin by 5cm (0,250) yrs<-1995:2020 NLmalesOT_LF <- merge(NLmalesOT_LF,data.frame(year=yrs),all=T) NLmalesOT_LF[is.na(NLmalesOT_LF)]<-0
@@ -373,7 +384,7 @@ NLmalesLL.tab24$yr <- gsub("yr"," ", as.character(NLmalesLL.tab24$yr))
 NLmalesLL.tab24 <- NLmalesLL.tab24 %>%
    rename(year = yr)
 
-write.csv(NLmalesLL.tab24, file.path(datadir,"NLdata_received2021/NLmalesLLobs_binned2024.csv"), row.names = FALSE)
+write.csv(NLmalesLL.tab24, file.path(datadir,"OBS 2024 update/NLmalesLLobs_binned2024.csv"), row.names = FALSE)
 
 #female
 
@@ -413,7 +424,7 @@ NLfemalesLL.tab24$yr <- gsub("yr"," ", as.character(NLfemalesLL.tab24$yr))
 NLfemalesLL.tab24 <- NLfemalesLL.tab24 %>%
    rename(year = yr)
 
-write.csv(NLfemalesLL.tab24, file.path(datadir,"NLdata_received2021/NLfemalesLLobs_binned2024.csv"), row.names = FALSE)
+write.csv(NLfemalesLL.tab24, file.path(datadir,"OBS 2024 update/NLfemalesLLobs_binned2024.csv"), row.names = FALSE)
 
 #unknown sex
 
@@ -453,7 +464,7 @@ NLunknownLL.tab24$yr <- gsub("yr"," ", as.character(NLunknownLL.tab24$yr))
 NLunknownLL.tab24 <- NLunknownLL.tab24 %>%
    rename(year = yr)
 
-write.csv(NLunknownLL.tab24, file.path(datadir,"NLdata_received2021/NLunknownLLobs_binned2024.csv"), row.names = FALSE)
+write.csv(NLunknownLL.tab24, file.path(datadir,"OBS 2024 update/NLunknownLLobs_binned2024.csv"), row.names = FALSE)
 ```
 
 
