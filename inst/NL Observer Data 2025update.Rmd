@@ -37,7 +37,7 @@ Changing set info from text file to data frame
 ```{r}
 NLobs_set24 <- read.fwf(file.path(datadir,"OBS 2024 update/maritimes_Ahal_SC_21_24.sdet"), widths=c(2,2,10,4,4,3,2,2,3,3,3,1,3,4,1,1,2,2,2,3,2,4,4,4,4,4,1,4,2,2,2,3,4,1,1,1,4,5,4,1,3,3,3,3,3,3,8,3,5,6,6,6,6,6,5,5,2,2,1,3,5))
 
-colnames(NLobs_set24) <- c("year", "country", "side_no", "hpwr","deployment_no", "set_no","vessel_class", "gear", "codend_mesh", "body_mesh_size", "roller_size", "chafing_gear", "num_gillnets", "num_hooks", "net_damage", "in_out_eez", "day", "month", "NAFO_div", "unit_area", "tow_speed", "lat_ddmm", "long_ddmm", "av_fishing_depth_m", "start_time", "set_dur", "data_type", "directed_spp", "num_spp", "quota", "trip_type", "av_len_gillnet", "num_pots", "window", "num_windows", "record_type", "species", "kept_wt_kg", "discard_wt_kg", "blank1", "num_ind", "blank2", "blank3", "blank4", "blank5", "blank6", "stratarea", "pots", "est_wt_crab", "ASOC", "start_lat_ddmmmm", "start_long_ddmmmm", "end_lat_ddmmmm", "end_long_ddmmmm", "logbook_id", "logbook_id2", "haul_day", "haul_month", "catch_comp", "subtrip_no", "ASO_company")
+colnames(NLobs_set24) <- c("year", "country", "vessel", "hpwr","deployment_no", "set_no","vessel_class", "gear", "codend_mesh", "body_mesh_size", "roller_size", "chafing_gear", "num_gillnets", "num_hooks", "net_damage", "in_out_eez", "day", "month", "NAFO_div", "unit_area", "tow_speed", "lat_ddmm", "long_ddmm", "av_fishing_depth_m", "start_time", "set_dur", "data_type", "directed_spp", "num_spp", "quota", "trip_type", "av_len_gillnet", "num_pots", "window", "num_windows", "record_type", "species", "kept_wt_kg", "discard_wt_kg", "blank1", "num_ind", "blank2", "blank3", "blank4", "blank5", "blank6", "stratarea", "pots", "est_wt_crab", "ASOC", "start_lat_ddmmmm", "start_long_ddmmmm", "end_lat_ddmmmm", "end_long_ddmmmm", "logbook_id", "logbook_id2", "haul_day", "haul_month", "catch_comp", "subtrip_no", "ASO_company")
 
 write.csv(NLobs_set24, file.path(datadir,"OBS 2024 update/NLobserver_setdetail24.csv"))
 NLobs_set24<-read.csv(file.path(datadir,"OBS 2024 update/NLobserver_setdetail24.csv"))
@@ -83,9 +83,10 @@ with(NLobs_set24,points(slon_deg,slat_deg))
 
 ```
 
-Combine set and LF info into 1 useful DF with only useful columns
+DH - Combine set and LF info into 1 useful DF
 ```{r}
-
+NL_updatedcombined <- NLobs_LF24 %>%
+  left_join(NLobs_set24, by = c("year", "deployment_no", "set_no", "vessel"))
 ```
 
 Check LF against #measured (I assume they created the "# measured" column by just adding the LF by we'll see...)
@@ -96,7 +97,8 @@ NLobs_LF24$total.undersize<-rowSums(NLobs_LF24[,which(names(NLobs_LF24)%in%paste
 
 ```
 
-Question: there are 20,681 set observations and only 13,440 LF observations. Assuming reach row or each table corresponds to a set, where are there more sets than LF? Did they include all sets for all trips that caught halibut (including sets on those trips that didn't catch halibut?)
+
+Question: there are 20,681 set observations and only 13,440 LF observations. Assuming each row or each table corresponds to a set, where are there more sets than LF? Did they include all sets for all trips that caught halibut (including sets on those trips that didn't catch halibut?)
 
 Question: LF goes to 250...ours goes to 260, do we need the extra columns here to make this work?
 
