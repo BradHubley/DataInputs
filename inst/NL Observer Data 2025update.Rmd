@@ -92,6 +92,7 @@ Check LF against #measured (I assume they created the "# measured" column by jus
 ```{r}
 NLobs_LF24$total<-rowSums(NLobs_LF24[,which(names(NLobs_LF24)%in%paste0("X",1:250))],na.rm=T)
 NLobs_LF24$total-NLobs_LF24$num_measured
+NLobs_LF24$total.undersize<-rowSums(NLobs_LF24[,which(names(NLobs_LF24)%in%paste0("X",1:83))],na.rm=T)
 
 ```
 
