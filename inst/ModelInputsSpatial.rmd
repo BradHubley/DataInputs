@@ -224,10 +224,10 @@ NLRV_Index3NOP$CV<-sqrt(NLRV_Index3NOP$var)/NLRV_Index3NOP$mean
   HSFixed_combined<-getNAL(FixedLF3NOP,sex='all')
   HSFixed_unsexed<-getNAL(FixedLF3NOP,sex=0)
   
-  HSFixed_Lengths3NOP<-list(HSFixed_males=HSFixed_males,
-                        HSFixed_females=HSFixed_females,
-                        HSFixed_combined=HSFixed_combined,
-                        HSFixed_unsexed=HSFixed_unsexed)
+  HSFixed_Lengths3NOP<-list(HSFixed_males3NOP=HSFixed_males,
+                        HSFixed_females3NOP=HSFixed_females,
+                        HSFixed_combined3NOP=HSFixed_combined,
+                        HSFixed_unsexed3NOP=HSFixed_unsexed)
   
   # Random survey numbers at length    
   RandomLF4VW <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata4VW),bins=bins, Yrs = Yrs2)
@@ -239,30 +239,30 @@ NLRV_Index3NOP$CV<-sqrt(NLRV_Index3NOP$var)/NLRV_Index3NOP$mean
   HSRandom_combined<-getNAL(RandomLF4VW,sex='all')
   HSRandom_unsexed<-getNAL(RandomLF4VW,sex=0)
   
-  HSRandom_Lengths4VW<-list(HSRandom_males=HSRandom_males,
-                         HSRandom_females=HSRandom_females,
-                         HSRandom_combined=HSRandom_combined,
-                         HSRandom_unsexed=HSRandom_unsexed)
+  HSRandom_Lengths4VW<-list(HSRandom_males4VW=HSRandom_males,
+                         HSRandom_females4VW=HSRandom_females,
+                         HSRandom_combined4VW=HSRandom_combined,
+                         HSRandom_unsexed4VW=HSRandom_unsexed)
   
   HSRandom_males<-getNAL(RandomLF4X,sex=1)
   HSRandom_females<-getNAL(RandomLF4X,sex=2)
   HSRandom_combined<-getNAL(RandomLF4X,sex='all')
   HSRandom_unsexed<-getNAL(RandomLF4X,sex=0)
   
-  HSRandom_Lengths4X<-list(HSRandom_males=HSRandom_males,
-                         HSRandom_females=HSRandom_females,
-                         HSRandom_combined=HSRandom_combined,
-                         HSRandom_unsexed=HSRandom_unsexed)
+  HSRandom_Lengths4X<-list(HSRandom_males4X=HSRandom_males,
+                         HSRandom_females4X=HSRandom_females,
+                         HSRandom_combined4X=HSRandom_combined,
+                         HSRandom_unsexed4X=HSRandom_unsexed)
   
   HSRandom_males<-getNAL(RandomLF3NOP,sex=1)
   HSRandom_females<-getNAL(RandomLF3NOP,sex=2)
   HSRandom_combined<-getNAL(RandomLF3NOP,sex='all')
   HSRandom_unsexed<-getNAL(RandomLF3NOP,sex=0)
   
-  HSRandom_Lengths3NOP<-list(HSRandom_males=HSRandom_males,
-                         HSRandom_females=HSRandom_females,
-                         HSRandom_combined=HSRandom_combined,
-                         HSRandom_unsexed=HSRandom_unsexed)
+  HSRandom_Lengths3NOP<-list(HSRandom_males3NOP=HSRandom_males,
+                         HSRandom_females3NOP=HSRandom_females,
+                         HSRandom_combined3NOP=HSRandom_combined,
+                         HSRandom_unsexed3NOP=HSRandom_unsexed)
   
   #HSRandom_Index<-data.frame(Year= 2017:2020,
    #                          Index= c(2.204668e-05, 3.263344e-05, 3.004447e-05, 1.819697e-05), 
