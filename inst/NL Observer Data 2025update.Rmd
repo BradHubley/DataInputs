@@ -67,16 +67,6 @@ NLobs_set24$slon_deg<-SpatialHub::convertDecDeg(NLobs_set24$start_long_ddmmmm ) 
 NLobs_set24$elat_deg<-SpatialHub::convertDecDeg(NLobs_set24$end_lat_ddmmmm )
 NLobs_set24$elon_deg<-SpatialHub::convertDecDeg(NLobs_set24$end_long_ddmmmm ) *-1
 
-#column of just degrees
-
-#column that has mmmm
-
-#adding decimal into mm.mm
-
-#dividing mm.mm by 60 to get decimal column
-
-#combining degree and decimal column to get decimal degrees
-
 # plot map to see where they are
 bioMap()
 with(NLobs_set24,points(slon_deg,slat_deg))
@@ -87,6 +77,14 @@ DH - Combine set and LF info into 1 useful DF
 ```{r}
 NL_updatedcombined <- NLobs_LF24 %>%
   left_join(NLobs_set24, by = c("year", "deployment_no", "set_no", "vessel"))
+
+NL_updatedcombined$slat_deg<-SpatialHub::convertDecDeg(NL_updatedcombined$start_lat_ddmmmm)
+NL_updatedcombined$slon_deg<-SpatialHub::convertDecDeg(NL_updatedcombined$start_long_ddmmmm ) *-1
+NL_updatedcombined$elat_deg<-SpatialHub::convertDecDeg(NL_updatedcombined$end_lat_ddmmmm )
+NL_updatedcombined$elon_deg<-SpatialHub::convertDecDeg(NL_updatedcombined$end_long_ddmmmm ) *-1
+
+bioMap()
+with(NL_updatedcombined,points(slon_deg,slat_deg))
 ```
 
 Check LF against #measured (I assume they created the "# measured" column by just adding the LF by we'll see...)
