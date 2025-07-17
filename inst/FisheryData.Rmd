@@ -40,7 +40,10 @@ lwB=3.119924
 ## Marfis from data,wrangling
 ```{r }
 
-#get_data(db='marfis',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+# 1. Establish Oracle connection first (NEW REQUIREMENT)
+cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+
+get_data(db='marfis', cxn = cxn , force.extract=T)
 
 MARFISdataLL<-getMARFISdata(datadir,sp=130,gear=1)
 MARFISdataLL$CLASS <-NA
