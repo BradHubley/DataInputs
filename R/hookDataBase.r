@@ -1,12 +1,12 @@
 #' @export
 # edited by Nell to spit out the data summarized by tub as well as set; default is to summarize by set - if you want data by tub set getrawdata to TRUE
 
-hookDataBase <- function(species=30, datadir, getrawdata=FALSE){
+hookDataBase <- function(species=30,  getrawdata=FALSE){
 
   library(reshape2)
   library(tidyverse)
 
-  get_data_custom(schema="isdb", data.dir = datadir, tables = c("ISTRIPS","ISFISHSETS","ISCATCHES","ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT","ISGEARFEATURECLASSES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
+  Mar.utils::get_data_tables(schema="isdb", data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISTRIPS","ISFISHSETS","ISCATCHES","ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT","ISGEARFEATURECLASSES"))
 
   ISTRIPS<-ISTRIPS[ISTRIPS$TRIPCD_ID == 7057,]
   ISFISHSETS<-ISFISHSETS[ISFISHSETS$TRIP_ID %in% ISTRIPS$TRIP_ID & ISFISHSETS$SETCD_ID==5,]

@@ -1,0 +1,173 @@
+---
+title: "Bruce Requests"
+author: "Brad"
+date: "2025-04-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(ROracle)
+library(devtools)
+library(tidyverse)
+library(SpatialHub)
+library(sf)
+library(MASS)
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r")) 
+
+ds_all <- Mar.datawrangling::load_datasources()
+
+devtools::load_all(".")
+
+
+bins=seq(0,260,5)# labelled by upper bound
+
+
+```
+
+## Bruce request
+
+HI Brad
+ 
+ 1.	Would you mind emailing me halibut size distribution data from DFO’s database on the halibut longline survey (including 2024 survey)?
+ 
+ Specifically, I’m interested in the annual size distribution for each of the past 5 years, overall and also for each of the areas 4X, 4VW, 3Ps, and 3NO? 
+ 
+ Please advise likely ETA?
+ 
+ 2.	Also, have you received the size distribution of halibut caught by OCI otter trawlers in each of 3Ps and 3NO?  If so, please forward the same profiles as described above for the longline survey?  
+ 
+ Bruce 
+
+```{r}
+  Yrs2=2020:2024
+
+  
+# 1. Halibut survey
+RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
+
+  allStrata<-sort(unique(RandomSurvey$ASSIGNED_STRATUM_ID))
+  Strata4VW<-allStrata[4:10]
+  Strata4X<-allStrata[1:3]
+  Strata3Ps<-allStrata[11:15]
+  Strata3NO<-allStrata[16:20]
+  Strata3NOPs<-allStrata[11:20]
+ 
+  # Random survey numbers at length    
+  RandomLF <- constructLF(LFdata=RandomSurvey,bins=bins, Yrs = Yrs2)
+  RandomLF4VW <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata4VW),bins=bins, Yrs = Yrs2)
+  RandomLF4X <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata4X),bins=bins, Yrs = Yrs2)
+  RandomLF3Ps <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata3Ps),bins=bins, Yrs = Yrs2)
+  RandomLF3NO <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata3NO),bins=bins, Yrs = Yrs2)
+
+  RandomLF3NOPs <- constructLF(LFdata=subset(RandomSurvey,ASSIGNED_STRATUM_ID%in%Strata3NOPs),bins=bins, Yrs = Yrs2)
+
+  
+    BarPlotLF(RandomLF[which(names(RandomLF)%in%Yrs2)],yrs=Yrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandomAll"),graphic='png',toplab = "HS 3NOPs4VWX5Zc")
+    
+    BarPlotLF(RandomLF4X[which(names(RandomLF4X)%in%Yrs2)],yrs=Yrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom4X"),graphic='png',toplab = "HS 4X")
+
+    BarPlotLF(RandomLF4VW[which(names(RandomLF4VW)%in%Yrs2)],yrs=Yrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom4VW"),graphic='png',toplab = "HS 4VW")
+
+    BarPlotLF(RandomLF3Ps[which(names(RandomLF3Ps)%in%Yrs2)],yrs=Yrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom3Ps"),graphic='png',toplab = "HS 3Ps")
+    
+    BarPlotLF(RandomLF3NO[which(names(RandomLF3NO)%in%Yrs2)],yrs=Yrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom3NO"),graphic='png',toplab = "HS 3NO")
+
+    BarPlotLF(RandomLF3NOPs[which(names(RandomLF3NOPs)%in%Yrs2)],yrs=Yrs2,rel=F,ht=6,filen=file.path(wd,"figures","HSLFrandom3NOPs"),graphic='png',toplab = "HS 3NOPs")
+
+    HSLF_4X<-do.call("rbind",lapply(RandomLF4X,colSums))
+    HSLF_4VW<-do.call("rbind",lapply(RandomLF4VW,colSums))
+    HSLF_3Ps<-do.call("rbind",lapply(RandomLF3Ps,colSums))
+    HSLF_3NO<-do.call("rbind",lapply(RandomLF3NO,colSums))
+    
+# 2. OCI data
+OCIdata<-OCdata(datadir)
+
+ttid<-unique(OCIdata[[2]]$Trip.Tow)
+OCIdata[[2]]$NUM<-1
+  LF<-data.frame('Trip.Tow'=ttid,t(sapply(ttid,function(tt){with(subset(OCIdata[[2]],Trip.Tow==tt),binNumAtLen(NUM,CM,bins))})))
+
+ OCILF<-merge(subset(OCIdata[[2]],!duplicated(Trip.Tow),c("Trip.Tow","Date")),LF,all=T)
+ OCILF$YEAR<-year( OCILF$Date)
+
+   OCI_LF <- constructLF(LFdata=OCILF,bins=bins, Yrs = Yrs2,sx='all')
+ BarPlotLF(OCI_LF,yrs=Yrs2,rel=F,ht=6,filen=file.path(wd,"figures","OCILF"),graphic='png',toplab = "OCI 3NOPs")
+ OCILF_3NOPs<-do.call("rbind",OCI_LF)
+     
+```
+
+## Update data from database 
+## Marfis from data,wrangling
+```{r }
+
+# 1. Establish Oracle connection first (NEW REQUIREMENT)
+cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+
+get_data(db='marfis', cxn = cxn , force.extract=T)
+
+MARFISdataLL<-getMARFISdata(datadir,sp=130,gear=1)
+MARFISdataLL$CLASS <-NA
+MARFISdataLL$CLASS[MARFISdataLL$LOA<35]<-"LL35"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=35&MARFISdataLL$LOA<45]<-"LL35-45"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=45&MARFISdataLL$LOA<65]<-"LL45-65"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>65]<-"LL65"
+MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
+MARFISdataOT$CLASS <-"OT"
+
+MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
+MARFISdata$SET<-1
+```
+
+# Make Tables by nafo
+
+```{r }
+yrs<-2015:2025
+
+tmp<- MARFISdata |>
+  filter(YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT") |>
+  group_by(NAFO,YEAR) |>
+  summarise(Catch = sum(RND_WEIGHT_KGS,na.rm=T),Effort = sum(SET),CPUE =  Catch/Effort) 
+  
+table1<- tmp |> 
+  dplyr::select(NAFO,YEAR,Catch)|>
+  pivot_wider(names_from = NAFO,values_from = Catch) |>
+  tibble()
+
+table2<- tmp |>  
+  dplyr::select(NAFO,YEAR,CPUE)|>
+  pivot_wider(names_from = NAFO,values_from = CPUE) |>
+  tibble()
+
+
+write.csv(table1,file.path(datadir,"MARFIS_Catch.csv"),row.names=F)
+write.csv(table2,file.path(datadir,"MARFIS_CPUE.csv"),row.names=F)
+
+MARFIS_Catch<-read.csv(file.path(datadir,"MARFIS_Catch.csv"))
+MARFIS_CPUE<-read.csv(file.path(datadir,"MARFIS_CPUE.csv"))
+
+```
+
+```{r}
+ library(readr)
+RandomHalibutSurveyData_LF <- read_csv("~/Halibut/data/RandomHalibutSurveyData_LF.csv")
+yrs<-2015:2025
+RandomHalibutSurveyData_LF$NAFO<-substr(RandomHalibutSurveyData_LF$NAFAREA_ID,1,2)
+
+tmp<- RandomHalibutSurveyData_LF |>
+  filter(YEAR%in%yrs) |>
+  group_by(NAFO,YEAR) |>
+  summarise(KGPKH = mean(EST_COMBINED_WT,na.rm=T)) 
+  
+table1<- tmp |> 
+  dplyr::select(NAFO,YEAR,KGPKH)|>
+  pivot_wider(names_from = NAFO,values_from = KGPKH) |>
+  tibble()
+
+
+write.csv(table1,file.path(datadir,"MARFIS_Catch.csv"),row.names=F)
+write.csv(table1,file.path(datadir,"Survey.csv"),row.names=F)
+
+
+```
+

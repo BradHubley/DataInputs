@@ -2,7 +2,7 @@
 getMARFISdata <- function(datadir,sp=130,gear){
 
   marfis <- new.env()
-  get_data(db='marfis',data.dir=datadir,env=marfis)
+  get_data(db='marfis',env=marfis)
 
 
   nafo3N = marfis$NAFO_UNIT_AREAS$NAFO_AREA[grep("3N",marfis$NAFO_UNIT_AREAS$NAFO_AREA)]

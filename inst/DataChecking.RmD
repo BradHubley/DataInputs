@@ -118,7 +118,7 @@ Checking length against weight for random survey halibut
 
 
 ```{r}
-halibut <- ISSETPROFILE_WIDE %>%
+halibut <- ISSETPROFILE %>%
   filter(YEAR == 2020) %>%
   left_join(ISFISHSETS, by = "FISHSET_ID")%>%
   filter(SETCD_ID == 5) %>%

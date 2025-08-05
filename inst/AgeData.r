@@ -49,7 +49,7 @@ self_filter("isdb")
 
 tripinfo = left_join(select(ISTRIPS,TRIP_ID,TRIP),select(ISFISHSETS,FISHSET_ID,TRIP_ID))
 
-setinfo = left_join(select(ISCATCHES, CATCH_ID, FISHSET_ID),select(ISSETPROFILE_WIDE, FISHSET_ID, SET_NO, DATE_TIME4, LATITUDE, LONGITUDE, YEAR))
+setinfo = left_join(select(ISCATCHES, CATCH_ID, FISHSET_ID),select(ISSETPROFILE, FISHSET_ID, SET_NO, DATE_TIME4, LATITUDE, LONGITUDE, YEAR))
 
 Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
 
@@ -140,7 +140,7 @@ self_filter("isdb")
 
 tripinfo = left_join(select(ISTRIPS,TRIP_ID,TRIP),select(ISFISHSETS,FISHSET_ID,TRIP_ID))
 
-setinfo = left_join(select(ISCATCHES, CATCH_ID, FISHSET_ID, SPECCD_ID ),select(ISSETPROFILE_WIDE, FISHSET_ID, SET_NO, DATE_TIME4, LATITUDE, LONGITUDE, YEAR))
+setinfo = left_join(select(ISCATCHES, CATCH_ID, FISHSET_ID, SPECCD_ID ),select(ISSETPROFILE, FISHSET_ID, SET_NO, DATE_TIME4, LATITUDE, LONGITUDE, YEAR))
 
 Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
 

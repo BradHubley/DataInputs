@@ -19,13 +19,13 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE, set.
 
   if(set.type==5){
     hook_data_old <- hookData(datadir=datadir, species=sp, getrawdata=getrawdata) #remove if old hook data gets into database
-    hook_data <- hookDataBase(datadir=datadir, species=sp, getrawdata=getrawdata)
+    hook_data <- hookDataBase(species=sp, getrawdata=getrawdata)
   }
 
   # Get Halibut Survey from ISDB
   isdb <- new.env()
 
-  get_data(db='isdb',data.dir=datadir,env=isdb)
+  get_data(db='isdb',env=isdb)
 
   # filter for halibut longline survey
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057,7058),]

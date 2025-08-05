@@ -30,7 +30,7 @@ halsets <- ISFISHSETS %>%
   filter(SETCD_ID %in% c(4,5,10), SPECSCD_ID == 30)
 
 halsets <- halsets %>%
-  left_join(ISSETPROFILE_WIDE, by = "FISHSET_ID")
+  left_join(ISSETPROFILE, by = "FISHSET_ID")
 
 halsets <- halsets %>%
   left_join(haltrips, by = "TRIP_ID")
@@ -124,11 +124,11 @@ sets_sr1 %>% filter(TRIPCD_ID == 30)
 Checking that all set codes are right by checking the year...?
 ```{r}
 sets_fs %>% count(YEAR)
-#2009 entry station 274 has no set info...what to do with that point? (trip:100015694, set:100061377) NOT in ISSETPROFILE_WIDE...why??
+#2009 entry station 274 has no set info...what to do with that point? (trip:100015694, set:100061377) NOT in ISSETPROFILE...why??
 sets_sr %>% count(YEAR)
 #station coming from 2002 appears to be a mistake. This is the only set from trip 100014065. Should is even be a halibut trip? (Trip: J02-0208)
 sets_ci %>% count(YEAR)
-#2011 entry has no set info...(set:100160079, trip:100028073) not in ISSETPROFILE_WIDE...why?
+#2011 entry has no set info...(set:100160079, trip:100028073) not in ISSETPROFILE...why?
 ```
 NAFO
 ```{r}

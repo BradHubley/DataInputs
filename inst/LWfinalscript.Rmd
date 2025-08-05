@@ -160,7 +160,7 @@ Finding how/when these halibut were caught by isolating the sets and trips where
 hal_allsets <- hal_allrmNAwt %>%
   left_join(ISFISHSETS, by = "FISHSET_ID")
 
-hal_allLATLONG <- ISSETPROFILE_WIDE %>% dplyr::select(FISHSET_ID, LAT1, LONG1, LAT2, LONG2, LAT3, LONG3, LAT4, LONG4)
+hal_allLATLONG <- ISSETPROFILE %>% dplyr::select(FISHSET_ID, LAT1, LONG1, LAT2, LONG2, LAT3, LONG3, LAT4, LONG4)
   
 hal_allsetinfo <- hal_allsets %>%
   left_join(hal_allLATLONG, by = "FISHSET_ID")
