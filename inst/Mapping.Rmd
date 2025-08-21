@@ -24,8 +24,8 @@ library(sf)
 source(file.path(getwd(), "directories.r"))
 #datadir="C:/Users/hubleyb/Documents/Halibut/data"
 #wd="C:/Users/hubleyb/Documents/Halibut/Git/DataInputs/"
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
-wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
+#wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
 
 source(file.path(wd, "passwords.r")) 
 #ds_all <- Mar.datawrangling::load_datasources()
@@ -159,19 +159,19 @@ yl=c(40,48)
 sp="Halibut"
 xl=c(-68,-47)
 yl=c(41,48)    
-  Yrs = 2022:2023        
-  #i=Yrs
+  Yrs = 2017:2024        
+  i=Yrs
   
-  FixedSurvey<-read.csv(file.path(datadir,paste0("FixedSurvey",sp,".csv")))
+  #FixedSurvey<-read.csv(file.path(datadir,paste0("FixedSurvey",sp,".csv")))
   RandomSurvey<-read.csv(file.path(datadir,paste0("RandomSurvey",sp,".csv")))
 
   
-for(i in Yrs){
+#for(i in Yrs){
   
   
 	# interpolate abundance
 		interp.data<-subset(RandomSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LATITUDE','total_target_species'))
-		if(i<2017)	interp.data<-subset(FixedSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LATITUDE','total_target_species'))
+		#if(i<2017)	interp.data<-subset(FixedSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LATITUDE','total_target_species'))
 #rs.data<-subset(RandomSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LAT1','EST_NUM_CAUGHT'))
 #fs.data<-subset(FixedSurvey,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LAT1','EST_NUM_CAUGHT'))
 #ci.data<-subset(ComIndex,YEAR%in%i,c('FISHSET_ID','LONGITUDE','LAT1','EST_NUM_CAUGHT'))
@@ -199,7 +199,7 @@ for(i in Yrs){
 #addPolys(BO2,density=20,col='black')
 
 dev.off()
-}
+#}
 
   
   

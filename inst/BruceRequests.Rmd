@@ -116,28 +116,71 @@ MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
 MARFISdataOT$CLASS <-"OT"
 
 MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
-MARFISdata$SET<-1
 ```
 
 # Make Tables by nafo
+Would you mind graphing the trends for each of the three series?
+ 
+Maybe:
+•	a graph presenting the area figures for each of the three series?
+•	a graph presenting the three series for each of the 8-9 areas?
+ 
+
+# Would mind also graphing the annual catch by area of the same time series?
 
 ```{r }
-yrs<-2015:2025
+yrs<-2017:2024
 
-tmp<- MARFISdata |>
-  filter(YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT") |>
+data1<-subset(MARFISdata,YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT")
+data1$NAFO<-substr(data1$NAFO,1,2)
+
+
+daydata<-merge(aggregate(RND_WEIGHT_KGS~DATE_FISHED+TRIP_ID,data=data1,FUN=sum,na.rm=T),subset(data1,!duplicated(paste(TRIP_ID,DATE_FISHED)),c("TRIP_ID","DATE_FISHED","YEAR","NAFO")),all.x=T)
+
+daydata$DAY<-1
+
+tmp2<- daydata |>
   group_by(NAFO,YEAR) |>
-  summarise(Catch = sum(RND_WEIGHT_KGS,na.rm=T),Effort = sum(SET),CPUE =  Catch/Effort) 
+  summarise(Catch = sum(RND_WEIGHT_KGS),Effort = sum(DAY),CPUE =  Catch/Effort) 
   
-table1<- tmp |> 
+table1<- tmp2 |> 
   dplyr::select(NAFO,YEAR,Catch)|>
   pivot_wider(names_from = NAFO,values_from = Catch) |>
   tibble()
 
-table2<- tmp |>  
+table2<- tmp2 |>  
   dplyr::select(NAFO,YEAR,CPUE)|>
   pivot_wider(names_from = NAFO,values_from = CPUE) |>
   tibble()
+
+table3<- tmp2 |>  
+  dplyr::select(NAFO,YEAR,Effort)|>
+  pivot_wider(names_from = NAFO,values_from = Effort) |>
+  tibble()
+
+##
+setdata<-data1
+setdata$SET<-1
+
+tmp2<- setdata |>
+  group_by(NAFO,YEAR) |>
+  summarise(Catch = sum(RND_WEIGHT_KGS),Effort = sum(SET),CPUE =  Catch/Effort) 
+  
+table1set<- tmp2 |> 
+  dplyr::select(NAFO,YEAR,Catch)|>
+  pivot_wider(names_from = NAFO,values_from = Catch) |>
+  tibble()
+
+table2set<- tmp2 |>  
+  dplyr::select(NAFO,YEAR,CPUE)|>
+  pivot_wider(names_from = NAFO,values_from = CPUE) |>
+  tibble()
+
+table3set<- tmp2 |>  
+  dplyr::select(NAFO,YEAR,Effort)|>
+  pivot_wider(names_from = NAFO,values_from = Effort) |>
+  tibble()
+
 
 
 write.csv(table1,file.path(datadir,"MARFIS_Catch.csv"),row.names=F)
@@ -146,12 +189,34 @@ write.csv(table2,file.path(datadir,"MARFIS_CPUE.csv"),row.names=F)
 MARFIS_Catch<-read.csv(file.path(datadir,"MARFIS_Catch.csv"))
 MARFIS_CPUE<-read.csv(file.path(datadir,"MARFIS_CPUE.csv"))
 
+# Select columns to plot
+years <- MARFIS_Catch$YEAR
+data_to_plot <- MARFIS_Catch[, 2:7]/1000
+
+# Plot all time series
+matplot(
+  years,
+  data_to_plot,
+  type = "l", lty = 1, lwd = 2,
+  col = 1:6,
+  xlab = "Year", ylab = "T",
+  main = "MARFIS Catch"
+)
+legend(
+  "topleft",
+  legend = c("3N", "3O", "3P", "4V", "4W", "4X"),
+  col = 1:6,
+  lty = 1,
+  lwd = 2
+)
+
+
 ```
 
 ```{r}
  library(readr)
 RandomHalibutSurveyData_LF <- read_csv("~/Halibut/data/RandomHalibutSurveyData_LF.csv")
-yrs<-2015:2025
+yrs<-2015:2024
 RandomHalibutSurveyData_LF$NAFO<-substr(RandomHalibutSurveyData_LF$NAFAREA_ID,1,2)
 
 tmp<- RandomHalibutSurveyData_LF |>
@@ -165,9 +230,73 @@ table1<- tmp |>
   tibble()
 
 
-write.csv(table1,file.path(datadir,"MARFIS_Catch.csv"),row.names=F)
 write.csv(table1,file.path(datadir,"Survey.csv"),row.names=F)
+SurveyNAFO<-read.csv(file.path(datadir,"Survey.csv"))
 
+# Select columns to plot
+years <- SurveyNAFO$YEAR
+data_to_plot <- SurveyNAFO[, 2:7]
+
+# Plot all time series
+matplot(
+  years,
+  data_to_plot,
+  type = "l", lty = 1, lwd = 2,
+  col = 1:6,
+  xlab = "Year", ylab = "KG / Set",
+  main = "Halibut Survey"
+)
+legend(
+  "topleft",
+  legend = c("3N", "3O", "3P", "4V", "4W", "4X"),
+  col = 1:6,
+  lty = 1,
+  lwd = 2
+)
+
+```
+# Why would the survey CPUE in 4X be in decline in light of the better than average (DFO survey) recruitment index (in 4X?)?
+
+#There are a few possible explanations as to why good recruitment observed in the DFO survey is not leading to increased biomass in 4X. It has to do with the size distribution and selectivity of the gear. The DFO survey catches smaller fish while the halibut survey catches mainly commercial size fish and the migration theory is that halibut move northeast as they grow larger so 3NOP has more larger fish while 4X has smaller fish many of which are too small to be caught in the Halibut survey or fishery. The DFO survey is also a numbers index while the plots I provided here are in biomass where larger fish contribute more mass. I’ve also included the DFO survey index where you can see that even with the small fish 4VW is contributing more to the overall index than 4X in 2024 compared to 2010.
+
+```{r}
+load(file=file.path(scaldir,"SCALmodeldata2024.rdata"))
+
+ with(NSRV_Index4X,plot(year,NPT,type='o',pch=16,lwd=2,xlim=c(1990,2025),ylim=c(0,1.2)))
+ NSRV_Index4VW$NPT[NSRV_Index4VW$year%in%c(2018,2021,2022)]<-NA
+ with(NSRV_Index4VW,lines(year,NPT,lwd=2,col=2,type='o',pch=16))
+legend("topleft",legend=c("4X","4VW"),pch=16,col = 1:2,lwd=2)
+
+```
+
+# Can you graph the fishable biomass by NAFO sub-division over the available (stratified random) time series, maybe on a stacked bar chart?
+
+```{r}
+load("~/Halibut/git/DataInputs/inst/Nti.rdata")
+load(file.path(datadir,"Survey","BlackOutAreas.RData"))
+attr(BO1,"projection")<-"LL"
+BO13P<-clipPolys(BO1,xlim=c(-60,-54.5),ylim=c(42,50))
+BO13NO<-clipPolys(BO1,xlim=c(-54.5,-45),ylim=c(42,50))
+a3nop<-sum(calcArea(BO1)$area)
+a3p<-sum(calcArea(BO13P)$area)
+a3no<-sum(calcArea(BO13NO)$area)
+a3noV<- a3no/(a3no+a3p)
+a3pV<- a3p/(a3no+a3p)
+
+HSRB<-matrix(NA,5,length(Nti))
+
+for(i in 1:length(Nti)){
+  
+  HSRB[1,i]<-with(subset(Nti[[i]],PID%in%11:13),sum(Bh*area))
+  HSRB[2,i]<-with(subset(Nti[[i]],PID%in%21:23),sum(Bh*area))
+  HSRB[3,i]<-with(subset(Nti[[i]],PID%in%31:34),sum(Bh*area))
+  HSRB[4,i]<-with(subset(Nti[[i]],PID%in%41:44),sum(Bh*area))
+  HSRB[5,i]<-with(subset(Nti[[i]],PID%in%51:54),sum(Bh*area))
+  if(60%in%Nti[[i]]$PID){
+    HSRB[5,i]<-HSRB[5,i] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3noV
+    HSRB[4,i]<-HSRB[4,i] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3pV
+  }
+}
 
 ```
 

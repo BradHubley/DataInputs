@@ -31,12 +31,13 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   ## Trips
   trips <- left_join(isdb$ISTRIPS[,c("TRIP_ID","TRIPCD_ID","TRIP","VESS_ID")], isdb$ISVESSELS[,c("VESS_ID","VESSEL_NAME","CFV")], by='VESS_ID')
 
+  wide <- Mar.utils::ISSETPROFILE_enwidener(df=isdb$ISSETPROFILE)
 
   ## Sets
-  isdb$ISSETPROFILE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE$DATE_TIME3,  isdb$ISSETPROFILE$DATE_TIME1, units='min')
-  isdb$ISSETPROFILE$SOAKMINP3P2 <- difftime(isdb$ISSETPROFILE$DATE_TIME3,  isdb$ISSETPROFILE$DATE_TIME2, units='min')
+  wide$SOAKMINP3P1 <- difftime(wide$DATE_TIME3,  wide$DATE_TIME1, units='min')
+  wide$SOAKMINP3P2 <- difftime(wide$DATE_TIME3,  wide$DATE_TIME2, units='min')
   isdb$ISFISHSETS$GEAR_LEN_M <- ((isdb$ISFISHSETS$LEN_LONGLINE)*1000)
-  sets <- left_join(isdb$ISSETPROFILE[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME2","DATE_TIME3","DATE_TIME4","SOAKMINP3P1","SOAKMINP3P2","LAT1","LAT2","LAT3","LAT4","LONG1","LONG2","LONG3","LONG4","DUR_41","YEAR","DEP1","DEP2","DEP3","DEP4")],
+  sets <- left_join(wide[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME2","DATE_TIME3","DATE_TIME4","SOAKMINP3P1","SOAKMINP3P2","LAT1","LAT2","LAT3","LAT4","LONG1","LONG2","LONG3","LONG4","DUR_41","YEAR","DEP1","DEP2","DEP3","DEP4")],
                     isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID","HAULCCD_ID","LEN_LONGLINE","GEAR_LEN_M","SPECSCD_ID")], by=c('FISHSET_ID','SET_NO'))
   # join gear if desired
   if(add.gear){

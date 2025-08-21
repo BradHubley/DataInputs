@@ -234,7 +234,7 @@ NAFO <- sf::st_read(file.path(datadir,"Mapping","NAFODivisions","Divisions.shp")
 
 xl=c(-68,-47)
 yl=c(41,48)    
-  Yrs = 2017:2023        
+  Yrs = 2017:2024        
   i=Yrs
   
 #for(i in Yrs){

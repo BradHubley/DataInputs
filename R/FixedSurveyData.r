@@ -8,7 +8,7 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
 
   isdb <- new.env()
 
-  Mar.datawrangling::get_data(db='isdb',data.dir=datadir,env=isdb)
+  Mar.datawrangling::get_data(db='isdb',env=isdb)
 
   # filter for halibut longline survey
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057),]
@@ -35,12 +35,13 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
   ## Trips
   trips <- left_join(isdb$ISTRIPS[,c("TRIP_ID","TRIPCD_ID","TRIP","VESS_ID")], isdb$ISVESSELS[,c("VESS_ID","VESSEL_NAME","CFV")], by='VESS_ID')
 
+  wide <- Mar.utils::ISSETPROFILE_enwidener(df=isdb$ISSETPROFILE)
 
   ## Sets
-  isdb$ISSETPROFILE_WIDE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE_WIDE$DATE_TIME3,  isdb$ISSETPROFILE_WIDE$DATE_TIME1, units='min')
-  isdb$ISSETPROFILE_WIDE$SOAKMINP3P2 <- difftime(isdb$ISSETPROFILE_WIDE$DATE_TIME3,  isdb$ISSETPROFILE_WIDE$DATE_TIME2, units='min')
+  wide$SOAKMINP3P1 <- difftime(wide$DATE_TIME3,  wide$DATE_TIME1, units='min')
+  wide$SOAKMINP3P2 <- difftime(wide$DATE_TIME3,  wide$DATE_TIME2, units='min')
   isdb$ISFISHSETS$GEAR_LEN_M <- ((isdb$ISFISHSETS$LEN_LONGLINE)*1000)
-  sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME2","DATE_TIME3","DATE_TIME4","SOAKMINP3P1","SOAKMINP3P2","LAT1","LAT2","LAT3","LAT4","LONG1","LONG2","LONG3","LONG4","DUR_41","YEAR","DEP1","DEP2","DEP3","DEP4")],
+  sets <- left_join(wide[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME2","DATE_TIME3","DATE_TIME4","SOAKMINP3P1","SOAKMINP3P2","LAT1","LAT2","LAT3","LAT4","LONG1","LONG2","LONG3","LONG4","DUR_41","YEAR","DEP1","DEP2","DEP3","DEP4")],
                     isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID","HAULCCD_ID","LEN_LONGLINE","GEAR_LEN_M","SPECSCD_ID")], by=c('FISHSET_ID','SET_NO'))
 
   sets$SOAKMINP3P1[sets$SOAKMINP3P1<0]<-NA
@@ -100,7 +101,7 @@ FixedSurveyData <-function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,
       #LFisfish <-LF
     }
     if(LF.from=="ISFISHLENGTHS"){
-      Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"),env=isdb)
+      Mar.utils::get_data_tables(schema="observer", data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"),env=isdb)
 
       #The new tables get downloaded and/or loaded in and you can filter them manually
       ISSAMPLES = subset(isdb$ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))

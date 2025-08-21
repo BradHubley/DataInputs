@@ -22,6 +22,7 @@ ds_all <- Mar.datawrangling::load_datasources()
 
 devtools::load_all(".")
 
+AY<-2024
 
 bins=seq(0,260,5)
 # labelled by upper bound
@@ -36,15 +37,26 @@ bins=seq(0,260,5)
 
 # Update data from database 
 
-# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+   # 1. Establish Oracle connection first (NEW REQUIREMENT)
+    cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+
+ get_data(db='isdb',cxn=cxn, force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
-# Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"), usepkg = "roracle", fn.oracle.dsn= "PTRAN", fn.oracle.username=uid, fn.oracle.password =pwd)
-
-#get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+ get_data(db='rv',cxn=cxn,force.extract=T)
 
 
-#  Mar.datawrangling::get_data(db='rv',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+ Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"))
+
+
+Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"))
+Mar.utils::get_data_tables(schema="<NA>",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT")) 
+
+
+get_ps_data(data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+
+
 
 
 ```
@@ -80,36 +92,13 @@ BiologicalParameters$bins<-bins
 
 ```{r}
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2022, raw=T)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:AY, raw=T)
 RVinputs$NSRV_unsexed<-RVinputs$NSRV_combined-(RVinputs$NSRV_males+RVinputs$NSRV_females) # unsexed
 NSRV_Index<-RVinputs$Index
 NSRV_Lengths<-list(NSRV_males=RVinputs$NSRV_males,
                    NSRV_females=RVinputs$NSRV_females,
                    NSRV_combined=RVinputs$NSRV_combined,
                    NSRV_unsexed=RVinputs$NSRV_unsexed)
-
-# for spatial model
-allStrata<-sort(unique(RVdata[[1]]$STRAT))
-Strata4VW<-allStrata[1:25]
-Strata4X<-allStrata[26:46]
-
-RVinputs4X<-prepRVdata(RVdata,years=1970:2024,strat= Strata4X,bins=bins, raw=T)
-RVinputs4X$NSRV_unsexed<-RVinputs4X$NSRV_combined-(RVinputs4X$NSRV_males+RVinputs4X$NSRV_females) # unsexed
-NSRV_Index4X<-RVinputs4X$Index
-NSRV_Lengths4X<-list(NSRV_males=RVinputs4X$NSRV_males,
-                   NSRV_females=RVinputs4X$NSRV_females,
-                   NSRV_combined=RVinputs4X$NSRV_combined,
-                   NSRV_unsexed=RVinputs4X$NSRV_unsexed)
-
-
-
-RVinputs4VW<-prepRVdata(RVdata,years=1970:2024,strat= Strata4VW,bins=bins, raw=T)
-RVinputs4VW$NSRV_unsexed<-RVinputs4VW$NSRV_combined-(RVinputs4VW$NSRV_males+RVinputs4VW$NSRV_females) # unsexed
-NSRV_Index4VW<-RVinputs4VW$Index
-NSRV_Lengths4VW<-list(NSRV_males=RVinputs4VW$NSRV_males,
-                   NSRV_females=RVinputs4VW$NSRV_females,
-                   NSRV_combined=RVinputs4VW$NSRV_combined,
-                   NSRV_unsexed=RVinputs4VW$NSRV_unsexed)
 
 
 
@@ -163,8 +152,8 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
 
 #Halibut Survey Catch Composition
 ```{r}
-  Yrs1 = 2000:2020        
-  Yrs2 = 2017:2024        
+  Yrs1 = 2000:2022        
+  Yrs2 = 2017:AY        
 
   FixedSurvey <- FixedSurveyData(datadir=datadir, bins=bins,by.sex=T)
   RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
@@ -202,15 +191,15 @@ NLRV_Index$CV<-sqrt(NLRV_Index$var)/NLRV_Index$mean
    #                          se= c(1.075617e-06, 1.291483e-06, 1.437159e-06, 8.738080e-07))
   
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
-  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2023,use.calc.weight = F)
+  HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:AY,use.calc.weight = F)
 
 
 ```
 # Plots for Data Inputs Doc
 ```{r}
     
-    pltYrs1=2000:2020
-    pltYrs2=2017:2020
+    pltYrs1=2000:2022
+    pltYrs2=2017:AY
    
     BarPlotLF(FixedLF[which(names(FixedLF)%in%pltYrs1)],yrs=pltYrs1,rel=F,filen=file.path(wd,"figures","HSLFfixed"),graphic='png')
   
@@ -236,7 +225,7 @@ Landings_t<-read.csv(file.path(scaldir,"nafoSISCAL.csv"))
 
 #Fishery Catch Composition
 ```{r}
-CCyrs=1978:2024
+CCyrs=1978:AY
 
  nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PS", "3U")
  nafo4 = c("4V","4VB", "4VC", "4VN", "4VNW", "4VS", "4VSB", "4VSC","4VSW","4VW","4VX", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM","4WX","4XMNOPQ", "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XU", "4XS", "4XRS", "5YB", "5ZJ", "5ZM", "5ZN","5ZEJ")
@@ -328,7 +317,7 @@ Fishery_Lengths<-list(LLNafo4_males=LLNafo4_males,
 # Plots for Data Inputs Doc
 ```{r}
 
-YrsObs = 1995:2024 
+YrsObs = 1995:AY 
 
 ## English
 
@@ -394,9 +383,9 @@ BarPlotLF(LL3[which(names(LL3)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(wd,"
 # Put it all together
 ```{r}
 
-save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2023.rdata"))
+save(BiologicalParameters,NSRV_Index,NSRV_Lengths,NLRV_Index,NLRV_Lengths,HSFixed_Index,HSFixed_Lengths,HSRandom_Index,HSRandom_Lengths,Landings_t,Fishery_Lengths,file=file.path(scaldir,"SCALmodeldata2024.rdata"))
 
-load(file=file.path(scaldir,"SCALmodeldata2022.rdata"))
+load(file=file.path(scaldir,"SCALmodeldata2024.rdata"))
 
 ```
 

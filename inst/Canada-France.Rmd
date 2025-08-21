@@ -117,8 +117,8 @@ yrs<-unique(RandomSurveySets$YEAR)
 
 # source(calcAreaFrance.r) #script that calculates strata areas inside SPM EEZ and saves them as SPMareas.csv
 
- HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate' )
- HSRandom_Index_NRA<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2022, output = 'stratified.estimate', AltArea="NRA")
+ HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2025, output = 'stratified.estimate' )
+ HSRandom_Index_NRA<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:2025, output = 'stratified.estimate', AltArea="NRA")
 
 
  

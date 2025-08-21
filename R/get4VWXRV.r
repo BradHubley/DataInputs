@@ -10,18 +10,18 @@ get4VWXRV<-function(uid, pwd, use.local=T,datadir="C:/Users/hubleyb/Documents/Ha
     con <- ROracle::dbConnect(drv = drv.fn, username = uid, password = pwd, dbname = "ptran")
 
     # Get fish length data - use statement provided by Nell
-    fishlength_get <- ROracle::dbSendQuery(conn = con, statement = "select i.mission,i.setno,(dmin+dmax)/2 depth, strat, sdate, dist,flen,fwt,clen, fsex from groundfish.gsinf i, groundfish.gsdet c where i.mission=c.mission and i.setno=c.setno and spec=30 and to_char(sdate,'mm') in ('06','07','08') and strat between '440' and '495'  and type=1")
+    fishlength_get <- ROracle::dbSendQuery(conn = con, statement = "select i.mission,i.setno,(dmin+dmax)/2 depth, strat, latitude, longitude, sdate, dist,flen,fwt,clen, fsex from groundfish.gsinf i, groundfish.gsdet c where i.mission=c.mission and i.setno=c.setno and spec=30 and to_char(sdate,'mm') in ('06','07','08') and strat between '440' and '495'  and type=1")
 
     # fetch the data
     fishlength <- ROracle::fetch(fishlength_get)
 
     # get the required set information - requires three queries
     # Get tows with halibut - only summer survey (months 6, 7, 8)
-    halibut_get <- ROracle::dbSendQuery(conn = con, statement = "select i.mission,i.setno,(dmin+dmax)/2 depth, strat, sdate, dist,totno,totwgt from groundfish.gsinf i, groundfish.gscat c where i.mission=c.mission and i.setno=c.setno and spec=30 and to_char(sdate,'mm') in ('06','07','08') and strat between '440' and '495'  and type=1")
+    halibut_get <- ROracle::dbSendQuery(conn = con, statement = "select i.mission,i.setno,(dmin+dmax)/2 depth, strat, latitude, longitude, sdate, dist,totno,totwgt from groundfish.gsinf i, groundfish.gscat c where i.mission=c.mission and i.setno=c.setno and spec=30 and to_char(sdate,'mm') in ('06','07','08') and strat between '440' and '495'  and type=1")
     halibut <- ROracle::fetch(halibut_get)
 
     # get tows with no halibut - only summer survey (months 6, 7, 8)
-    no_halibut_get <- ROracle::dbSendQuery(conn = con, statement = "select i.mission,i.setno,(dmin+dmax)/2 depth, strat, sdate,dist, 0 totno, 0 totwgt from groundfish.gsinf i where to_char(sdate,'mm') in ('06','07','08') and strat between '440' and '495' and type=1")
+    no_halibut_get <- ROracle::dbSendQuery(conn = con, statement = "select i.mission,i.setno,(dmin+dmax)/2 depth, strat, latitude, longitude, sdate,dist, 0 totno, 0 totwgt from groundfish.gsinf i where to_char(sdate,'mm') in ('06','07','08') and strat between '440' and '495' and type=1")
     no_halibut <- ROracle::fetch(no_halibut_get)
 
     # Get stratum data

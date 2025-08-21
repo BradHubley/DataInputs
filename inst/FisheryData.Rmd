@@ -67,6 +67,8 @@ tmp<- MARFISdata |>
   filter(YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT") |>
   group_by(NAFO,YEAR) |>
   summarise(Catch = sum(RND_WEIGHT_KGS,na.rm=T),Effort = sum(SET),CPUE =  Catch/Effort) 
+
+tmp<-aggregate(RND_WEIGHT_KGS~NAFO+YEAR,data=MARFISdata,FUN=sum,na.rm=T)
   
 table1<- tmp |> 
   dplyr::select(NAFO,YEAR,Catch)|>
@@ -179,7 +181,7 @@ plot2<-MARFISdata %>%
 
 # plot annual
 ```{r}
-yrs<-2001:2005
+yrs<-2015:2025
 lvls=seq(0,7000,1000)
 xl=c(-69,-47)
 yl=c(40,48)
@@ -653,7 +655,7 @@ OCLengthSamples<-do.call("rbind",LSfiles)
 
 
 ## from Mar.fleets
-#```{r}
+```{r}
 yrs = 2002:2020
 fleets <- list()
         for (i in 1:length(yrs)){
@@ -670,5 +672,5 @@ catch.data <- na.omit(with(subset(marf,year(DATE_FISHED)==2020),data.frame(LOG_E
 catch.data$LOG_EFRT_STD_INFO_ID <- 1:nrow(catch.data)
 summary(catch.data)
 
-#```
+```
 
