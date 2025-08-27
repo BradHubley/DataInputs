@@ -70,6 +70,7 @@ Mar.utils::get_data_tables(schema="<NA>",cxn=cxn, data.dir = "C:/DFO-MPO/PESDDat
 RandomSurveyLandmark<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
 
 
+
 ```
 
 
@@ -293,23 +294,39 @@ dev.off()
 
 ## Map Random stations
 ```{r}
-xl=c(-69,-47)
-yl=c(40,48)    
-#stations_100 <- read.csv(file.path(wd,'data',"FixedStation100.csv"))
+yr=2024
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
+RS<-subset(RandomSurvey,YEAR==yr)
+for(i in 1:nrow(RS)){
+x1<-RS$LONG1[i]
+y1<-RS$LAT1[i]
+xl=c(x1-0.5,x1+0.5)
+yl=c(y1-0.3,y1+0.3)
 
-  #pdf(file.path(wd,'figures','StratfiedRandomSurveyMap2020.pdf'),width=10,height=7)
 
-png(file.path(wd,'figures',"StratfiedRandomSurveyMap2020.png"), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
-
-png(file.path(wd,'figures',paste0("StratfiedRandomSurveyMap",yr,".png")), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
+png(file.path(wd,'figures',paste0("StratfiedRandomSurveyMapSet",RS$SET_NO[i],yr,".png")), width =8, height = 6,units='in',pointsize=9, res=300,type='cairo')
 
                          
-SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="MR", title = "Stratified Random Survey",nafo=T)
-points(LAT1~LONG1,subset(RandomSurvey,YEAR==2021),pch=21,bg=rgb(1,1,0,1))
+SpatialHub::bioMap(xlim = xl, ylim = yl, mapRes="UR", title = "Stratified Random Survey",nafo=T)
+#points(LAT1~LONG1,subset(RandomSurvey,YEAR==yr),pch=21,bg=rgb(1,1,0,1))
+#with(RS,segments(LONG1,LAT1,LONG3,LAT3,col='red'))
+block <- read.csv(file.path(datadir,"Survey","newblock.csv"))
+block_sf = st_as_sf(block, coords = c("xAEAm", "yAEAm"), crs = "ESRI:102001") #original data as a sf object
+
+block_ll = st_transform(block_sf,crs = 4326)
+
+blockLL = cbind(block[,c("PID","SID","POS")],st_coordinates(block_ll))
+attr(blockLL,"projection") ="LL"
+addLines(blockLL,col='grey')
+with(RS,segments(LONG1,LAT1,LONG2,LAT2,col='red'))
+points(LAT1~LONG1,RS,pch=21,bg=rgb(1,1,0,1))
+points(LAT2~LONG2,RS,pch=21,bg=rgb(1,0,0,1))
+#points(LAT3~LONG3,RS,pch=21,bg=rgb(0,1,0,1))
+#ipoints(LAT4~LONG4,RS,pch=21,bg=rgb(0,0,1,1))
 
 dev.off()
 
-
+}
 
 ```
 

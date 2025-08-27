@@ -53,7 +53,7 @@ bins=seq(0,260,5)
 ## 
 
 ```{r,  echo=FALSE}
-Yrs=1978:2020
+Yrs=1978:2024
 
  nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
  

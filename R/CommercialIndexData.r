@@ -8,7 +8,7 @@ CommercialIndexData <-function(sp=30,datadir,add.gear=F,add.LF=T,bins=seq(5,260,
 
   isdb <- new.env()
 
-  get_data(db='isdb',data.dir=datadir,env=isdb)
+  Mar.datawrangling::get_data(db='isdb',env=isdb)
 
   # filter for halibut longline survey
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057,7058),]
@@ -25,18 +25,19 @@ CommercialIndexData <-function(sp=30,datadir,add.gear=F,add.LF=T,bins=seq(5,260,
 
 
   # Apply filter
-  self_filter('isdb',env=isdb)
+  Mar.datawrangling::self_filter('isdb',env=isdb)
 
   #### Select relevent columns and Join tables into HALIBUTSURVEY
 
   ## Trips
   trips <- left_join(isdb$ISTRIPS[,c("TRIP_ID","TRIPCD_ID","TRIP","VESS_ID")], isdb$ISVESSELS[,c("VESS_ID","VESSEL_NAME","CFV")], by='VESS_ID')
+  wide <- Mar.utils::ISSETPROFILE_enwidener(df=isdb$ISSETPROFILE)
 
 
   ## Sets
-  isdb$ISSETPROFILE_WIDE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE_WIDE$DATE_TIME3,  isdb$ISSETPROFILE_WIDE$DATE_TIME1, units='min')
-  isdb$ISSETPROFILE_WIDE$DEPTH <- rowMeans(isdb$ISSETPROFILE_WIDE[,c("DEP1","DEP2","DEP3","DEP4")],na.rm=T)
-  sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME2","DATE_TIME3","DATE_TIME4","SOAKMINP3P1","DEPTH","LAT1","LAT2","LAT3","LAT4","LONG1","LONG2","LONG3","LONG4","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID")], by=c('FISHSET_ID','SET_NO'))
+  wide$SOAKMINP3P1 <- difftime(wide$DATE_TIME3,  wide$DATE_TIME1, units='min')
+  wide$DEPTH <- rowMeans(wide[,c("DEP1","DEP2","DEP3","DEP4")],na.rm=T)
+  sets <- left_join(wide[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME2","DATE_TIME3","DATE_TIME4","SOAKMINP3P1","DEPTH","LAT1","LAT2","LAT3","LAT4","LONG1","LONG2","LONG3","LONG4","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID")], by=c('FISHSET_ID','SET_NO'))
 
   # consolidating dates where missing
   sets$DATE<-as.Date(apply(sets[,c("DATE_TIME1", "DATE_TIME2", "DATE_TIME3", "DATE_TIME4")],1,min))

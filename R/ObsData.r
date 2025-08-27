@@ -9,7 +9,7 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   # get observer data from ISDB
   isdb <- new.env()
 
-  Mar.datawrangling::get_data(db='isdb',data.dir=datadir,env=isdb)
+  Mar.datawrangling::get_data(db='isdb',env=isdb)
 
   # filter for targeted halibut and commercial index trips
   #isdb$ISTRIPS = isdb$ISTRIPS[!isdb$ISTRIPS$TRIPCD_ID %in% c(14, 70, 2210, 4511, 7002,7052,7050,7051,7053,7055),]
@@ -27,14 +27,15 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
 
   ## Trips
   trips <- left_join(isdb$ISTRIPS[,c("TRIP_ID","TRIPCD_ID","TRIP","VESS_ID")], isdb$ISVESSELS[,c("VESS_ID","VESSEL_NAME","CFV")], by='VESS_ID')
+  wide <- Mar.utils::ISSETPROFILE_enwidener(df=isdb$ISSETPROFILE)
 
 
   ## Sets
-  isdb$ISSETPROFILE_WIDE$DATE_TIME4[isdb$ISSETPROFILE_WIDE$DATE_TIME4>Sys.time()]<-NA
-  isdb$ISSETPROFILE_WIDE$DATE_TIME1[isdb$ISSETPROFILE_WIDE$DATE_TIME1>Sys.time()]<-NA
-  isdb$ISSETPROFILE_WIDE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE_WIDE$DATE_TIME4,  isdb$ISSETPROFILE_WIDE$DATE_TIME1, units='min')
-  isdb$ISSETPROFILE_WIDE$DEPTH <- rowMeans(isdb$ISSETPROFILE_WIDE[,c("DEP1","DEP2","DEP3","DEP4")],na.rm=T)
-  sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME4","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID")], by=c('FISHSET_ID','SET_NO'))
+  wide$DATE_TIME4[wide$DATE_TIME4>Sys.time()]<-NA
+  wide$DATE_TIME1[wide$DATE_TIME1>Sys.time()]<-NA
+  wide$SOAKMINP3P1 <- difftime(wide$DATE_TIME4,  wide$DATE_TIME1, units='min')
+  wide$DEPTH <- rowMeans(wide[,c("DEP1","DEP2","DEP3","DEP4")],na.rm=T)
+  sets <- left_join(wide[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME4","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID")], by=c('FISHSET_ID','SET_NO'))
   sets <- left_join(sets,isdb$ISGEARS[,c("GEAR_ID","TRIP_ID","GEARCD_ID", "HOOKCD_ID","HOOKSIZE")])
   sets$SOAKMINP3P1[sets$SOAKMINP3P1<0]<-NA
   sets$GEAR<-NA
@@ -53,7 +54,7 @@ ObsData <-function(sp=30,datadir="C:/Users/hubleyb/Documents/Halibut/data",by.se
   totalfish <- isdb$ISCATCHES[,c("FISHSET_ID","CATCH_ID","EST_NUM_CAUGHT","EST_COMBINED_WT")]
 
   # get length frequency
-  Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"))
+  Mar.utils::get_data_tables(schema="observer", data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"))
 
   #The new tables get downloaded and/or loaded in and you can filter them manually
   ISSAMPLES = subset(ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
