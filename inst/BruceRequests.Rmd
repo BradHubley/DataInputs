@@ -298,5 +298,53 @@ for(i in 1:length(Nti)){
   }
 }
 
+
+nafoA = get_21A(count="others", yearstart = 2019, datadir=datadir) 
+
+nafoCatch = nafoA  |>
+  mutate( Division=replace(Division, Division%in%c("4VN","4VS"), "4V"))  |>
+  mutate( Division=replace(Division, Division%in%c("3N","3O"), "3NO"))  |>
+  group_by(Year, Division) |>
+  summarize(Catch = sum(CatchA,na.rm=T )) |>
+  pivot_wider(names_from = c(Division),values_from = Catch) 
+
+
+bigQ = 0.8387526
+
+tHSRB<-t(HSRB)
+B<-tHSRB[,ncol(tHSRB):1]/bigQ/1000
+C<-data.frame(nafoCatch[1:6,2:6])
+
+#barplot(as.matrix(t(C)))
+row.names(C)<-2019:2024
+dimnames(B)<-list(2019:2024,c("3NO", "3PS", "4V",  "4W",  "4X"))
+
+barplot(as.matrix(t(C[,ncol(C):1])),ylab="Catch (t)",ylim=c(0,max(rowSums(C))*1.2))
+legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
+barplot(as.matrix(t(B[,ncol(B):1])),ylab="Biomass (t)",ylim=c(0,max(rowSums(B))*1.2))
+legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
+
+
+Exploitation<-C/B
+
+library(ggplot2)
+library(reshape2)
+
+# Sample data: replace with your actual C and B values
+
+# Convert to long format
+Exploitation$Year <- as.numeric(row.names(Exploitation))
+Exploitation_long <- melt(Exploitation, id.vars = "Year", variable.name = "NAFO", value.name = "Exploitation")
+
+# Plot
+ggplot(Exploitation_long, aes(x = Year, y = Exploitation, color = NAFO, linetype = NAFO)) +
+  geom_line(size = 1) +
+  geom_hline(yintercept = 1 - exp(-0.1044), linetype = "dashed", color = "black") +
+  labs(title = "Exploitation Rates by Area", y = "C/B", x = "Year") +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+
+
 ```
 

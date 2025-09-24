@@ -48,8 +48,8 @@ get_data(db='marfis', cxn = cxn , force.extract=T)
 MARFISdataLL<-getMARFISdata(datadir,sp=130,gear=1)
 MARFISdataLL$CLASS <-NA
 MARFISdataLL$CLASS[MARFISdataLL$LOA<35]<-"LL35"
-MARFISdataLL$CLASS[MARFISdataLL$LOA>=35&MARFISdataLL$LOA<45]<-"LL35-45"
-MARFISdataLL$CLASS[MARFISdataLL$LOA>=45&MARFISdataLL$LOA<65]<-"LL45-65"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=35&MARFISdataLL$LOA<50]<-"LL35-50"
+MARFISdataLL$CLASS[MARFISdataLL$LOA>=50&MARFISdataLL$LOA<65]<-"LL50-65"
 MARFISdataLL$CLASS[MARFISdataLL$LOA>65]<-"LL65"
 MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
 MARFISdataOT$CLASS <-"OT"
@@ -64,11 +64,11 @@ MARFISdata$SET<-1
 yrs<-2015:2025
 
 tmp<- MARFISdata |>
-  filter(YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT") |>
+  filter(YEAR%in%yrs&!is.na(NAFO)&CLASS%in%c("LL35","LL35-50")) |>
   group_by(NAFO,YEAR) |>
   summarise(Catch = sum(RND_WEIGHT_KGS,na.rm=T),Effort = sum(SET),CPUE =  Catch/Effort) 
 
-tmp<-aggregate(RND_WEIGHT_KGS~NAFO+YEAR,data=MARFISdata,FUN=sum,na.rm=T)
+#tmp<-aggregate(RND_WEIGHT_KGS~NAFO+YEAR,data=MARFISdata,FUN=sum,na.rm=T)
   
 table1<- tmp |> 
   dplyr::select(NAFO,YEAR,Catch)|>
@@ -227,6 +227,7 @@ for(y in yrs){
 
 
 ```
+``
 
 
 ### Loop for quarterly year blocks

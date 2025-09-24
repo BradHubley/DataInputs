@@ -7,7 +7,7 @@
 #' @export
 
 
-get_21A <- function(count, yearstart, datadir, fn="NAFO-21A-2025updated.csv"){
+get_21A <- function(count, yearstart, datadir, fn="Export.csv"){
 
   nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
   nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
@@ -22,12 +22,12 @@ get_21A <- function(count, yearstart, datadir, fn="NAFO-21A-2025updated.csv"){
 
   #filter divisions; zone 5 includes CDN landings only
   landA = as.data.frame(landA) %>%
-    filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z))
+    dplyr::filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z))
   landA5 =   landA   %>%
-    filter(Division %in% c("5ZC","5ZE","5Z","5Y"),
+    dplyr::filter(Division %in% c("5ZC","5ZE","5Z","5Y"),
            grepl("CAN",landA$Country))
   landA34 =   landA   %>%
-    filter(!Division %in% c("5ZC","5ZE","5Z","5Y"))
+    dplyr::filter(!Division %in% c("5ZC","5ZE","5Z","5Y"))
 
   landA=rbind(landA34, landA5)
 #  unique(landA5$Country)
@@ -36,11 +36,11 @@ get_21A <- function(count, yearstart, datadir, fn="NAFO-21A-2025updated.csv"){
   # Canada+Foreign landings by year/area; assign Area 5 to 4X
   if (count=="CDN") {
     nafoA = landA %>%
-      filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z),
+      dplyr::filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z),
              grepl("CAN",landA$Country))
   } else if (count=="Foreign") {
       nafoA = landA %>%
-          filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z),
+        dplyr::filter(Division %in% c(nafodivs3NOPS, nafodivs4VWX5Z),
           !grepl("CAN",landA$Country))
 
     } else {
@@ -50,8 +50,8 @@ get_21A <- function(count, yearstart, datadir, fn="NAFO-21A-2025updated.csv"){
 
 
   nafoA = nafoA %>%
-    filter(Year >=yearstart)%>%
-    mutate( Division=replace(Division, Division%in%c("5ZC","5ZE","5Y"), "4X"))  %>%
+    dplyr::filter(Year >=yearstart)%>%
+    #mutate( Division=replace(Division, Division%in%c("5ZC","5ZE","5Y"), "4X"))  %>%
     mutate( Division=replace(Division, Division=="3NK", "3N"))   %>%
     group_by(Year, Division) %>%
     summarize(CatchA=sum(Catch))

@@ -26,6 +26,7 @@ attr(nraStrata,"projection")<-"LL"
 nraAreas<-calcArea(nraStrata,1)
 
 write.csv(nraAreas,file.path(datadir,"Survey","NRAareas.csv"),row.names = F)
+write.csv(nraStrata,file.path(datadir,"Survey","NRAstrata.csv"),row.names = F)
 
 
 

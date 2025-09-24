@@ -8,6 +8,7 @@ get4VWXRV<-function(uid, pwd, use.local=T,datadir="C:/Users/hubleyb/Documents/Ha
 
     # Make connection to Database PTRAN
     con <- ROracle::dbConnect(drv = drv.fn, username = uid, password = pwd, dbname = "ptran")
+    3cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
 
     # Get fish length data - use statement provided by Nell
     fishlength_get <- ROracle::dbSendQuery(conn = con, statement = "select i.mission,i.setno,(dmin+dmax)/2 depth, strat, latitude, longitude, sdate, dist,flen,fwt,clen, fsex from groundfish.gsinf i, groundfish.gsdet c where i.mission=c.mission and i.setno=c.setno and spec=30 and to_char(sdate,'mm') in ('06','07','08') and strat between '440' and '495'  and type=1")

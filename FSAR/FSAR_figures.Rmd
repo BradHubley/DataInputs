@@ -18,7 +18,19 @@ devtools::load_all(".")
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
 setwd(file.path(wd,'FSAR'))
-Assessment.Year <- 2024
+Assessment.Year <- 2025
+
+
+# Update data from database 
+
+   # 1. Establish Oracle connection first (NEW REQUIREMENT)
+    #cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+
+    #Mar.datawrangling::get_data(db='isdb',cxn=cxn, force.extract=T)
+    # open and check setprofile_wide to confirm that you have year, latitude & longitude
+
+    # Mar.datawrangling::get_data(db='rv',cxn=cxn,force.extract=T)
+
 
 source("real-data.R")
 in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
@@ -211,6 +223,12 @@ Figure  (B) Stratified Random Halibut Survey Biomass (B) in relation to the Limi
   abline(h=0.0877*c(1.2,1,0.8), lty = 3, lwd = 2,col=c("blue", "forestgreen", "orange"))
 
   #lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "M-1/yr"), ], lty = 1, lwd = 2, col = grey(0.5))
+  
+  B<-subset(in.df,ts.name=="HSobs_3yrm")
+  L<-subset(in.df,panel.category=="Catch"&year%in%B$year)
+  U<-(L$ts.value[L$ts.name=="CanadaTotal"]+L$ts.value[L$ts.name=="ForeignTotal"])/(B$ts.value*1000)
+  f<- log(1-U)*-1
+  points(B$year,f,pch=16)
 
 
   legend("topright","(C)", bty = "n", cex=1.25)

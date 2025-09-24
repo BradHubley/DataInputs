@@ -70,7 +70,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
       isdb$ISFISH$FISH_WEIGHT<-LW[1]*isdb$ISFISH$FISH_LENGTH^LW[2]
       cid=unique(isdb$ISFISH$CATCH_ID)
       LF <-list()
-      LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$count)})))
+      LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$counts)})))
       names(LFnosex)[-1]<-paste0("L",bins[-1])
       LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
       LFnosex <- isdb$ISFISH %>%
@@ -83,7 +83,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
-          LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s&SEXCD_ID==sx[i]),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$count)})))
+          LF[[i]]<-data.frame('CATCH_ID'=cid,'SEXCD_ID'=sx[i],t(sapply(cid,function(s){with(subset(isdb$ISFISH,CATCH_ID==s&SEXCD_ID==sx[i]),hist(FISH_LENGTH,breaks=bins,plot=F,right=F)$counts)})))
         }
         LF <- do.call("rbind",LF)
         names(LF)[-(1:2)]<-paste0("L",bins[-1])
@@ -135,11 +135,12 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
 
   # get assigned strata
   #browser()
+
   StnStrt<-read.csv(file.path(datadir,"Survey","HS_STATION_STRATA.csv"))
   StnStrt$ASSIGNED_STATION<-floor( StnStrt$ASSIGNED_STATION)
   HALIBUTSURVEY$ASSIGNED_STATION<-floor(as.numeric( HALIBUTSURVEY$STATION))
   HALIBUTSURVEY <- left_join(HALIBUTSURVEY,StnStrt)
-  HALIBUTSURVEY$STRATUM_ID <- HALIBUTSURVEY$ASSIGNED_STRATUM_ID
+  HALIBUTSURVEY$STRATUM_ID[!is.na(HALIBUTSURVEY$ASSIGNED_STRATUM_ID)] <- HALIBUTSURVEY$ASSIGNED_STRATUM_ID[!is.na(HALIBUTSURVEY$ASSIGNED_STRATUM_ID)]
 
   if(hook.data==T){
     hookData<-PrepareDataHookModel(sp=sp, datadir = datadir)

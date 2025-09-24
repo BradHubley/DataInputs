@@ -11,6 +11,7 @@ output: html_document
 library(ROracle)
 library(devtools)
 library(tidyverse)
+library(Mar.datawrangling)
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
 

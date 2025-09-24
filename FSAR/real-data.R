@@ -11,7 +11,11 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
 
 
   if(update.data){
-    Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+    # 1. Establish Oracle connection first (NEW REQUIREMENT)
+    cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+
+    Mar.datawrangling::get_data(db='isdb',cxn=cxn, force.extract=T)
+
     RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
   }
 

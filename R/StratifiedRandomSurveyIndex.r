@@ -1,8 +1,8 @@
 #' @export
 StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30,nadj=1,use.calc.weight=F,restratify=F, AltArea='n', select.strata, ZeroStrata=T, combine.strata=NULL){
 
-  RSindexData <- RandomSurveyData(sp=sp,datadir=datadir, add.LF=T,by.sex=F, LF.from = "ISFISH")
-  RSindexData$STRAT <- as.numeric(substr(RSindexData$ASSIGNED_STRATUM_ID,2,3)) # make strata.id numeric
+  RSindexData <- RandomSurveyData(sp=sp,datadir=datadir, add.LF=!use.calc.weight,by.sex=F, LF.from = "ISFISH")
+  RSindexData$STRAT <- as.numeric(substr(RSindexData$STRATUM_ID,2,3)) # make strata.id numeric
   if(!missing(select.strata))RSindexData<-subset(RSindexData,STRAT%in%select.strata)
 
   load(file.path(datadir,"Survey","SurveyStrata.rdata")) # These are the original strata (2017-2021)
@@ -37,9 +37,11 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   }
 
   # to calculate index NRA (tail of the Grand Banks)
-  if(AltArea=='NRA'){
+  if(AltArea%in%c('NRA',"NRA2")){
     load(file.path(datadir,"Survey","SurveyStrata.rdata"))
-    RSindexData<-reStratify(RSindexData,subset(surveyStrataPolyLL,PID%in%c(51:53)))
+    if(AltArea=='NRA2')surveyStrataPolyLL<-read.csv(file.path(datadir,"Survey","NRAstrata.csv"))
+    #browser()
+    RSindexData<-reStratifyHS(RSindexData,subset(surveyStrataPolyLL,PID%in%c(51:53)))
     RSindexData$STRAT<-RSindexData$PID
     areas<-areas2<-areas3<-read.csv(file.path(datadir,"Survey","NRAareas.csv"))
   }

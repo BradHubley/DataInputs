@@ -1,5 +1,5 @@
 
-ageData<-read.csv(file.path(data.dir,"Ageing","ageData.csv"))
+ageData<-read.csv(file.path(datadir,"AgeData","ageData.csv"))
 head(ageData)
 summary(ageData)
 plot(Age~LENGTH,ageData)
