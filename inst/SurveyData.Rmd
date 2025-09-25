@@ -10,7 +10,7 @@ library(devtools)
 
 # install_github("Maritimes/Mar.datawrangling")
 # install_github("Maritimes/Mar.fleets")
-#install_github("Maritimes/Mar.utils")
+install_github("Maritimes/Mar.utils")
  library(Mar.datawrangling)
  #library(Mar.fleets)
  library(tidyverse)
@@ -167,9 +167,9 @@ RandomSurvey1$diff_weight<-with(RandomSurvey1,EST_COMBINED_WT -calc_weight )
 RandomSurvey2$diff_count<-with(RandomSurvey2,EST_NUM_CAUGHT -NUM_MEASURED )
 RandomSurvey2$diff_weight<-with(RandomSurvey2,EST_COMBINED_WT -calc_weight )
 
-subset(RandomSurvey1,abs(diff_count)>1&YEAR==2020)
-subset(RandomSurvey1,abs(diff_count)>1&YEAR==2021&!is.na(L5))
-subset(RandomSurvey2,abs(diff_count)>1&YEAR==2021)
+subset(RandomSurvey1,abs(diff_count)>1&YEAR==2025)
+subset(RandomSurvey1,abs(diff_count)>1&YEAR==2025&!is.na(L5))
+subset(RandomSurvey2,abs(diff_count)>1&YEAR==2025)
 
 subset(RandomSurvey1,diff_count==0&diff_weight>100)
 subset(RandomSurvey2,diff_count==0&diff_weight>100)
@@ -183,7 +183,7 @@ rs_ISFISHLENGTHS_w <- subset(RandomSurvey1,diff_count==0&diff_weight>100)
 rs_w <- rs_ISFISHLENGTHS_w %>% bind_rows(.,rs_ISFISH_w)
 rs_w <- rs_w[!duplicated(rs_w$FISHSET_ID), ]
 
-write.csv(rs_w, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_weightissues_2024.csv", row.names = FALSE)
+write.csv(rs_w, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_weightissues_2025.csv", row.names = FALSE)
 
 #length from both datasets (using ISFISH and ISFISHLENGTHS)
 rs_ISFISH_l <- subset(RandomSurvey2,abs(diff_count)>0)
@@ -191,7 +191,7 @@ rs_ISFISHLENGTHS_l <- subset(RandomSurvey1,abs(diff_count)>0)
 rs_l <- rs_ISFISHLENGTHS_l %>% bind_rows(.,rs_ISFISH_l)
 rs_l <- rs_l[!duplicated(rs_l$FISHSET_ID), ]
 
-write.csv(rs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_lengthissues_2024.csv", row.names = FALSE)
+write.csv(rs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_lengthissues_2025.csv", row.names = FALSE)
 ```
 
 

@@ -30,7 +30,7 @@ bins=seq(0,260,5)
 # labelled by upper bound
 
 
-Current.Year <- 2024
+Current.Year <- 2025
 
 
 ```
@@ -42,11 +42,22 @@ Current.Year <- 2024
 
 
 # Update data from database 
+   # 1. Establish Oracle connection first (NEW REQUIREMENT)
+    cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
 
-Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+ get_data(db='isdb',cxn=cxn, force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
-RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
+ get_data(db='rv',cxn=cxn,force.extract=T)
+
+
+
+ Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"))
+
+
+Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"))
+Mar.utils::get_data_tables(schema="<NA>",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT")) 
+# open and check setprofile_wide to confirm that you have year, latitude & longitude
 
 ```
 
@@ -116,7 +127,7 @@ dev.off()
 
   HSFixed_Index<-FixedSurveyIndex(datadir=datadir,yrs=1998:2022)
   HSRandom_Index_WZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, use.calc.weight=F)
-  HSRandom_Index_WOZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F) 
+  #HSRandom_Index_WOZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F) 
   ##if looking for findPolys try require(PBSmapping)
   
   with(subset(HSRandom_Index_WZS,Year==Current.Year),c(mean3_biomass,mean3_biomass-KgPKHse*1.96,mean3_biomass+KgPKHse*1.96))/2
