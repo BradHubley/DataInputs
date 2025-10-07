@@ -1,5 +1,5 @@
 #' @export
-get4VWXRV<-function(uid, pwd, use.local=T,datadir="C:/Users/hubleyb/Documents/Halibut/data"){
+get4VWXRV<-function(uid, pwd, use.local=T,datadir=datadir){
 
   if(use.local==F){
 
