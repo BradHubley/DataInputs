@@ -120,7 +120,7 @@ devtools::load_all(".")
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
 setwd(file.path(wd,'FSAR'))
-Assessment.Year <- 2024
+Assessment.Year <- 2025
 
 source("real-data.R")
 source("plot-timeseries.R")
