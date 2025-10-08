@@ -33,7 +33,7 @@ fsar_data <- function(Assessment.Year=2024,datadir=datadir,update.data=F) {
 
   ##update from Landings SCript each year
 
-  Catch=read.csv("fsardata/figuredata_markdown_2024.csv")
+  Catch=read.csv("fsardata/figuredata_markdown_2025.csv")
   Catch=subset(Catch,Year>1969)
   ts1=data.frame(
     panel.category = rep(categories[1],nrow(Catch)),
