@@ -118,10 +118,12 @@ Figure (A) Northwest Atlantic Fisheries Organization (NAFO) reported Canadian (b
   xl <- c(1970,Assessment.Year+3)
 
   if (language == "English") {
+    x.lab <- "Year"
     y.lab <- "Biomass (KT)"
     legend.text <- c("Halibut Survey (modelled)","95% confidence","Halibut Survey (projection)","90% projection envelope", "Halibut Survey (index)", "3-year mean of index","USR", "LRP")
   }
   if (language == "French") {
+    x.lab <- "Année"
     y.lab <- "Biomasse KT"
     legend.text <- c("BSR-tonne", "confiance à 95%", "NRS-tonne", "NRL-tonne")
   }

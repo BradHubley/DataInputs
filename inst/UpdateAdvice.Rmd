@@ -35,10 +35,17 @@ Assessment.Year <- 2025
 
 # Update data from database 
 
-# Mar.datawrangling::get_data(db='isdb',data.dir=datadir,fn.oracle.username = uid, fn.oracle.password = pwd, fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract=T)
+   # 1. Establish Oracle connection first (NEW REQUIREMENT)
+    cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+
+ get_data(db='isdb',cxn=cxn, force.extract=T)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
-# RVdata<-get4VWXRV(uid, pwd, use.local=F,datadir=datadir)
+ get_data(db='rv',cxn=cxn,force.extract=T)
+
+
+
+ Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"))
 
 ```
 # Landings

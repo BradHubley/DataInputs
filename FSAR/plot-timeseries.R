@@ -229,6 +229,12 @@ fsar_plot_base <- function(in.df, Assessment.Year=2024, language = c("English","
 
   #lines(ts.value ~ year, data = bl.df[which(bl.df$ts.name == "M-1/yr"), ], lty = 1, lwd = 2, col = grey(0.5))
 
+  B<-subset(in.df,ts.name=="HSobs_3yrm")
+  L<-subset(in.df,panel.category=="Catch"&year%in%B$year)
+  U<-(L$ts.value[L$ts.name=="CanadaTotal"]+L$ts.value[L$ts.name=="ForeignTotal"])/(B$ts.value*1000)
+  f<- log(1-U)*-1
+  points(B$year,f,pch=16)
+
 
   legend("topright","(C)", bty = "n", cex=1.25)
   legend("topleft",
