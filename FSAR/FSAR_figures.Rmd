@@ -324,8 +324,8 @@ BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
 
 BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
 
-HalSurvey2024 <- read.csv("fsardata/2024 Halibut Longline Survey Stations Assigned.csv")
-completed2024 <- read.csv("fsardata/2024 Halibut Longline Survey Stations Completed.csv")
+HalSurvey2025 <- read.csv("fsardata/StratifiedRandom_2025final.csv")
+completed2025 <- read.csv("fsardata/2025 Halibut Longline Survey Stations Completed.csv")
 
 xl=c(-68,-47)
 yl=c(40,48)
@@ -334,8 +334,8 @@ png(file.path(wd,'figures',"SurveyMap.png"), width =8, height = 6,units='in',poi
 bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
 addPolys(BO1,density=20,col='black')
 sp::plot(NAFO,add=T)
- points(lat.DecDeg~lon.DecDeg,HalSurvey2024,pch=21,bg = "yellow",cex=0.5)
- points(lat.DecDeg_Assigned~lon.DecDeg_Assigned,completed2024,pch=21, bg = "black",cex=0.5)
+ points(lat.DecDeg~lon.DecDeg,HalSurvey2025,pch=21,bg = "yellow",cex=0.5)
+ points(lat.DecDeg~lon.DecDeg,completed2025,pch=21, bg = "black",cex=0.5)
 text(x = -56.5, y = 43, labels = "4Vs")
 text(x = -59.55, y = 46.37, labels = "4Vn")
 text(x = -61, y = 42, labels = "4W")
