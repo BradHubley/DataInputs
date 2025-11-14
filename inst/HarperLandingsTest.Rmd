@@ -62,7 +62,7 @@ TAC = data.frame(Year=1988:2025,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850
 ystart =1960
 
 # 21A last year(assessment year)
-yend=2022 ##DOES THIS CHANGE??
+yend=2024 ##DOES THIS CHANGE??
 
 width1=8
 height1=8
@@ -151,9 +151,9 @@ Canadian Maritimes Landings only
 # 
 #get_data(db='marfis',data.dir=datadir,fn.oracle.username = "hubleyb", fn.oracle.password = "R4#vmxtas", fn.oracle.dsn = 'ptran',usepkg='roracle',force.extract = T)
 
-cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), "hubleyb", "R4#vmxtas", "PTRAN")
 
-get_data(db='marfis', cxn = cxn , force.extract=T)
+get_data(db='marfis', cxn = cxn)
 
 #get_data(db='marfis',data.dir=datadir)
 SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]
@@ -178,6 +178,7 @@ self_filter()
 # #comparing old with new
 # CanadaMarCompare <- CanadaMar %>% left_join(marfis3check, by = "YEAR") %>% left_join(marfis4check, by = "YEAR")
 
+PRO_SPC_INFO <- PRO_SPC_INFO %>% mutate(YEAR = as.numeric(substr(LANDED_DATE, 1,4)))
 ##NEW CANADAMAR!! DO THIS INSTEAD OF ABOVE
 marfis3NOPS <- PRO_SPC_INFO %>% filter(NAFO_UNIT_AREA_ID %in% c(114:128, 130:138)) %>% group_by(YEAR) %>% summarize(Canada3NOPS = round(sum(RND_WEIGHT_KGS)/1000)) %>% drop_na() %>% add_row("YEAR" = 2000, "Canada3NOPS" = NA)
 
