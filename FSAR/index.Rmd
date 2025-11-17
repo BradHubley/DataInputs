@@ -14,7 +14,7 @@ Dartmouth, Nova Scotia B2Y 4A2"
 report_title_french: "Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) du plateau néo-écossais et du sud du Grand Banc dans les divisions 3NOPs4VWX5Zc de l'OPANO"
 inuktitut_citation: " "
 context: |
-  Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science advice on the status of the Scotian Shelf and southern Grand Banks (3NOPs4VWX5Zc) Atlantic Halibut (Hippoglossus hippoglossus) stock based on the articulated harvest decision rule adopted at the Scotia-Fundy Groundfish Advisory Committee (SFGAC) meeting in March 2022. This Science Response Report results from the regional peer review of December 2nd-3rd, 2025, on the Stock Status Update for 3NOPs4VWX5Zc Atlantic Halibut.
+  .
 output:
  csasdown::fsar_word
 link-citations: true

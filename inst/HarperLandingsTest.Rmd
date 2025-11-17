@@ -194,7 +194,7 @@ figtab <- table1 %>% select("Year", "CanadaTotal", "ForeignTotal", "TAC")
 figtab <- figtab %>% gather(key = Source, value = landings_mt, CanadaTotal, ForeignTotal, TAC)
 
 figtab[nrow(figtab) + 1, 1:3] = c(2025, "MARFIS", CanadaMar_ay$CanadaTotal)
-write.csv(figtab, "C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/datafolder/figuredata_markdown_2025.csv", row.names = F)
+write.csv(figtab, "C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/fsardata/figuredata_markdown_2025.csv", row.names = F)
 
 #adding marfis to summary table
 table2$Canada3NOPS[table2$Year == ay] = CanadaMar_ay$Canada3NOPS
