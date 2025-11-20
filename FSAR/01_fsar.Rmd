@@ -22,7 +22,7 @@ Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science
 
 - Inter-annual changes in the index of exploitable biomass and the three-year mean have remained relatively stable through the time series with a small decrease in 2025 from the previous year. 
 
-- Atlantic halibut catch per tow in 2025 from the Maritimes Summer Ecosystem Research Vessel Survey was the lowest value in last five years, although it remains well above the long term mean. The trend in catch appears similar to what was seen during the peak and decline in the 2010s.
+- Atlantic halibut abundance in 2025 from the Maritimes Summer Ecosystem Research Vessel Survey was the lowest value in last five years, although it remains well above the long-term mean. The trend in abundance appears similar to what was seen during the peak and decline in the 2010s.
 
 :::
 
@@ -101,7 +101,7 @@ The HDR has two steps. First, a fishing mortality rate (F) is applied to the exp
 
 #### Data changes: {-}
 
-- Data from the 2021 RV Summer Survey that were not previously included due to the lack of a conversion factors between the new and old vessels have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Incomplete coverage remains in the following years: 2018, 2021, and 2022.
+- Data from the 2021 RV Summer Survey that were not previously included due to the lack of conversion factors between the new and old vessels have now been included in the time series following completion of comparative fishing and calculation of conversion factors. Incomplete coverage remains in the following years: 2018, 2021, and 2022.
 
 ## ASSESSMENT {-}
 
@@ -184,7 +184,7 @@ text(x = -53.2, y = 43.7, labels = "3O")
 text(x = -55.5, y = 45.9, labels = "3Ps")
 text(x = -58.7, y = 47.35, labels = "3Pn")
 ```
-Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into depth strata, shown in different shades of each colour. The hatched area is a new strata with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2025 survey, black dots indicate completed stations and red dots indicate incomplete stations (three stations in 3Ps). Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
+Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into depth strata, shown in different shades of each colour. The hatched area is a new stratum with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2025 survey, black dots indicate completed stations and red dots indicate incomplete stations (three stations in 3Ps). Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
 
 
 #### Index of Recruitment: Maritimes Summer Ecosystem Research Vessel Survey (RV Summer Survey; NAFO Divs. 4VWX) {-}
@@ -255,11 +255,11 @@ No significant changes in data sources or significant deviations from expectatio
 
 ## SOURCES OF UNCERTAINTY {-}
 
-The Industry-DFO Halibut Longline Survey index uses the stratified mean catch per tow and does not account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although three stations were not completed, the minimum number of stations in each strata were completed, allowing for calculation of the exploitable biomass index.
+The Industry-DFO Halibut Longline Survey index uses the stratified mean catch per tow and does not account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although three stations were not completed, the minimum number of stations in each stratum were completed, allowing for calculation of the exploitable biomass index.
 
 The 2018 and 2022 RV Summer Survey did not cover all strata due to mechanical issues with the vessels.
 
-The interpretation of trends assumes no changes in vital rates, such as, growth or fecundity, that impact the dynamics of the population. Therefore, it is not known if, or how, vital rates and population growth rate will change with changes in stock size and/or variable environmental conditions. Further, there is uncertainty in the stock recruitment relationship and natural mortality in Atlantic Halibut which can affect outcomes, especially reference points. There is also potential for shifts in habitat usage, spawning areas, migration, and distribution due to changes in thermal conditions in the Northwest Atlantic. Despite these sources of uncertainty, they are not expected to change the outcome of the advice provided.
+The interpretation of trends assumes no changes in vital rates such as growth or fecundity that impact the dynamics of the population. Therefore, it is not known if, or how, vital rates and population growth rate will change with changes in stock size and/or variable environmental conditions. Further, there is uncertainty in the stock recruitment relationship and natural mortality in Atlantic Halibut which can affect outcomes, especially reference points. There is also potential for shifts in habitat usage, spawning areas, migration, and distribution due to changes in thermal conditions in the Northwest Atlantic. There is no expectation that these sources of uncertainty would change the provided advice.
 
 
 ## LIST OF MEETING PARTICIPANTS {-}
