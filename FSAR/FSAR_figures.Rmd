@@ -329,12 +329,12 @@ completed2025 <- read.csv("fsardata/2025 Halibut Longline Survey Stations Comple
 
 xl=c(-68,-47)
 yl=c(40,48)
-png(file.path(wd,'figures',"SurveyMap.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
+png(file.path(wd,'figures',"SurveyMap2025.png"), width =8, height = 6,units='in',pointsize=12, res=300,type='cairo')
 
 bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
 addPolys(BO1,density=20,col='black')
 sp::plot(NAFO,add=T)
- points(lat.DecDeg~lon.DecDeg,HalSurvey2025,pch=21,bg = "yellow",cex=0.5)
+ points(lat.DecDeg~lon.DecDeg,HalSurvey2025,pch=21,bg = "red",cex=0.5)
  points(lat.DecDeg~lon.DecDeg,completed2025,pch=21, bg = "black",cex=0.5)
 text(x = -56.5, y = 43, labels = "4Vs")
 text(x = -59.55, y = 46.37, labels = "4Vn")

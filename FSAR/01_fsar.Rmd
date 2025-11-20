@@ -184,7 +184,7 @@ text(x = -53.2, y = 43.7, labels = "3O")
 text(x = -55.5, y = 45.9, labels = "3Ps")
 text(x = -58.7, y = 47.35, labels = "3Pn")
 ```
-Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into depth strata, shown in different shades of each colour. The hatched area is a new strata with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2025 survey, black dots indicate completed stations and yellow dots indicate incomplete stations (three stations in 3Ps). Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
+Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into depth strata, shown in different shades of each colour. The hatched area is a new strata with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2025 survey, black dots indicate completed stations and red dots indicate incomplete stations (three stations in 3Ps). Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
 
 
 #### Index of Recruitment: Maritimes Summer Ecosystem Research Vessel Survey (RV Summer Survey; NAFO Divs. 4VWX) {-}
@@ -210,7 +210,7 @@ Landings data for Atlantic Halibut are retrieved from the NAFO database for each
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
 library(kableExtra)
 landingstable <- read.csv("fsardata/landingstable.csv")
-csasdown::csas_table(landingstable, caption = "Total reported Canadian and foreign landings (tonnes) of Atlantic Halibut from Northwest Atlantic Fisheries Organization (NAFO) Divisions 3NOPs4VWX5Zc and total allowable catch (TAC) for these divisions. Ten-year annual average landings are presented for 1960 to 2009. The [NAFO 21A table](https://www.nafo.int/Data/STATLANT-21A) of landings by country are reported by calendar year; however, the TAC for the stock is set for the period of April–March. Data were extracted from the NAFO 21A database on November 14, 2025. An 'NA' indicates where data are not available.
+csasdown::csas_table(landingstable, caption = "Total reported Canadian and foreign landings (tonnes) of Atlantic Halibut from Northwest Atlantic Fisheries Organization (NAFO) Divisions 3NOPs4VWX5Zc and total allowable catch (TAC) for these divisions. Ten-year annual average landings are presented for 1960 to 2009. The [NAFO 21A table](https://www.nafo.int/Data/STATLANT-21A) of landings by country are reported by calendar year; however, the TAC for the stock is set for the period of April–March. Data were extracted from the NAFO 21A database on November 14, 2025. A dash indicates where data are not available.
                      ")
 # 
 # names(landingstable)[c(3, 6)] <- paste0(names(landingstable)[c(3,6)],
