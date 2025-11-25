@@ -80,6 +80,7 @@ language="English"
   plm<-as.matrix(plm[c(1,2,4),-(1:2)])
   plm[is.na(plm)]<-0
 
+#png(file.path(wd,'figures',"Landings2025.png"), width =9, height = 6,units='in',pointsize=12, res=300,type='cairo')
 
   barplot(plm,ylim=yl, axes = FALSE, col=c(colrs[1],colrs[2],colrs[1]),border=NA,density=c(NA,NA,40),axisnames=F)
   #axis(1,at=seq(0.7,(Assessment.Year-1959)*1.2,1.2),lab=F,tck=-0.01) ##change to 77 in sequence to increase axis length (ticks)
@@ -102,6 +103,7 @@ language="English"
   mtext(side = 1, x.lab, line = 2, cex = 1)
   mtext(side = 2, y.lab, line = 3.2, cex = 1)
   box()
+#  dev.off()
 
 ```
 Figure (A) Northwest Atlantic Fisheries Organization (NAFO) reported Canadian (blue) and foreign (red) landings (tonnes) for 3NOPs4VWX5Zc Atlantic Halibut. Landings for 2024 (hashed bar) are preliminary, and taken from the Maritimes Fisheries Information System (MARFIS) as of October 31, 2024 (this does not include landings in Newfoundland which are not yet available). The solid green line is the Canadian total allowable catch (TAC). The NAFO 21A table of landings by country is reported by calendar year; however, the TAC for the stock is set for the period of April–March.
@@ -127,6 +129,8 @@ Figure (A) Northwest Atlantic Fisheries Organization (NAFO) reported Canadian (b
     y.lab <- "Biomasse KT"
     legend.text <- c("BSR-tonne", "confiance à 95%", "NRS-tonne", "NRL-tonne")
   }
+
+#  png(file.path(wd,'figures',"SRBiomass2025.png"), width =9, height = 6,units='in',pointsize=12, res=300,type='cairo')
 
   plot(ts.value ~ year, data = tr.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl,xlim=xl)
 
@@ -180,7 +184,7 @@ Figure (A) Northwest Atlantic Fisheries Organization (NAFO) reported Canadian (b
   mtext(side = 1, x.lab, line = 2, cex = 0.75)
   mtext(side = 2, y.lab, line = 3, cex = 0.75)
   box()
-
+#dev.off()
 
 ```
 Figure  (B) Stratified Random Halibut Survey Biomass (B) in relation to the Limit Reference Point (LRP; 10.9 kt) and Upper Stock Reference (USR; 21.8 kt).
@@ -202,6 +206,8 @@ Figure  (B) Stratified Random Halibut Survey Biomass (B) in relation to the Limi
     y.lab <- "Mortalité"
     legend.text <- c("F-1/yr", "confiance à 95%", "RP-1/yr", "M-1/yr")
   }
+
+#png(file.path(wd,'figures',"Mortality2025.png"), width =9, height = 6,units='in',pointsize=12, res=300,type='cairo')
 
   plot(ts.value ~ year, data = bl.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl,xlim=xl)
 
@@ -228,9 +234,9 @@ Figure  (B) Stratified Random Halibut Survey Biomass (B) in relation to the Limi
   
   B<-subset(in.df,ts.name=="HSobs_3yrm")
   L<-subset(in.df,panel.category=="Catch"&year%in%B$year)
-  U<-(L$ts.value[L$ts.name=="CanadaTotal"]+L$ts.value[L$ts.name=="ForeignTotal"])/(B$ts.value*1000)
-  f<- log(1-U)*-1
-  points(B$year,f,pch=16)
+  U<-(L$ts.value[L$ts.name=="CanadaTotal"]+L$ts.value[L$ts.name=="ForeignTotal"])/(B$ts.value*1000) #total landings divided by HS_3yrm*1000
+  f<- log(1-U)*-1 
+  points(B$year,f,pch=16) #make points of x=B$year, y=f ??
 
 
   legend("topright","(C)", bty = "n", cex=1.25)
@@ -252,7 +258,7 @@ Figure  (B) Stratified Random Halibut Survey Biomass (B) in relation to the Limi
   mtext(side = 2, y.lab, line = 3, cex = 0.75)
 
   box()
-
+#dev.off()
 
 ```
 Figure (C) Fishing and Natural Mortality in relation to the F~MSY~ Removal References. 
@@ -273,6 +279,9 @@ Figure (C) Fishing and Natural Mortality in relation to the F~MSY~ Removal Refer
     y.lab <- "Recrutement"
     legend.text <- c("R-E06", "confiance à 95%")
   }
+
+#png(file.path(wd,'figures',"Recruitment2025.png"), width =9, height = 6,units='in',pointsize=12, res=300,type='cairo')
+
   plot(ts.value ~ year, data = br.df, type = "n", axes = FALSE, xlab = "", ylab = "", ylim = yl)
   ## Vulnerable Abundance
   ## lower and upper
@@ -304,7 +313,7 @@ Figure (C) Fishing and Natural Mortality in relation to the F~MSY~ Removal Refer
   axis(side = 2, las = 1, hadj = 0.9)
   mtext(side = 2, y.lab, line = 3, cex = 0.75)
   box()
-
+#dev.off()
 
 
 ```
