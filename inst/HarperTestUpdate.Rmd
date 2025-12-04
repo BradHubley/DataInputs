@@ -132,7 +132,7 @@ dev.off()
   #HSRandom_Index_WOZS<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Current.Year, ZeroStrata=F) 
   ##if looking for findPolys try require(PBSmapping)
   
-  with(subset(HSRandom_Index_WZS,Year==Current.Year),c(mean3_biomass,mean3_biomass-KgPKHse*1.96,mean3_biomass+KgPKHse*1.96))/2
+  with(subset(HSRandom_Index_WZS,Year==Current.Year),c(mean3_biomass,mean3_biomass-KgPKHse*1.96,mean3_biomass+KgPKHse*1.96))/2 #q-adjusted
   with(subset(HSRandom_Index_WZS,Year==Current.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
   
   
@@ -141,7 +141,7 @@ dev.off()
 # Harvest Control Rule
 ```{r}
 value <- HSRandom_Index_WZS$mean3_biomass[HSRandom_Index_WZS$Year==Current.Year] 
-HCR(value)
+HCR(value) #F in healthy zone in HCR function is 0.1044 not just 0.104
 
 
 #HCR(value, q=0.0019) # when using calculated weight...but HCR function uses q = 0.002
