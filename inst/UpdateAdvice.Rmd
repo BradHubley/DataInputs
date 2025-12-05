@@ -11,8 +11,10 @@ library(ROracle)
 library(devtools)
 library(tidyverse)
 library(PBSmapping)
+library(Mar.datawrangling)
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
+
 
 ds_all <- Mar.datawrangling::load_datasources()
 
@@ -38,10 +40,10 @@ Assessment.Year <- 2025
    # 1. Establish Oracle connection first (NEW REQUIREMENT)
     cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
 
- get_data(db='isdb',cxn=cxn, force.extract=T)
+ get_data(db='isdb',cxn=cxn)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
- get_data(db='rv',cxn=cxn,force.extract=T)
+ get_data(db='rv',cxn=cxn)
 
 
 
