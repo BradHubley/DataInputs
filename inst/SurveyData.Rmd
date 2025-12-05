@@ -10,7 +10,7 @@ library(devtools)
 
 # install_github("Maritimes/Mar.datawrangling")
 # install_github("Maritimes/Mar.fleets")
-install_github("Maritimes/Mar.utils")
+#install_github("Maritimes/Mar.utils")
  library(Mar.datawrangling)
  #library(Mar.fleets)
  library(tidyverse)
@@ -506,7 +506,7 @@ BarPlotLF(rvLF,yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF2"),ymax=50)
 #RVnumbers<-RVindex(uid, pwd, use.local=F,plot=F,datadir=datadir)
 
 RVdata<-get4VWXRV(uid, pwd, use.local=T,datadir=datadir)
-RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2020)
+RVinputs<-prepRVdata(RVdata,bins=bins,years=1970:2025)
 
 ```
 ## plot RVindex
@@ -545,18 +545,18 @@ dev.off()
 ```
 # plot RV LF
 ```{r}
-Yrs1 = 1970:1995        
-Yrs2 = 1996:2020        
+Yrs1 = 1970:1999        
+Yrs2 = 2000:2025        
 
 rvLF<-rearrangeLFlist(RVinputs[2:4])
 
-BarPlotLF(rvLF[1:26],yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF1"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6)
+BarPlotLF(rvLF[1:30],yrs=Yrs1,rel=T,filen=file.path(wd,"figures","RVLF1"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,add.sample.size = F)
 
-BarPlotLF(rvLF[27:51],yrs=Yrs2,rel=F,filen=file.path(wd,"figures","RVLF2"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6)
+BarPlotLF(rvLF[31:length(rvLF)],yrs=Yrs2,rel=T,filen=file.path(wd,"figures","RVLF2"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,add.sample.size = F)
 
-BarPlotLF(rvLF[1:26],yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF1_fr"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6,xlab="Longueur (cm)",ylab="Nombre de flétans")
+BarPlotLF(rvLF[1:30],yrs=Yrs1,rel=F,filen=file.path(wd,"figures","RVLF1_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,xlab="Longueur (cm)",ylab="Nombre de flétans",add.sample.size = F)
 
-BarPlotLF(rvLF[27:51],yrs=Yrs2,rel=F,filen=file.path(wd,"figures","RVLF2_fr"),rows=13,graphic='png',ax=c(rep(2,13),rep(4,13)),ylp=0.6,xlab="Longueur (cm)",ylab="Nombre de flétans")
+BarPlotLF(rvLF[31:length(rvLF)],yrs=Yrs2,rel=F,filen=file.path(wd,"figures","RVLF2_fr"),rows=15,graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,xlab="Longueur (cm)",ylab="Nombre de flétans",add.sample.size = F)
 
 
 ```

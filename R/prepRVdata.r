@@ -51,6 +51,7 @@ prepRVdata<-function(RVdata,years,strat, bins=seq(0,260,5), pal=F,raw=F){
     survF.lst[[i]]<-subset(RVdata[[2]],year==years[i])
     survM.lst[[i]]<-subset(RVdata[[2]],year==years[i])
     surv.lst[[i]]<-subset(RVdata[[2]],year==years[i])
+
     # Length frequency
     for(j in 1:(length(bins)-1)){
       NbinhF<-with(subset(RVdata[[1]],year==years[i]&FLEN>=bins[j]&FLEN<bins[j+1]&FSEX==2),tapply(CLEN,SETNO,sum))
