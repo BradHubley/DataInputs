@@ -349,4 +349,19 @@ dev.off()
 ```
 Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into depth strata, shown in different shades of each colour. The hatched area is a new strata with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2024 survey, black dots indicate completed stations and yellow dots indicate incomplete stations. Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
 
+```{r}
+blob1=readRDS(file.path("fsardata", "MSEoutput","sim_base.rds"))
+
+plotHCR(list(blob1))
+
+blob2=readRDS(file.path("fsardata", "MSEoutput","sim_parBatpostCSASgrid3.rds"))
+
+plotHCR(list(blob2))
+
+
+png(file.path('Outputs','SARfigures',"HCRfr.png"), width =6000, height = 4000, res = 600)
+plotHCR(list(blob1),lang='fr')
+dev.off()
+
+```
 

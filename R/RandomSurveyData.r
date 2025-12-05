@@ -1,6 +1,6 @@
 #' @export
 
-RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), LW=c(a=0.006803616,b=3.119924), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS',adj.calc.wt=F){
+RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,260,5), LW=c(a=0.006803616,b=3.119924), by.sex=T, hook.data=F, LF.from='ISFISHLENGTHS',adj.calc.wt=F, LF.long=F){
 
   library(Mar.datawrangling)
   library(tidyverse)
@@ -104,15 +104,15 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
         group_by(CATCH_ID) %>%
         mutate(FISH_WEIGHT=LW[1]*FISH_LENGTH^LW[2]) %>%
         mutate(avg_length=weighted.mean(FISH_LENGTH ,NUM_AT_LENGTH,na.rm=T)) %>%
-        mutate(calc_weight=sum(FISH_WEIGHT*NUM_AT_LENGTH)/1000)
-
+        mutate(calc_weight=sum(FISH_WEIGHT*NUM_AT_LENGTH)/1000) %>%
+        mutate(NUM_MEASURED=sum(NUM_AT_LENGTH))
 
       cid=unique(fishlengths$CATCH_ID)
       LF <-list()
       LFnosex<-data.frame('CATCH_ID'=cid,t(sapply(cid,function(s){with(subset(fishlengths,CATCH_ID==s),binNumAtLen(NUM_AT_LENGTH,FISH_LENGTH,bins))})))
       #names(LFnosex)[-1]<-paste0("L",bins[-1])
-      LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
-      LFnosex <- merge(LFnosex,subset(fishlengths,!duplicated(CATCH_ID),c("CATCH_ID","avg_length","calc_weight")))
+      #LFnosex$NUM_MEASURED <- rowSums(LFnosex[,-1],na.rm=T)
+      LFnosex <- merge(LFnosex,subset(fishlengths,!duplicated(CATCH_ID),c("CATCH_ID","avg_length","calc_weight","NUM_MEASURED")))
       if(by.sex==T){
         sx<-c(1,2,0)
         for(i in 1:3){
@@ -126,7 +126,13 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
       if(by.sex==F)LF <- LFnosex
 
     }
-    totalfish <- left_join(totalfish,LF)
+    if(LF.long==T){
+      totalfish <- left_join(totalfish,fishlengths)
+
+    }else{
+      totalfish <- left_join(totalfish,LF)
+
+    }
   } # end length frequency
 
 
