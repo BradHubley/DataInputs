@@ -135,7 +135,7 @@ plotHCR <- function(  obj = list(blob),
 
 
     lines(x = x, y = y, lwd = lw[i], col = clrs[i], lty=lt[i])
-    if(lang=='en')mtext(side = 2, text = "Fishing mortality rate (/yr)", line = 3 )
+    if(lang=='en')mtext(side = 2, text = "Fishing mortality rate (/yr)", line = 3 , cex = 1.05)
     if(lang=='fr')mtext(side = 2, text = "Taux de mortalité par pêche (/an)", line = 3 )
     abline( v = Bref*vlines,
             col = vcols,
@@ -157,12 +157,12 @@ plotHCR <- function(  obj = list(blob),
   grid()
   box()
   if(lang=='en'){
-    mtext( side = 1, text= paste0(survName, "survey biomass (kt)"), line = 2 )
-    mtext( side =2, text = "Maximum inter-annual change in TAC (%)", line = 3)
+    mtext( side = 1, text= paste0(survName, "survey biomass (kt)"), line = 2 , cex = 1.25)
+    mtext( side =2, text = "Maximum inter-annual change in TAC (%)", line = 3, cex = 1.05)
   }
   if(lang=='fr'){
-    mtext( side = 1, text= paste0(survName, "Biomasse du relevé à stations aléatoire (en kt)"), line = 2 )
-    mtext( side =2, text = "Variation annuelle maximale du TAC (en %)", line = 3)
+    mtext( side = 1, text= paste0(survName, "Biomasse du relevé à stations aléatoire (en kt)"), line = 2 , cex = 1.25)
+    mtext( side =2, text = "Variation annuelle maximale du TAC (en %)  ", line = 3)
   }
   for(i in 1:length(obj)){
     lines(x = x, y = deltaTACrule[[i]], lwd = lw[i], col = clrs[i], lty=lt[i] )
