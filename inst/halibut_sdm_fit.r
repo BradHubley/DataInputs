@@ -48,9 +48,9 @@ ggplot(d, aes(longitude, latitude, size = number, colour = number)) +
   labs(title = "Halibut Density")
 
 # Add UTM coordinates
-d <- add_utm_columns(d, utm_crs = 22820)
+d <- add_utm_columns(d, utm_crs = 32621)
 d$rowid<-as.factor(1:nrow(d))
-d$prop<-d$number/d$hooks
+d$NPH<-d$number/d$hooks
 
 #plot
 ggplot(d, aes(X, Y, size = number, colour = number)) +
@@ -63,7 +63,8 @@ ggplot(d, aes(X, Y, size = number, colour = number)) +
 
 d$hook_adj_factor<- -log(d$prop_baited)/(1-d$prop_baited)
 d<-na.omit(d)
-d$adj_prop<-(d$number * d$hook_adj_factor)/d$hooks
+d$adj_NPH<-(d$number * d$hook_adj_factor)/d$hooks
+d$adj_number<-(d$number * d$hook_adj_factor)
 
 ### Mesh ###
 # Create a finite element mesh
@@ -91,7 +92,7 @@ plot(mesh)
 
   # Model 2: IID spatiotemporal fields beta binom
   fit_n_iid_bb <- sdmTMB(
-    prop ~ 0 + factor(year)+ poly(log_depth, 2) ,
+    NPH ~ 0 + factor(year)+ poly(log_depth, 2) ,
     data = d,
     mesh = mesh,
     time = "year",
@@ -122,11 +123,27 @@ plot(mesh)
   fit_n_iid_ps
 
 
-  AIC(fit_n_iid_nb,fit_n_iid_bb,fit_n_iid_ps)
+  AIC(fit_n_iid_nb,fit_n_iid_bb)
 
-  # Model 2: IID spatiotemporal fields beta binom
+  # Model 1: IID spatiotemporal fields neg binom
+  fit_n_iid_nb_hookadj <- sdmTMB(
+    adj_number ~ 0 + factor(year)+ poly(log_depth, 2) ,
+    data = d,
+    mesh = mesh,
+    offset = log(d$hooks),
+    time = "year",
+    spatiotemporal='iid',#ar1, #rw
+    family = nbinom2(),
+    #family = poisson(),
+    anisotropy = F,
+    silent=F
+  )
+  sanity(fit_n_iid_nb)
+  fit_n_iid_nb
+
+    # Model 2: IID spatiotemporal fields beta binom
   fit_n_iid_bb_hookadj <- sdmTMB(
-    adj_prop ~ 0 + factor(year)+ poly(log_depth, 2) ,
+    adj_NPH ~ 0 + factor(year)+ poly(log_depth, 2) ,
     data = d,
     mesh = mesh,
     time = "year",
@@ -140,6 +157,7 @@ plot(mesh)
   sanity(fit_n_iid_bb_hookadj)
   fit_n_iid_bb_hookadj
 
+  AIC(fit_n_iid_nb_hookadj,fit_n_iid_bb_hookadj)
 
 
 
@@ -161,7 +179,7 @@ plot(mesh)
 
   # Model 1: IID spatiotemporal fields
   fit_n_iid_gg <- sdmTMB(
-    number ~ 0 + factor(year)+ poly(log_depth, 2) + survey_abbrev,
+    number ~ 0 + factor(year)+ poly(log_depth, 2),
     data = d,
     mesh = mesh,
     time = "year",
@@ -191,7 +209,23 @@ plot(mesh)
   fit_b_iid_gg
 
   #
+  fit_n_iid_bb
 
+  # depth
+  nd <- data.frame(log_depth = seq(log(20), log(700), length.out = 100), year = 2020)
+  #nd$year_factor <- as.factor(nd$year)
+
+  p <- predict(
+    fit_n_iid_bb_hookadj,
+    newdata = nd,
+    re_form = ~ 0, # means only include the fixed effects (not the default)
+    se_fit = TRUE # means calculate standard errors (not the default)
+  )
+
+  ggplot(p, aes(log_depth, exp(est),
+                ymin = exp(est - 1.96 * est_se), ymax = exp(est + 1.96 * est_se))) +
+    geom_line() + geom_ribbon(alpha = 0.4)
+  hist(exp(d$log_depth),breaks=50)
 
 ##### Grid for predictions #####
 
@@ -202,7 +236,7 @@ plot(mesh)
   #Canada Albers Equal Area Conic Projection (ESRI 102001, resources.arcgis.com)
   g = st_as_sf(g, coords = c("xAEAm", "yAEAm"), crs = "ESRI:102001") #original data as a sf object
 
-  g <- st_transform(g, crs = 22820)
+  g <- st_transform(g, crs = 32621)
   grid <- data.frame(st_coordinates(g)/1000,depth=g$blockMidDepth_m )
   grid$log_depth<-log(grid$depth)
 
@@ -212,7 +246,7 @@ plot(mesh)
   ggplot(grid, aes(X, Y)) +
     geom_tile(width = 2, height = 2, fill = "grey50") +
     geom_point(data = d, size = 2, pch = ".", colour = "red") +
-    geom_point(data=surveyPoly,col='red') +
+    #geom_point(data=surveyPoly,col='red') +
     coord_equal()
 
 # grid 2 : a square grid
@@ -287,12 +321,28 @@ plot(mesh)
 
 #Generate predictions and calculate an index:
 
-p <- predict(fit_n_iid_bb_hookadj, newdata = grid1, return_tmb_object = TRUE)
-pdata<-p$data
-ind_iid <- get_index(p, area = 16)
+p2 <- predict(fit_n_iid_bb_hookadj, newdata = grid1, return_tmb_object = TRUE)
+p2data<-p2$data
+#ind_iid <- get_index(p, area = 16)
 #ind_iid <- get_index_split(fit_iid, newdata = grid, nsplit = 2, bias_correct = F, area = 4)
+with(p2data,tapply(exp(est),year,sum))->ind_bb2
 
-plot(y=ind_iid$est,x=ind_iid$year,type="l")
+p <- predict(fit_n_iid_bb, newdata = grid1, return_tmb_object = TRUE)
+pdata<-p$data
+with(pdata,tapply(exp(est),year,sum))->ind_bb
+
+p_nb1 <- predict(fit_n_iid_nb, newdata = grid1, return_tmb_object = TRUE)
+p_nb1data<-p_nb1$data
+ind_iid <- get_index(p_nb1, area = 16)
+
+p_nb2 <- predict(fit_n_iid_nb_hookadj, newdata = grid1, return_tmb_object = TRUE)
+p_nb2data<-p_nb2$data
+ind_iid2 <- get_index(p_nb2, area = 16)
+
+plot(y=ind_iid$est,x=ind_iid$year,type="l",ylim=c(0,6000))
+lines(y=ind_iid2$est,x=ind_iid2$year,col='red')
+lines(ind_iid$year,ind_bb2*16,col='red',lty=2)
+lines(ind_iid$year,ind_bb*16,lty=2)
 
 # Depth and year effect contribution:
 # (Everything not a random field)
