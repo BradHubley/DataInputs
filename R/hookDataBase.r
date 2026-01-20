@@ -16,7 +16,7 @@ hookDataBase <- function(species=30,  getrawdata=FALSE){
   hook_occupancy<-left_join(ISFISHSETGEARGROUPS[,c("FISHSET_ID","SETGEARGROUP_ID", "GEARGROUP_NO", "GEAR_COMPONENTS_GROUPED")], ISGEARCOMPONENTS[,c("GEARCOMPONENT_ID","SETGEARGROUP_ID", "GEAR_COMPONENT_NO", "CONDITIONCD_ID")]) %>%
     left_join(.,ISCATCHES[,c("GEARCOMPONENT_ID", "SPECCD_ID")])
 
-
+browser()
   hook_occupancy$labels <- NA
   hook_occupancy$labels[hook_occupancy$CONDITIONCD_ID==0] = "empty_unbaited"
   hook_occupancy$labels[hook_occupancy$CONDITIONCD_ID==1] = "empty_baited"

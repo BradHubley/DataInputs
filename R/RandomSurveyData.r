@@ -151,6 +151,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   if(hook.data==T){
     hookData<-PrepareDataHookModel(sp=sp, datadir = datadir)
     hooknames <- c("FISHSET_ID","LATITUDE","LONGITUDE","DEPTH","total_target_species","total_other_species", "total_sampled", "broken_hook", "empty_baited", "empty_unbaited", "other_species", "target_species", "missing_hook", "ASSIGNED_STATION", "ASSIGNED_STRATUM_ID")#
+    #browser()
     HALIBUTSURVEY <-left_join(HALIBUTSURVEY,hookData[,hooknames])
   }
 

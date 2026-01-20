@@ -55,11 +55,11 @@ conflict_prefer("select", "dplyr")
 
 
 
- Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"))
+ Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"),force.extract=T)
 
 
 Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"))
-Mar.utils::get_data_tables(schema="<NA>",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT")) 
+Mar.utils::get_data_tables(schema="<NA>",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"),force.extract=T) 
 
 
 ```
@@ -88,15 +88,15 @@ sp=30 #halibut
 #sp=10 #cod
 
 
-RandomSurveyLandmark<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
-RandomSurveyRaph$avg_weight<-RandomSurveyRaph$EST_COMBINED_WT / RandomSurveyRaph$total_target_species
-RandomSurveyRaph$STATION <- RandomSurveyRaph$ASSIGNED_STATION
-RandomSurveyRaph$DEPTH[RandomSurveyRaph$DEPTH==0]<-NA
+RandomSurveySDM<-RandomSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
+RandomSurveySDM$avg_weight<-RandomSurveySDM$EST_COMBINED_WT / RandomSurveySDM$total_target_species
+RandomSurveySDM$STATION <- RandomSurveySDM$ASSIGNED_STATION
+RandomSurveySDM$DEPTH[RandomSurveySDM$DEPTH==0]<-NA
 
 colNames1 <- c("FISHSET_ID","SET_NO","TRIP","DATE_TIME3","SOAKMINP3P1","DEPTH","LATITUDE","LONGITUDE","YEAR","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","CFV","SPECCD_ID","total_other_species","total_target_species","broken_hook","empty_baited","empty_unbaited","other_species","target_species","missing_hook","total_sampled","avg_weight")
 
-RandomSurvey <- RandomSurveyRaph[,colNames1]
-names(RandomSurveyRaph)
+RandomSurvey <- RandomSurveySDM[,colNames1]
+names(RandomSurveySDM)
 
 FixedSurveyRaph<-FixedSurveyData(sp=sp,datadir=datadir,by.sex=F,add.LF=F, hook.data=T)
 FixedSurveyRaph$avg_weight<-FixedSurveyRaph$EST_COMBINED_WT / FixedSurveyRaph$total_target_species
