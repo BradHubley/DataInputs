@@ -56,9 +56,9 @@ conflict_prefer("select", "dplyr")
 
 
  Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"),force.extract=T)
+ISSETPROFILE <- Mar.utils::ISSETPROFILE_enwidener(ISSETPROFILE)
 
-
-Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"))
+#Mar.utils::get_data_tables(schema="observer",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"))
 Mar.utils::get_data_tables(schema="<NA>",cxn=cxn, data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHSETGEARGROUPS","ISGEARCOMPONENTS","ISGEARCOMPONENTSBAIT"),force.extract=T) 
 
 

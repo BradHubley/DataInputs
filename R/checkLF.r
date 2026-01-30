@@ -22,7 +22,7 @@ checkLF<-function(datadir,sp=30){
   trips <- left_join(isdb$ISTRIPS[,c("TRIP_ID","TRIPCD_ID","TRIP","VESS_ID")], isdb$ISVESSELS[,c("VESS_ID","VESSEL_NAME","CFV")], by='VESS_ID')
 
   ## Sets
-  sets <- left_join(isdb$ISSETPROFILE_WIDE[,c("FISHSET_ID","SET_NO","DATE_TIME3","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION")], by=c('FISHSET_ID','SET_NO'))
+  sets <- left_join(isdb$ISSETPROFILE[,c("FISHSET_ID","SET_NO","DATE_TIME3","LATITUDE","LONGITUDE","YEAR")], isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION")], by=c('FISHSET_ID','SET_NO'))
 
   tripsets <- full_join(trips,sets)
 

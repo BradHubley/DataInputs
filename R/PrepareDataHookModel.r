@@ -60,11 +60,11 @@ PrepareDataHookModel <-function(sp=30,datadir,add.gear=F, getrawdata=FALSE, set.
   ## Trips
   trips <- left_join(dplyr::select(isdb$ISTRIPS,TRIP_ID,TRIPCD_ID,TRIP,VESS_ID), dplyr::select(isdb$ISVESSELS,VESS_ID,VESSEL_NAME,CFV), by='VESS_ID')
 
-
+browser()
   ## Sets
-  isdb$ISSETPROFILE_WIDE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE_WIDE$DATE_TIME3,  isdb$ISSETPROFILE_WIDE$DATE_TIME1, units='min')
-  isdb$ISSETPROFILE_WIDE$DEPTH <- rowMeans(dplyr::select(isdb$ISSETPROFILE_WIDE,DEP1,DEP2,DEP3,DEP4),na.rm=T)
-  sets <- left_join(dplyr::select(isdb$ISSETPROFILE_WIDE,FISHSET_ID,SET_NO,DATE_TIME3,SOAKMINP3P1,DEPTH,LATITUDE,LONGITUDE,YEAR), dplyr::select(isdb$ISFISHSETS,FISHSET_ID,TRIP_ID,SET_NO,SETCD_ID,STATION,STRATUM_ID,NAFAREA_ID,NUM_HOOK_HAUL,GEAR_ID), by=c('FISHSET_ID','SET_NO'))
+  isdb$ISSETPROFILE$SOAKMINP3P1 <- difftime(isdb$ISSETPROFILE$DATE_TIME3,  isdb$ISSETPROFILE$DATE_TIME1, units='min')
+  isdb$ISSETPROFILE$DEPTH <- rowMeans(dplyr::select(isdb$ISSETPROFILE,DEP1,DEP2,DEP3,DEP4),na.rm=T)
+  sets <- left_join(dplyr::select(isdb$ISSETPROFILE,FISHSET_ID,SET_NO,DATE_TIME3,SOAKMINP3P1,DEPTH,LATITUDE,LONGITUDE,YEAR), dplyr::select(isdb$ISFISHSETS,FISHSET_ID,TRIP_ID,SET_NO,SETCD_ID,STATION,STRATUM_ID,NAFAREA_ID,NUM_HOOK_HAUL,GEAR_ID), by=c('FISHSET_ID','SET_NO'))
 
   # join gear if desired
   if(add.gear){

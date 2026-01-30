@@ -1,4 +1,7 @@
 #setup
+# install.packages("remotes")
+#remotes::install_github("MarEcosystemApproaches/marea")
+library(marea)
 library(sdmTMB)
 library(dplyr)
 library(ggplot2)
@@ -31,6 +34,8 @@ d <- read.csv(file.path(datadir,"RandomHalibutSurveyData_LF.csv"))
 d <- read.csv(file.path(datadir,"HalibutSurveyHookData.csv")) # hook data
 d$empty_baited[d$empty_baited==0]<-1
 d$prop_baited<-d$empty_baited / d$total_sampled
+
+
 
 d<-subset(d,select=c("YEAR","LONGITUDE","LATITUDE","total_target_species","NUM_HOOK_HAUL","DEPTH","prop_baited"))
 names(d)<-c("year", "longitude", "latitude", "number","hooks", "depth","prop_baited")
