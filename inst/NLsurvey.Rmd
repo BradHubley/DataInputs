@@ -720,6 +720,88 @@ segments(1996, mean(rv.dat[length(1971:1995):length(1971:2012),2]), 2013, mean(r
 text(1976,0.38, "Yankee")
 text(1989,0.38, "Engel")
 text(2004,0.38, "Campelen")
+
+##this is a function from the 2014 framework for building that figure it seems
+# get.3NOP.rv.dat<-function(start.year, end.year){
+# require(RODBC)
+# require(sqldf)
+# require(reshape2)
+
+dat<-read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/data/NLHalibut_2014.csv", header = TRUE)
+dim(dat)
+#[1] 84366    23
+names(dat)
+dat<-dat[dat$SPEC==30&as.character(dat$NAFOZONE)%in%c('3N', '3O', '3P'),]
+dat<-dat[as.character(dat$SEASON1)=='Spring'&dat$Month!=8,]
+dat<-dat[dat$GEAR%in%c(1,2),]
+dim(dat)
+summary(dat)
+sort(unique(dat$NAFOZONE))
+with(dat, table(STDNO))
+##mostly zeros, want to get expanded num
+
+##remove any strata in a year with less than 2 tows
+dat$yr_strat<-paste(dat$Year, dat$STRATUM)
+x<-with(dat, table(yr_strat))
+y<-x[x<2]
+rm_strat<-names(y)
+dat<-dat[!dat$yr_strat%in%rm_strat,]
+
+##
+dat<-dat[dat$Year>=start.year,]
+stdsetarea<-c(0.013331, 0.007274)  ##from Marianno, [1] is engel 1983-1995, [2] is campelen 1996-2013
+##but we do not have the same for the yankee
+
+dat$num[dat$Year<=1995]<-dat$STDNO[dat$Year<=1995]/stdsetarea[1]
+dat$num[dat$Year>1995]<-dat$STDNO[dat$Year>1995]/stdsetarea[2]
+
+library(sqldf)
+dat2<-sqldf("SELECT Year, STRATUM, AVG(AreaNMsq) area, AVG(num) mean_no, Variance(num) var_no FROM dat GROUP BY Year, STRATUM")
+dat3<-sqldf("SELECT Year, SUM(mean_no) tot_no, SUM(area) tot_area FROM dat2 GROUP BY Year")
+
+with(dat3, plot(Year, tot_no/tot_area))
+
+dat4<-merge(dat2, dat3, by.y='Year', by.x='Year', all.x=T)
+names(dat4)
+dat4$w_mean<-dat4$mean_no*dat4$area/dat4$tot_area
+dat4$w_var<-dat4$var_no*(dat4$area/dat4$tot_area)^2
+
+dat5<-sqldf("SELECT Year, SUM(w_mean) std_mean, sum(w_var) sum_var FROM dat4 GROUP BY Year")
+
+# RV survey
+rv.dat<-dat5
+names(rv.dat)<-c('year','smean','smean.var')
+rv.dat$smean[rv.dat$year<=1995]<-rv.dat$smean[rv.dat$year<=1995]*stdsetarea[1]   
+rv.dat$smean[rv.dat$year>1995]<-rv.dat$smean[rv.dat$year>1995]*stdsetarea[2]   
+rv.dat$smean.se[rv.dat$year<=1995]<-sqrt(rv.dat$smean.var[rv.dat$year<=1995])*stdsetarea[1] 
+rv.dat$smean.se[rv.dat$year>1995]<-sqrt(rv.dat$smean.var[rv.dat$year>1995])*stdsetarea[2] 
+
+lower<-rv.dat$smean-rv.dat$smean.se*2
+upper<-rv.dat$smean+rv.dat$smean.se*2
+
+years<-1971:2013
+ylim1<-c(0,0.4)
+
+par(mfrow=c(1,1),omi=c(2,2,1,1),mar=c(2,2,2,.5), mgp=c(2,1,0), las=1)
+plot(1971:1982,rv.dat[1:length(1971:1982),2],type='l',lty=1,xlim=c(1971,2013),ylim=ylim1,xlab='',ylab='',lwd=3)
+lines(1983:1995,rv.dat[length(1971:1983):length(1971:1995),2],lwd=3)
+lines(1996:2013,rv.dat[length(1971:1996):length(1971:2013),2],,lwd=3)
+
+arrows(years,upper,years,lower,length=0.05,angle=90,code=3)  # change length to 0.05 if want horizontal lines on error bar and code=3
+mtext("Mean numbers per tow",side=2,line=2.5,cex=1.1,las=0)
+mtext("3NOPs Spring RV survey",side=3,line=.5,cex=1.2,las=0,adj=0)
+segments(1971, mean(rv.dat[1:length(1971:1982),2]), 1982, mean(rv.dat[1:length(1971:1982),2]), col="gray60", lwd=2)
+segments(1983, mean(rv.dat[length(1971:1982):length(1971:1995),2]), 1995, mean(rv.dat[length(1971:1982):length(1971:1995),2]), col="gray60", lwd=2)
+segments(1996, mean(rv.dat[length(1971:1995):length(1971:2012),2]), 2013, mean(rv.dat[length(1971:1995):length(1971:2012),2]), col="gray60", lwd=2)
+text(1976,0.38, "Yankee")
+text(1989,0.38, "Engel")
+text(2004,0.38, "Campelen")
+
+
+return(rv.dat)
+
+}
+
 ```
 
 
