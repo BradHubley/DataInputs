@@ -1,10 +1,21 @@
+library(tidyverse)
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r"))
 
 ageData<-read.csv(file.path(datadir,"AgeData","ageData.csv"))
 head(ageData)
 summary(ageData)
-plot(Age~LENGTH,ageData)
+plot(LENGTH~Age,ageData)
 with(subset(ageData,Age==11),hist(LENGTH,breaks = seq(0,200,5)))
 with(subset(ageData,Age==6&YEAR>2009),hist(LENGTH,breaks = seq(0,200,5)))
+
+NAAdata<-ageData |> group_by(YEAR,Age) |> count()
+# Plot CAL
+ggplot(data=NAAdata,aes(y=YEAR,x=Age,size=n))+ theme_classic() + #ggtitle('Catch PAL') +
+  theme(panel.grid.major.y = element_line(color='grey'),legend.position = 'none') + geom_point(colour='red',alpha=0.5) +
+  scale_x_continuous('Age',limits=c(min(NAAdata$Age)-1,max(NAAdata$Age)+1), expand = c(0,0)) +
+  scale_y_reverse(name='Year',limits=c(min(NAAdata$YEAR)-1,max(NAAdata$YEAR)+1),expand=c(0,0)) +
+  geom_vline(xintercept = max(NAAdata$Age)+1) + geom_hline(yintercept = min(NAAdata$YEAR)-1)
 
 
 ######## DB source data for Andrea ###############
@@ -169,4 +180,82 @@ GPSdata2 = left_join(subset(GPSAMPLES,TRIP_NUMBER%in%GPStrips2,c("SAMPLE","AREA"
 write.csv(GPSdata2,file.path(datadir,"AgeData","GPSdata2.csv"),row.names=F)
 
 # NL data
-NLdata <-
+#NLdata <-
+
+
+
+
+####### 2026 ##### Age Data Summary ########
+
+source(file.path(getwd(), "directories.r"))
+source(file.path(wd, "passwords.r"))
+library(tidyverse)
+
+AgeSummary<-read.csv(file.path(datadir,"AgeData","All_Halibut_Ages_updatedNov2025_YRsummary.csv"))
+AgeData<-read.csv(file.path(datadir,"AgeData","All_Halibut_Ages_updatedNov2025.csv"))
+isdbOtoliths<-read.csv(file.path(datadir,"AgeData","ISDB_availableotoliths2025.csv"))
+rvOtoliths<-read.csv(file.path(datadir,"AgeData","MARRV_availableotoliths2025.csv"))
+
+Ages <- AgeData |>
+  mutate(SOURCE = ifelse(FISH_SOURCE %in% c("GPS","ISDB","ISDB&GPS","NFLD IOP"), "ISDB", "RV")) |>
+  mutate( NAFO=replace(NAFO, NAFO%in%c("4X","4XM","4XN","4XO","4XP","4XQ","4XR","4XS" ,"5Y","5YB","5Ze","5ZJ"), "4X"))  |>
+  mutate( NAFO=replace(NAFO, NAFO%in%c("3P,4V","4V","4VB","4VC","4Vn", "4VN","4Vs","4VS","4VsW","4VW","4W","4W,4X", "4WG","4WJ" ,"4WL","4WM"), "4VW"))  |>
+  mutate( NAFO=replace(NAFO, NAFO%in%c("3N","3NB","3NC","3ND","3NE","3NF","3O","3OA","3OC", "3OD","3OE","3P","3PS"), "3NOP"))  |>
+  filter(NAFO%in%c("4X","4VW","3NOP"))
+
+AgeSummary <- Ages |>
+  group_by(SOURCE,YEAR,NAFO) |>
+  summarise(n = n())|>
+  pivot_wider(names_from = NAFO, values_from = n)
+
+write.csv(AgeSummary,"AgeSummary.csv")
+
+Otoliths <- rbind(isdbOtoliths,rvOtoliths) |>
+  mutate( NAFO=replace(NAFO, NAFO%in%c("4X","5Y","5Z"), "4X"))  |>
+  mutate( NAFO=replace(NAFO, NAFO%in%c("4V","4VN","4VS","4VSb", "4VSc", "4VSW", "4W" ,"4Wgj", "4Wlx"), "4VW"))  |>
+  mutate( NAFO=replace(NAFO, NAFO%in%c("3N","3O","3P"), "3NOP"))  |>
+  filter(NAFO%in%c("4X","4VW","3NOP"))
+
+OtolithsSummary <-  Otoliths |>
+  group_by(SOURCE,YEAR,NAFO) |>
+  summarise(n = n()) |>
+  pivot_wider(names_from = NAFO, values_from = n)
+
+write.csv(OtolithsSummary,"OtolithsSummary.csv")
+
+
+AgeData$SEX[is.na(AgeData$SEX)]<-0
+sx=c(1,2,0)
+yrs<-1970:2025
+bins=seq(5,260,5)
+LF_Ages_isdb<-list()
+LF_Ages_rv<-list()
+LF_Otoliths_isdb<-list()
+LF_Otoliths_rv<-list()
+for(i in 1:length(yrs)){
+  LF_Ages_isdb[[i]]<-t(sapply(sx,function(s){with(subset(Ages,YEAR==yrs[i]&SEX==s&SOURCE=="ISDB"),hist(LENGTH,breaks=bins,plot=F,right=F)$counts)}))
+  LF_Ages_rv[[i]]<-t(sapply(sx,function(s){with(subset(Ages,YEAR==yrs[i]&SEX==s&SOURCE=="RV"),hist(LENGTH,breaks=bins,plot=F,right=F)$counts)}))
+  LF_Otoliths_isdb[[i]]<-t(sapply(sx,function(s){with(subset(Otoliths,YEAR==yrs[i]&SEX==s&SOURCE=="ISDB"),hist(LENGTH,breaks=bins,plot=F,right=F)$counts)}))
+  LF_Otoliths_rv[[i]]<-t(sapply(sx,function(s){with(subset(Otoliths,YEAR==yrs[i]&SEX==s&SOURCE=="RV"),hist(LENGTH,breaks=bins,plot=F,right=F)$counts)}))
+
+}
+names(LF_Ages_isdb)<-yrs
+names(LF_Ages_rv)<-yrs
+names(LF_Otoliths_isdb)<-yrs
+names(LF_Otoliths_rv)<-yrs
+
+pltYrs1<-1970:1999
+pltYrs2<-2000:2025
+
+BarPlotLF(LF_Ages_rv[which(names(LF_Ages_rv)%in%pltYrs1)],yrs=pltYrs1,rel=F,rows=15,filen=file.path(wd,"figures","AgesRV1"),graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,add.sample.size = T,ymax=40)
+
+BarPlotLF(LF_Ages_rv[which(names(LF_Ages_rv)%in%pltYrs2)],yrs=pltYrs2,rel=F,rows=15,filen=file.path(wd,"figures","AgesRV2"),graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,add.sample.size = T,ymax=40)
+
+BarPlotLF(LF_Otoliths_rv[which(names(LF_Otoliths_rv)%in%pltYrs1)],yrs=pltYrs1,rel=F,rows=15,filen=file.path(wd,"figures","OtolithsRV1"),graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,add.sample.size = T,ymax=40)
+
+BarPlotLF(LF_Otoliths_rv[which(names(LF_Otoliths_rv)%in%pltYrs2)],yrs=pltYrs2,rel=F,rows=15,filen=file.path(wd,"figures","OtolithsRV2"),graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.6,add.sample.size = T,ymax=40)
+
+BarPlotLF(LF_Ages_isdb[which(names(LF_Ages_isdb)%in%pltYrs2)],yrs=pltYrs2,rel=F,rows=15,filen=file.path(wd,"figures","AgesISBD"),graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.1,add.sample.size = T,ymax=60)
+
+BarPlotLF(LF_Otoliths_isdb[which(names(LF_Otoliths_isdb)%in%pltYrs2)],yrs=pltYrs2,rel=F,rows=15,filen=file.path(wd,"figures","OtolithsISBD"),graphic='png',ax=c(rep(2,15),rep(4,15)),ylp=0.1,add.sample.size = T,ymax=500)
+

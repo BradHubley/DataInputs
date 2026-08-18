@@ -304,18 +304,18 @@ a3no<-sum(calcArea(BO13NO)$area)
 a3noV<- a3no/(a3no+a3p)
 a3pV<- a3p/(a3no+a3p)
 
-HSRB<-matrix(NA,5,length(Nti))
+HSRB<-matrix(NA,length(Nti),5)
 
 for(i in 1:length(Nti)){
   
-  HSRB[1,i]<-with(subset(Nti[[i]],PID%in%11:13),sum(Bh*area))
-  HSRB[2,i]<-with(subset(Nti[[i]],PID%in%21:23),sum(Bh*area))
-  HSRB[3,i]<-with(subset(Nti[[i]],PID%in%31:34),sum(Bh*area))
-  HSRB[4,i]<-with(subset(Nti[[i]],PID%in%41:44),sum(Bh*area))
-  HSRB[5,i]<-with(subset(Nti[[i]],PID%in%51:54),sum(Bh*area))
+  HSRB[i,1]<-with(subset(Nti[[i]],PID%in%11:13),sum(Bh*area))
+  HSRB[i,2]<-with(subset(Nti[[i]],PID%in%21:23),sum(Bh*area))
+  HSRB[i,3]<-with(subset(Nti[[i]],PID%in%31:34),sum(Bh*area))
+  HSRB[i,4]<-with(subset(Nti[[i]],PID%in%41:44),sum(Bh*area))
+  HSRB[i,5]<-with(subset(Nti[[i]],PID%in%51:54),sum(Bh*area))
   if(60%in%Nti[[i]]$PID){
-    HSRB[5,i]<-HSRB[5,i] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3noV
-    HSRB[4,i]<-HSRB[4,i] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3pV
+    HSRB[i,5]<-HSRB[i,5] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3noV
+    HSRB[i,4]<-HSRB[i,4] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3pV
   }
 }
 
@@ -325,6 +325,7 @@ nafoA = get_21A(count="others", yearstart = 2019, datadir=datadir)
 nafoCatch = nafoA  |>
   mutate( Division=replace(Division, Division%in%c("4VN","4VS"), "4V"))  |>
   mutate( Division=replace(Division, Division%in%c("3N","3O"), "3NO"))  |>
+  mutate( Division=replace(Division, Division%in%c("5Y","5ZE","5ZC"), "4X"))  |>
   group_by(Year, Division) |>
   summarize(Catch = sum(CatchA,na.rm=T )) |>
   pivot_wider(names_from = c(Division),values_from = Catch) 
@@ -332,13 +333,14 @@ nafoCatch = nafoA  |>
 
 bigQ = 0.8387526
 
-tHSRB<-t(HSRB)
-B<-tHSRB[,ncol(tHSRB):1]/bigQ/1000
-C<-data.frame(nafoCatch[1:6,2:6])
+#tHSRB<-t(HSRB)
+B<-HSRB[3:nrow(HSRB),ncol(HSRB):1]/bigQ/1000
+C<-data.frame(nafoCatch[,2:6])
+
 
 #barplot(as.matrix(t(C)))
-row.names(C)<-2019:2024
-dimnames(B)<-list(2019:2024,c("3NO", "3PS", "4V",  "4W",  "4X"))
+dimnames(C)<-list(2019:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
+dimnames(B)<-list(2019:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
 
 barplot(as.matrix(t(C[,ncol(C):1])),ylab="Catch (t)",ylim=c(0,max(rowSums(C))*1.2))
 legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
@@ -347,7 +349,7 @@ legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
 
 
 Exploitation<-C/B
-
+names(Exploitation)
 library(ggplot2)
 library(reshape2)
 
