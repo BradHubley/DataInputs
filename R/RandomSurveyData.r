@@ -9,7 +9,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
 
   isdb <- new.env()
 
-  get_data(db='isdb',env=isdb)
+  get_data('isdb', cxn=cxn, env=isdb)
 
   # filter for halibut longline survey
   isdb$ISTRIPTYPECODES= isdb$ISTRIPTYPECODES[isdb$ISTRIPTYPECODES$TRIPCD_ID %in% c(7057),]

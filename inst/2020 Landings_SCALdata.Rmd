@@ -75,10 +75,10 @@ Additionally, the 2014 version of 21B data is available in the 2014 Assessment.
 nafoA = get_21A(count="others", yearstart = ystart, datadir=file.path(datadir,"Landings"))  #1970
 sort(unique(nafoA$Year))
 
-nafoB=get_21B(count="others",ystart,yend,type=1, datadir=file.path(datadir,"Landings"))
+nafoB=get_21Bdh(count="others",ystart,yend,type=1, datadir=file.path(datadir,"Landings_2025update"))
 #nafoB=get_21Bdh(count="others",ystart,yend,type=1, datadir=datadir)
 # unique(nafoB$Division)
-nafoBdiv = get_21B(count="others",ystart,yend,type=2,datadir=file.path(datadir,"Landings"))
+nafoBdiv = get_21Bdh(count="others",ystart,yend,type=2,datadir=file.path(datadir,"Landings_2025update"))
 
 # current 21B with the version in the  2014 Assessment  
 

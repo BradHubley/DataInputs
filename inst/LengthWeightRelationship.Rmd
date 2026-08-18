@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
  library(tidyverse)
  library(lubridate)
  library(stringr)
+library(Mar.utils)
 
 datadir="C:/Users/harperd/Documents/Halibut/RDataVault"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs/"
@@ -25,7 +26,10 @@ source(file.path(wd, "passwords.r"))
 
 Extract MAR RV survey data from existing dump
 ```{r}
-get_data("rv", data.dir = datadir)
+cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), "harperd", "qkhxvh8b", "PTRAN")
+
+get_data('rv', cxn=cxn, force.extract=FALSE)
+
 ```
 
 Pull halibut morphology data from the MAR RV survey since beginning of survey data set (1970?)
@@ -45,7 +49,7 @@ Combining the hal data with the set info to determine strata
 ```{r}
 setdata_halRV <- merge(hal, GSINF, by.x = c("MISSION","SETNO"), 
                        by.y = c("MISSION","SETNO"), all.x = TRUE, all.y = FALSE) %>% 
-  dplyr::select("MISSION", "SETNO", "SPEC", "FSHNO", "FLEN", "FSEX", "FMAT", "FWT", "AGMAT", "AGE", "CLEN", "REMARKS.x", "SIZE_CLASS", "SDATE", "STRAT", "SLAT", "SLONG", "ELAT", "ELONG", "ETIME", "REMARKS.y", "START_DEPTH", "END_DEPTH", "SURFACE_TEMPERATURE", "BOTTOM_TEMPERATURE", "BOTTOM_SALINITY", "STATION")
+  dplyr::select("MISSION", "SETNO", "SPEC", "FSHNO", "FLEN", "FSEX", "FMAT", "FWT", "AGMAT", "AGE", "CLEN", "REMARKS.x", "SIZE_CLASS", "SDATE", "STRAT", "ELATITUDE", "ELONGITUDE", "ETIME", "REMARKS.y", "START_DEPTH", "END_DEPTH", "SURFACE_TEMPERATURE", "BOTTOM_TEMPERATURE", "BOTTOM_SALINITY", "STATION")
 ```
 
 Joining the Stratum table to attach associated NAFO info
@@ -71,7 +75,8 @@ setdata_halRV <- setdata_halRV %>%
            ifelse(YEAR %in% c(2001, 2002, 2003, 2004, 2005), "2001-2005",
            ifelse(YEAR %in% c(2006, 2007, 2008, 2009, 2010), "2006-2010",
            ifelse(YEAR %in% c(2011, 2012, 2013, 2014, 2015), "2011-2015",
-           ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020", "Error")))))))))))
+           ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020", 
+           ifelse(YEAR %in% c(2021, 2022, 2023, 2024, 2025), "2020-2025", "Error")))))))))))) #not yet included 2026...no summer survey done yet
 
 ```
 
@@ -101,7 +106,7 @@ ggplot(setdata_halRV, aes(FLEN, FWT)) +
   facet_grid(YEAR~NAFO)
 ```
 
-Graphing the length by weight for NAFO and 5yr bins (when colouring the points by sex we lose even more data (from 1188 to 1204 fish not included in the figure below...))
+Graphing the length by weight for NAFO and 5yr bins (when colouring the points by sex we lose even more data (from 1188 to 1204 fish not included in the figure below...))...maybe flattening out over time, but also likely because scales are free and range larger in recent years
 ```{r}
 ggplot(setdata_halRV, aes(FLEN, FWT, color = as.factor(FSEX))) +
   geom_point()+
@@ -143,10 +148,14 @@ setdata_halRV[is.na(setdata_halRV$FWT),] #there are 1188 fish missing weights
 
 Pull ISDB data from where it is stored locally (previously pulled from database using oracle)
 ```{r}
-#get_data("isdb", data.dir = datadir)
+#cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), "harperd", "qkhxvh8b", "PTRAN")
+get_data('isdb', cxn=cxn, force.extract = FALSE)
+ISSETPROFILE_WIDE <- ISSETPROFILE_enwidener(ISSETPROFILE)
+
+
 ```
 
-Pulling the halibut trips from the trips table (30 = halibut, 7057 = halibut longline survey, 7058 = halibut port sampling)
+Pulling the halibut trips from the trips table (30 = halibut, 7057 = halibut longline survey, 7058 = halibut port sampling)  - BUT for 7058, there will be no weight in FISH_WEIGHT, it's held as gutted weight in the morphology table...so I'll handle those separately for this section and then work on combining them later
 ```{r}
 hal_trips <- ISTRIPS %>%
   filter(TRIPCD_ID %in% c("30", "7057"))
@@ -156,22 +165,22 @@ Pulling all the sets that belong to the halibut trips identified above
 ```{r}
 hal_fishsets <- hal_trips %>%
   left_join(ISFISHSETS, by = "TRIP_ID") %>%
-  drop_na(FISHSET_ID) #need to drop NAs as there are 281 catches with NA for fish set in ISCATCHED that are being matched in the next join
+  drop_na(FISHSET_ID) #need to drop NAs as there is 1 catches with NA for fish set in ISCATCHED that are being matched in the next join
 ```
 
-Pulling out all the catches from the identified sets above
+Pulling out all the catches from the identified sets above, , and then filtering for just the halibut caught
 ```{r}
 hal_catches <- hal_fishsets %>%
-  left_join(ISCATCHES, by = "FISHSET_ID")
+  left_join(ISCATCHES, by = "FISHSET_ID") %>%
+  filter(SPECCD_ID == 30)
 ```
 **Weird that for species sought there are other species (30, 12, 15, 7099, 31, 23, 11, 10, 211, 201, 16, NA) even though the trip is identified as trip code 30...should I be isolating for only halibut sought trips???
 
 
-Pulling out all fish caught in the catches from the halibut trips, and then filtering for just the halibut caught
+Pulling out all fish caught in the catches from the halibut trips
 ```{r}
 hal_fish <- hal_catches %>%
-  left_join(ISFISH, by = "CATCH_ID") %>%
-  filter(SPECCD_ID == "30")
+  left_join(ISFISH, by = "CATCH_ID")
 ```
 
 First exploratory plot: plotting all length against width (some will not be plotted and provides idea of how many individuals are missing a length or weight measurement)
@@ -182,10 +191,10 @@ ggplot(hal_fish, aes(FISH_LENGTH, FISH_WEIGHT)) +
 From looking at the data in hal_fish and the graph there are A LOT of issues: lots of missing lengths and weights, and weights that don't make sense (what's the units for the weights?)
 ```{r}
 hal_fish %>% 
-  count(FISH_LENGTH) # 10,949 rows without fish length (of these, 2 have weights and the rest are missing both)
+  count(FISH_LENGTH) # 11,819 rows without fish length (of these, 2 have weights and the rest are missing both)
 
 hal_rmNAwt <- hal_fish %>%
-  drop_na(FISH_WEIGHT)#from 180,684 observations in hal_fish to 40,256 observations where weight is available
+  drop_na(FISH_WEIGHT)#from 157,160 observations in hal_fish to 40,302 observations where weight is available (very few new from last assessment)
 ```
 
 Trimming down the dataframe to useful columns
@@ -210,7 +219,9 @@ hal_fishTrim <- hal_fishTrim %>%
            ifelse(YEAR %in% c(2001, 2002, 2003, 2004, 2005), "2001-2005",
            ifelse(YEAR %in% c(2006, 2007, 2008, 2009, 2010), "2006-2010",
            ifelse(YEAR %in% c(2011, 2012, 2013, 2014, 2015), "2011-2015",
-           ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020", "Error")))))))))))
+           ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020",
+           ifelse(YEAR %in% c(2021, 2022, 2023, 2024, 2025), "2021-2025", "Error"))))))))))))
+
 
 ```
 
@@ -242,7 +253,7 @@ ggplot(hal_fishTrim, aes(FISH_LENGTH, FISH_WEIGHT)) +
   facet_wrap(~YEAR)
 ```
 
-Graphing the length by weight for NAFO and 5yr bins (when colouring the points by sex we lose even more data (from 1188 to 1204 fish not included in the figure below...))
+Graphing the length by weight for NAFO and 5yr bins (when colouring the points by sex we lose even more data (from 1188 to 1204 fish not included in the figure below...)) - doesn't seem to be the case for re-run in 2026? says just removed 1 obs.
 ```{r}
 ggplot(hal_fishTrim, aes(FISH_LENGTH, FISH_WEIGHT, color = as.factor(SEXCD_ID))) +
   geom_point()+
@@ -284,6 +295,18 @@ hal_NAFOtrim %>%
                                 "NA" = "black"),
   labels = c("0", "male", "female", "NA"))+
   facet_wrap(~YEAR)
+
+hal_NAFOtrim %>%
+  filter(NAFO == "4V", TRIPCD_ID == "7057") %>%
+  ggplot() +
+  geom_point(aes(FISH_LENGTH, FISH_WEIGHT, color = as.factor(SEXCD_ID))) +
+    scale_color_manual(name = "SEXCD_ID",
+                     values = c("0" = "black",
+                                  "1" = "blue",
+                                  "2" = "deeppink",
+                                "NA" = "black"),
+  labels = c("0", "male", "female", "NA"))+
+  facet_wrap(~YEAR)
   
 ```
 
@@ -302,7 +325,7 @@ sum(num_fish_sampled_ISDB$Freq)
 
 There are 11 fish that do not match up to a NAFO area, could use coordinates to match to a NAFO
 
-Overall there are only 37 weighed fish from 2020, all on TRIPCD_ID 30 (not from survey). 2019 has only weighed fish on survey trips, and all seem to closely follow a log line (likely estimated). Seems like 2016 was the last time in a timeframe where lots of fish had weights and looks like it might have been measured?
+Overall there are only 37 weighed fish from 2020, all on TRIPCD_ID 30 (not from survey). 2019 has only weighed fish on survey trips, and all seem to closely follow a log line (likely estimated). Seems like 2016 was the last time in a timeframe where lots of fish had weights and looks like it might have been measured? Additionally, there are 45 and 10 from 2022 and 2023 respectively...all from commercial fishery, and units are a bit of a mess
 ```{r}
 hal_rmNAwt <- hal_rmNAwt %>%
     mutate(YEAR = substr(BOARD_DATE, 1,4))
@@ -312,7 +335,7 @@ hal_rmNAwt %>% count(YEAR)
 
 ```{r}
 hal_rmNAwt %>%
-    filter(YEAR == "2016") %>%
+    filter(YEAR == "2015") %>%
    ggplot() +
    geom_point(aes(FISH_LENGTH, FISH_WEIGHT, color = as.factor(SEXCD_ID))) +
    scale_color_manual(name = "SEXCD_ID",
@@ -344,7 +367,7 @@ Removing rows without length/weight data
 ```{r}
 hal_all %>% count(FISH_LENGTH) # 93,161 observations without length
 hal_allrmNAwt <- hal_all %>%
-  drop_na(FISH_WEIGHT) #goes from 272,023 observations to 55,197 when weight=NA is removed
+  drop_na(FISH_WEIGHT) #goes from 272,023 observations to 55,197 when weight=NA is removed - maybe need to look at morph table for gutted?
 
 hal_allrmNAwt %>% count(FISH_LENGTH) #only 2 fish where there is a weight and no length
 
@@ -354,7 +377,7 @@ Finding how/when these halibut were caught by isolating the sets and trips where
 hal_allsets <- hal_allrmNAwt %>%
   left_join(ISFISHSETS, by = "FISHSET_ID")
 
-hal_allLATLONG <- ISSETPROFILE %>% dplyr::select(FISHSET_ID, LAT1, LONG1, LAT2, LONG2, LAT3, LONG3, LAT4, LONG4)
+hal_allLATLONG <- ISSETPROFILE_WIDE %>% dplyr::select(FISHSET_ID, LAT1, LONG1, LAT2, LONG2, LAT3, LONG3, LAT4, LONG4)
   
 hal_allsetinfo <- hal_allsets %>%
   left_join(hal_allLATLONG, by = "FISHSET_ID")
@@ -367,7 +390,7 @@ hal_alltrips <- hal_allsetinfo %>%
 Removing the port sampled data as discussed 
 ```{r}
 hal_alltrips <- hal_alltrips %>%
-  filter(TRIPCD_ID != "7058")
+  filter(TRIPCD_ID != "7058") #it's surprisingly few...
 ```
 Looking at the different types of trips
 ```{r}
@@ -391,7 +414,7 @@ Looking into the length and weight data
 ```{r}
 summary(hal_alltrips$FISH_LENGTH)
 
-summary(hal_alltrips$FISH_WEIGHT)
+summary(hal_alltrips$FISH_WEIGHT) #clearly some unit inconsistencies
 ```
 
 Creating some new useful columns
@@ -531,7 +554,7 @@ ggplot(SSAhal)+
   geom_point(aes(FISH_LENGTH, FISH_WEIGHT))+
   facet_wrap(~TRIP, scale = "free")
 ```
-Looks like the only trip that might be an issue is redfish trip 90395.0 and it still could be real data...
+Looks like the only trip that might be an issue is redfish trip 90395.0 and it still could be real data...What was I basing that on??
 ```{r}
 hal_alltrips %>% filter(TRIP == "90395.0") %>%
   ggplot()+
@@ -563,7 +586,7 @@ summary(GEAC_juv) #few fish (n=26), weight appears to be g and length appearsa t
 snowcrab <- allsurveyhal %>%
   filter(TRIPCD_ID == "7061") %>%
   dplyr::select(FISH_LENGTH, FISH_WEIGHT, BOARD_DATE)
-summary(snowcrab) #few data (n=15), weight appears to be g, length appears to be cm. range from 2015-2020.
+summary(snowcrab) #few data (n=15), weight appears to be g, length appears to be cm. range from 2015-2020. #No longer have access to this...but n was only 15 for last assessment...do we need it?
 
 others <- allsurveyhal %>%
   filter(TRIPCD_ID %in% c("7055", "7054")) %>%
@@ -578,7 +601,7 @@ ggplot(hal_alltrips) +
   facet_wrap(~NAFO, scales = "free")
 
 ```
-This tells me there are data from the other fisheries/surveys that are outside our management unit. I need to remove those. And there are 9 fish where NAFO is not identified (tripcd_ID for missing NAFO is "J09-0307", set #1, FISHSET_ID = 100159262...can pull coordinates for that)
+This tells me there are data from the other fisheries/surveys that are outside our management unit. I need to remove those. And there are 11 fish where NAFO is not identified (tripcd_ID for missing NAFO is "J09-0307", set #1, FISHSET_ID = 100159262...can pull coordinates for that)
 ```{r}
 hal_allNAFOfilter[is.na(hal_allNAFOfilter$NAFO),]
 
@@ -624,55 +647,55 @@ Difference in amount of data between all halibut in ISDB and all halibut from di
 
 Removing outliers from all hal data (NEED TO MAKE A AND B BEFORE RUNNING THIS ON TOTAL DATA SET...THIS IS JUST TO TEST THE CODE)
 ```{r}
-# library(sqldf)
-# 
-# test_hal <- hal_allNAFOfilter %>%
-#   select(FISH_ID, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
-# 
-# test_hal$out<-0
-# test_hal<-test_hal[!is.na(test_hal$FISH_LENGTH),]
-# test_hal<-test_hal[!is.na(test_hal$FISH_WEIGHT),]
-# 
-# #identify outliers (using a and b from the previous assessment log(a)=-5.021354 so a=0.00659559; b=3.124184)
-# mod1<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_hal,start=c(a=0.00659559,b=3.124184),na.action=na.omit) #these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
-# test_hal$upper<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*1.75
-# test_hal$lower<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*0.25
-# test_hal$out[test_hal$FISH_WEIGHT<test_hal$upper&test_hal$FISH_WEIGHT>test_hal$lower]<-1
-# test_lenwt.dat.all<-test_hal[,c(1:8)]
-# 
-# ISDB_outliers <- test_lenwt.dat.all %>% filter(out == "0") #here we lose 319 fish as outliers (not major at all in the overall dataset, it's 0.58%) 
-# test_full <- test_lenwt.dat.all %>% filter(out == "1") #still 4,300+ small fish!
-# 
-# #bring test_full back together with the other df
-# test_full <- test_full %>%
-#   select("FISH_ID") %>%
-#   left_join(hal_allNAFOfilter, by = "FISH_ID")
-# 
-# test_full %>%
-#   filter(FISH_WEIGHT < 250) %>%
-#   ggplot(aes(FISH_LENGTH, FISH_WEIGHT))+
-#   geom_point()
-# #the problem seen above where issues arose due to kg vs. g units is not seen here, these data seem cleaned
-# 
-# ggplot(test_full, aes(FISH_LENGTH, FISH_WEIGHT))+
-#   geom_point()
-# 
-# # test_full %>% filter(between(FISH_LENGTH, 175, 200), between(FISH_WEIGHT, 20000, 21000)) %>%
-# # ggplot(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
-# #   geom_point()+
-# #   geom_text(aes(label=as.character(TRIP)))#outliers have been removed and data appear far more clean
+library(sqldf)
+
+test_hal <- hal_allNAFOfilter %>%
+  select(FISH_ID, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
+
+test_hal$out<-0
+test_hal<-test_hal[!is.na(test_hal$FISH_LENGTH),]
+test_hal<-test_hal[!is.na(test_hal$FISH_WEIGHT),]
+
+#identify outliers (using a and b from the previous assessment log(a)=-5.021354 so a=0.00659559; b=3.124184)
+mod1<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_hal,start=c(a=0.00659559,b=3.124184),na.action=na.omit) #these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
+test_hal$upper<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*1.75
+test_hal$lower<-predict(mod1, list(FISH_LENGTH = test_hal$FISH_LENGTH))*0.25
+test_hal$out[test_hal$FISH_WEIGHT<test_hal$upper&test_hal$FISH_WEIGHT>test_hal$lower]<-1
+test_lenwt.dat.all<-test_hal[,c(1:8)] #why this step? It's already only 8 columns...
+
+ISDB_outliers <- test_lenwt.dat.all %>% filter(out == "0") #here we lose 356 fish as outliers (not major at all in the overall dataset, it's 0.66%)
+test_full <- test_lenwt.dat.all %>% filter(out == "1") #still 4,300+ small fish!
+
+#bring test_full back together with the other df
+test_full <- test_full %>%
+  select("FISH_ID") %>%
+  left_join(hal_allNAFOfilter, by = "FISH_ID")
+
+test_full %>%
+  filter(FISH_WEIGHT < 250) %>%
+  ggplot(aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+#the problem seen above where issues arose due to kg vs. g units is not seen here, these data seem cleaned
+
+ggplot(test_full, aes(FISH_LENGTH, FISH_WEIGHT))+
+  geom_point()
+
+# test_full %>% filter(between(FISH_LENGTH, 175, 200), between(FISH_WEIGHT, 20000, 21000)) %>%
+# ggplot(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
+#   geom_point()+
+#   geom_text(aes(label=as.character(TRIP)))#outliers have been removed and data appear far more clean
 ```
 
 #----Data exploration----
 ```{r}
 
-ISDB_halall <- hal_allNAFOfilter %>%
+ISDB_halall <- hal_allNAFOfilter %>% #only reduces dataset by 12 fish, pretty good!
   drop_na(SEXCD_ID) %>%
   drop_na(FISH_LENGTH) %>%
   drop_na(FISH_WEIGHT) %>%
   drop_na(NAFO)
 
-MarRV <- setdata_halRV %>%
+MarRV <- setdata_halRV %>% #reduces by 1213 fish, a lot more than ISDB set but still lots to work with i suppose?
   drop_na(FSEX) %>%
   drop_na(FLEN) %>%
   drop_na(FWT) %>%
@@ -738,8 +761,7 @@ MarRV <- MarRV %>%
   dplyr::select(-"FMAT", -"AGMAT", -"AGE", -"CLEN", -"SIZE_CLASS", -"ETIME", -"START_DEPTH", -"END_DEPTH", -"SURFACE_TEMPERATURE",
          -"BOTTOM_TEMPERATURE", -"BOTTOM_SALINITY", -"STATION", -"REMARKS.x", -"REMARKS.y", -"STRAT") %>%
   rename("TRIP" = "MISSION", "SEXCD_ID" = "FSEX", "SET_NO" = "SETNO", "SPECCD_ID" = "SPEC", "FISH_NO" = "FSHNO", 
-         "FISH_LENGTH" = "FLEN", "FISH_WEIGHT" = "FWT", "COMMENTS" = "REMARKS", "BOARD_DATE" = "SDATE", "LAT1" = "SLAT", 
-         "LONG1" = "SLONG", "LAT2" = "ELAT", "LONG2" = "ELONG", "NAFAREA_ID" = "NAME")
+         "FISH_LENGTH" = "FLEN", "FISH_WEIGHT" = "FWT", "COMMENTS" = "REMARKS", "BOARD_DATE" = "SDATE", "LAT2" = "ELATITUDE", "LONG2" = "ELONGITUDE", "NAFAREA_ID" = "NAME")
 ```
 
 Removing excess columns from ISDB datasets to merge with RV
@@ -756,11 +778,11 @@ ISDBdat <- ISDB_halall %>%
            ifelse(YEAR %in% c(2001, 2002, 2003, 2004, 2005), "2001-2005",
            ifelse(YEAR %in% c(2006, 2007, 2008, 2009, 2010), "2006-2010",
            ifelse(YEAR %in% c(2011, 2012, 2013, 2014, 2015), "2011-2015",
-           ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020", "Error")))))))))))
+           ifelse(YEAR %in% c(2016, 2017, 2018, 2019, 2020), "2016-2020", 
+           ifelse(YEAR %in% c(2021, 2022, 2023, 2024, 2025), "2021-2025", "Error"))))))))))))
 
 ISDB_halall <- ISDBdat %>%
-  dplyr::select(-"FISH_ID", -"TRIP_ID", -"VESS_ID", -"LICENSE_NO", -"LANDING_DATE", -"FISHSET_ID", -"SETCD_ID", -"SPECSCD_ID",
-         -"CATCH_ID", -"MATCD_ID", -"LAT3", -"LONG3", -"LAT4", -"LONG4")
+  dplyr::select(-"FISH_ID", -"TRIP_ID", -"VESS_ID", -"LICENSE_NO", -"LANDING_DATE", -"FISHSET_ID", -"SETCD_ID", -"SPECSCD_ID.x", -"CATCH_ID", -"MATCD_ID", -"LAT1", -"LONG1", -"LAT3", -"LONG3", -"LAT4", -"LONG4")
 ```
 
 Merging the ISDB datasets with the RV dataset
@@ -779,17 +801,17 @@ test_halAll <- hal_datAll %>%
   dplyr::select(id, FISH_LENGTH, FISH_WEIGHT, TRIP, TRIPCD_ID)
 
 test_halAll$out<-0
-test_halAll<-test_halAll[!is.na(test_hal$FISH_LENGTH),]
-test_halAll<-test_halAll[!is.na(test_hal$FISH_WEIGHT),]
+test_halAll<-test_halAll[!is.na(test_halAll$FISH_LENGTH),]
+test_halAll<-test_halAll[!is.na(test_halAll$FISH_WEIGHT),]
 
 #identify outliers (using a and b from the previous assessment log(a)=-5.021354 so a=0.00659559; b=3.124184)
-mod_outliers<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_hal,start=c(a=0.00659559,b=3.124184),na.action=na.omit) #these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
-test_halAll$upper<-predict(mod1, list(FISH_LENGTH = test_halAll$FISH_LENGTH))*1.75
-test_halAll$lower<-predict(mod1, list(FISH_LENGTH = test_halAll$FISH_LENGTH))*0.25
+mod_outliers<-nls(FISH_WEIGHT~a*FISH_LENGTH^b,data=test_halAll,start=c(a=0.00659559,b=3.124184),na.action=na.omit) #these results are the same with a=0.001 and b=3 as was used by nell in her getLW function from the previous assessment
+test_halAll$upper<-predict(mod_outliers, list(FISH_LENGTH = test_halAll$FISH_LENGTH))*1.75
+test_halAll$lower<-predict(mod_outliers, list(FISH_LENGTH = test_halAll$FISH_LENGTH))*0.25
 test_halAll$out[test_halAll$FISH_WEIGHT<test_halAll$upper&test_halAll$FISH_WEIGHT>test_halAll$lower]<-1
 test_lenwt.dat.all<-test_halAll[,c(1:8)]
 
-all_outliers <- test_lenwt.dat.all %>% filter(out == "0") #here we lose 326 fish as outliers (the overall dataset, it's 0.56%) 
+all_outliers <- test_lenwt.dat.all %>% filter(out == "0") #here we lose 363 fish as outliers (the overall dataset, it's 0.60%) 
 test_full <- test_lenwt.dat.all %>% filter(out == "1") 
 
 #bring test_full back together with the other df
@@ -806,13 +828,37 @@ test_full %>%
 ggplot(test_full, aes(FISH_LENGTH, FISH_WEIGHT))+
   geom_point()
 
-hal_datOR <- test_full
+hal_datOR_noBS <- test_full
 
 # test_full %>% filter(between(FISH_LENGTH, 175, 200), between(FISH_WEIGHT, 20000, 21000)) %>%
 # ggplot(aes(FISH_LENGTH, FISH_WEIGHT, label=TRIP))+
 #   geom_point()+
 #   geom_text(aes(label=as.character(TRIP)))#outliers have been removed and data appear far more clean
 ```
+
+Now to see if I can include the shore-sampled Biological Sampling data. It's gutted weight, but try conversion factor of 1.14 which is used by C&P and Javitech as the conversion.
+```{r}
+biosamp <- ISTRIPS %>% filter(TRIPCD_ID == 7058)
+biosamp <- biosamp %>% left_join(ISFISHSETS, by = "TRIP_ID") 
+biosamp <- biosamp %>% left_join(ISCATCHES, by = "FISHSET_ID") %>% filter(SPECCD_ID == 30)
+biosamp <- biosamp %>% left_join(ISSETPROFILE_WIDE, by = "FISHSET_ID")
+biosamp <- biosamp %>% left_join(ISFISH, by = "CATCH_ID")
+biosamp <- biosamp %>% left_join(ISFISHMORPHS, by = "FISH_ID") %>% filter(MRPHCD_ID %in% c(5,6,11,12,17,31,42,43,45)) #only 6 and 11 (gutted fresh, dressed)
+
+#biosamp_mrphsummary <- biosamp %>% group_by(MRPHCD_ID) %>% summarize(n = n())
+biosamp <- biosamp %>% mutate(NAFO = substr(NAFAREA_ID, 1,2))
+#biosamp <- biosamp %>% select(TRIP, SPECCD_ID, FISH_ID, FISH_LENGTH, FISH_WEIGHT, MRPHCD_ID, QUANT_VALUE, YEAR, NAFO, SEXCD_ID) ##we have gutted weights up to 2025 from bio sampling
+
+#Dressed = code 11 is all just in 1999...going to remove for the plot
+biosamp <- biosamp %>% filter(MRPHCD_ID == 6)
+
+biosamp %>% filter(YEAR >= 2000) %>% filter(SEXCD_ID == 2) %>%
+ggplot() +
+  geom_jitter(aes(FISH_LENGTH, QUANT_VALUE, colour = YEAR, alpha = 0.25)) +
+  scale_colour_gradient(low = "blue", high = "red") +
+  facet_wrap(NAFO~.)
+```
+
 
 Plot data by year/year bin
 ```{r}

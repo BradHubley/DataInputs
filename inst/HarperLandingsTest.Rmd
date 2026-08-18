@@ -53,16 +53,16 @@ nafodivs3NOPS = c("3N","3O","3P","3PS","3NK")
 nafodivs4VWX5Z = c("4V","4VN","4VS","4W","4X","4NK","5Y","5Z","5ZE","5ZC")
 
 # assessment year
- ay = 2025
+ ay = 2026
 
 # annual TAC table
-TAC = data.frame(Year=1988:2025,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807, 4744, 4927, 5149)) ##update each year
+TAC = data.frame(Year=1988:2026,TAC=c(3200,3200,3200,3200,3200,3200,1500,850,850,850,850,850,1000,1150,1150,1300,1300,1375,1475,1475,1475,1700,1850,1850,2128,2447,2563,2738,3149,3621,4164,4789,5507,5445,4807, 4744, 4927, 5149, 5064)) ##update each year
 
 # 21B start year
 ystart =1960
 
 # 21A last year(assessment year)
-yend=2024 ##DOES THIS CHANGE??
+yend=2025 ##DOES THIS CHANGE??
 
 width1=8
 height1=8
@@ -102,8 +102,8 @@ nafoForeign4= nafoForeign %>%
   group_by(Year) %>%
   summarize(Foreign4VWX5Z=sum(CatchA))
 
-Canada = merge(merge(data.frame(Year=1960:2024), nafoCDN3,all=T), nafoCDN4,all=T) ##CHANGE TO 2023???
-Foreign  = merge(merge(data.frame(Year=1960:2024), nafoForeign3,all=T), nafoForeign4,all=T) ##CHANGE TO 2023???
+Canada = merge(merge(data.frame(Year=1960:2025), nafoCDN3,all=T), nafoCDN4,all=T) ##CHANGE TO 2023???
+Foreign  = merge(merge(data.frame(Year=1960:2025), nafoForeign3,all=T), nafoForeign4,all=T) ##CHANGE TO 2023???
 Foreign[is.na(Foreign)] <- 0
 Canada[is.na(Canada)] <- 0
 Canada$CanadaTotal = Canada$Canada3NOPS+Canada$Canada4VWX5Z

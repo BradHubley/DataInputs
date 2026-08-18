@@ -1,7 +1,7 @@
 #' @export
-FixedSurveyIndex<-function(datadir,yrs,restrict100=T,old.model=F,use.calc.wt=F,nafo){
+FixedSurveyIndex<-function(datadir,yrs, sp = 30, restrict100=T,old.model=F,use.calc.wt=F,nafo){
 
-  FSindexData <- FixedSurveyData(datadir=datadir, by.sex=F,adj.calc.wt=use.calc.wt,add.LF=use.calc.wt)
+  FSindexData <- FixedSurveyData(datadir=datadir, sp = sp, by.sex=F,adj.calc.wt=use.calc.wt,add.LF=use.calc.wt)
 
   if(restrict100){
     load(file.path(datadir,"Survey","HSFixed100Stations.rdata"))
