@@ -320,12 +320,12 @@ for(i in 1:length(Nti)){
 }
 
 
-nafoA = get_21A(count="others", yearstart = 2019, datadir=datadir) 
+nafoA = get_21A(count="others", yearstart = 2017, datadir=datadir) 
 
 nafoCatch = nafoA  |>
   mutate( Division=replace(Division, Division%in%c("4VN","4VS"), "4V"))  |>
   mutate( Division=replace(Division, Division%in%c("3N","3O"), "3NO"))  |>
-  mutate( Division=replace(Division, Division%in%c("5Y","5ZE","5ZC"), "4X"))  |>
+  #mutate( Division=replace(Division, Division%in%c("5Y","5ZE","5ZC"), "4X"))  |>
   group_by(Year, Division) |>
   summarize(Catch = sum(CatchA,na.rm=T )) |>
   pivot_wider(names_from = c(Division),values_from = Catch) 
@@ -334,13 +334,13 @@ nafoCatch = nafoA  |>
 bigQ = 0.8387526
 
 #tHSRB<-t(HSRB)
-B<-HSRB[3:nrow(HSRB),ncol(HSRB):1]/bigQ/1000
+B<-HSRB[1:nrow(HSRB),ncol(HSRB):1]/bigQ/1000
 C<-data.frame(nafoCatch[,2:6])
 
 
 #barplot(as.matrix(t(C)))
-dimnames(C)<-list(2019:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
-dimnames(B)<-list(2019:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
+dimnames(C)<-list(2017:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
+dimnames(B)<-list(2017:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
 
 barplot(as.matrix(t(C[,ncol(C):1])),ylab="Catch (t)",ylim=c(0,max(rowSums(C))*1.2))
 legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
@@ -349,7 +349,7 @@ legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
 
 
 Exploitation<-C/B
-names(Exploitation)
+
 library(ggplot2)
 library(reshape2)
 

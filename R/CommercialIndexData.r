@@ -88,7 +88,7 @@ CommercialIndexData <-function(sp=30,datadir,add.gear=F,add.LF=T,bins=seq(5,260,
       #browser()
     }
     if(LF.from=="ISFISHLENGTHS"){
-      Mar.datawrangling::get_data_custom(schema="observer", data.dir = datadir, tables = c("ISFISHLENGTHS","ISSAMPLES"),env=isdb)
+      Mar.utils::get_data_tables(schema="observer", data.dir = "C:/DFO-MPO/PESDData/MarDatawrangling", tables = c("ISFISHLENGTHS","ISSAMPLES"),env=isdb)
 
       #The new tables get downloaded and/or loaded in and you can filter them manually
       ISSAMPLES = subset(isdb$ISSAMPLES,CATCH_ID %in% isdb$ISCATCHES$CATCH_ID,c("SMPL_ID","CATCH_ID","SEXCD_ID"))
