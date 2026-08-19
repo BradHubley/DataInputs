@@ -89,7 +89,7 @@ allStrata<-sort(unique(RVdata[[1]]$STRAT))
 Strata4VW<-allStrata[1:25]
 Strata4X<-allStrata[26:46]
 
-RVinputs4X<-prepRVdata(RVdata,years=1970:2024,strat= Strata4X,bins=bins, raw=T)
+RVinputs4X<-prepRVdata(RVdata,years=1970:2025,strat= Strata4X,bins=bins, raw=T)
 RVinputs4X$NSRV_unsexed<-RVinputs4X$NSRV_combined-(RVinputs4X$NSRV_males+RVinputs4X$NSRV_females) # unsexed
 NSRV_Index4X<-RVinputs4X$Index
 NSRV_Lengths4X<-list(NSRV4X_males=RVinputs4X$NSRV_males,
@@ -99,7 +99,7 @@ NSRV_Lengths4X<-list(NSRV4X_males=RVinputs4X$NSRV_males,
 
 
 
-RVinputs4VW<-prepRVdata(RVdata,years=1970:2024,strat= Strata4VW,bins=bins, raw=T)
+RVinputs4VW<-prepRVdata(RVdata,years=1970:2025,strat= Strata4VW,bins=bins, raw=T)
 RVinputs4VW$NSRV_unsexed<-RVinputs4VW$NSRV_combined-(RVinputs4VW$NSRV_males+RVinputs4VW$NSRV_females) # unsexed
 NSRV_Index4VW<-RVinputs4VW$Index
 NSRV_Lengths4VW<-list(NSRV4VW_males=RVinputs4VW$NSRV_males,
@@ -109,8 +109,8 @@ NSRV_Lengths4VW<-list(NSRV4VW_males=RVinputs4VW$NSRV_males,
 
 
 
-BubblePlotLF(NSRV_Lengths4X,bins=bins,yrs=1970:2024,path=file.path(wd,'figures'),filen='RVSurvey4X',inches=0.1)
-BubblePlotLF(NSRV_Lengths4VW,bins=bins,yrs=1970:2024,path=file.path(wd,'figures'),filen='RVSurvey4VW',inches=0.1)
+BubblePlotLF(NSRV_Lengths4X,bins=bins,yrs=1970:2025,path=file.path(wd,'figures'),filen='RVSurvey4X',inches=0.1)
+BubblePlotLF(NSRV_Lengths4VW,bins=bins,yrs=1970:2025,path=file.path(wd,'figures'),filen='RVSurvey4VW',inches=0.1)
 ```
 
 #NL RV Survey
@@ -118,6 +118,7 @@ BubblePlotLF(NSRV_Lengths4VW,bins=bins,yrs=1970:2024,path=file.path(wd,'figures'
 
 #NLRV_ny<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_n_yr.csv"))
 #NLRV_nys<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_n_yrsex.csv"))
+NLRV_males1<-read.csv(file.path(wd,"datafolder","NLsurvey_mfu_LF_obs.csv"))
 
 NLRV_males<-read.csv(file.path(datadir,"Newfoundland Data","NLsurvey_m_LF_obs.csv"))
 NLRV_males<-data.frame(pivot_wider(NLRV_males,names_from = length,values_from = obs))

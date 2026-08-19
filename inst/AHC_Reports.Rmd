@@ -42,7 +42,7 @@ HI Brad
  Bruce 
 
 ```{r}
-  Yrs2=2020:2025
+  Yrs2=2020:2024
 
   
 # 1. Halibut survey
@@ -117,7 +117,6 @@ MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
 MARFISdataOT$CLASS <-"OT"
 
 MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
-MARFISdata <- MARFISdata %>% mutate(YEAR = substr(DATE_FISHED, 1,4))
 ```
 
 # Make Tables by nafo
@@ -131,11 +130,7 @@ Maybe:
 # Would mind also graphing the annual catch by area of the same time series?
 
 ```{r }
-<<<<<<< HEAD
-yrs<-2017:2025
-=======
 yrs<-2017:2026
->>>>>>> 125a0958570c5e44404274146cba242355f5280f
 
 data1<-subset(MARFISdata,YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT")
 data1$NAFO<-substr(data1$NAFO,1,2)
@@ -200,8 +195,6 @@ years <- MARFIS_Catch$YEAR
 data_to_plot <- MARFIS_Catch[, 2:7]/1000
 
 # Plot all time series
-tiff(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/MARFISCATCH_2026.tiff",
-     width=10, height=6, units="in", res=500)
 matplot(
   years,
   data_to_plot,
@@ -237,18 +230,13 @@ legend(
   lty = 1:6,
   lwd = 2
 )
-dev.off()
 
 
 ```
 
 ```{r}
  library(readr)
-<<<<<<< HEAD
-RandomHalibutSurveyData_LF <- read_csv(file.path(datadir, "RandomHalibutSurveyData_LF.csv"))
-=======
 RandomHalibutSurveyData_LF <- read_csv("~/Halibut/data/RandomHalibutSurveyData_LF.csv")
->>>>>>> 125a0958570c5e44404274146cba242355f5280f
 yrs<-2015:2025
 RandomHalibutSurveyData_LF$NAFO<-substr(RandomHalibutSurveyData_LF$NAFAREA_ID,1,2)
 
@@ -271,8 +259,6 @@ years <- SurveyNAFO$YEAR
 data_to_plot <- SurveyNAFO[, 2:7]
 
 # Plot all time series
-tiff(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/RandomSurveyCatch_2026.tiff",
-     width=10, height=6, units="in", res=500)
 matplot(
   years,
   data_to_plot,
@@ -288,7 +274,7 @@ legend(
   lty = 1:6,pch=1:6,
   lwd = 2
 )
-dev.off()
+
 ```
 # Why would the survey CPUE in 4X be in decline in light of the better than average (DFO survey) recruitment index (in 4X?)?
 
@@ -318,27 +304,28 @@ a3no<-sum(calcArea(BO13NO)$area)
 a3noV<- a3no/(a3no+a3p)
 a3pV<- a3p/(a3no+a3p)
 
-HSRB<-matrix(NA,5,length(Nti))
+HSRB<-matrix(NA,length(Nti),5)
 
 for(i in 1:length(Nti)){
   
-  HSRB[1,i]<-with(subset(Nti[[i]],PID%in%11:13),sum(Bh*area))
-  HSRB[2,i]<-with(subset(Nti[[i]],PID%in%21:23),sum(Bh*area))
-  HSRB[3,i]<-with(subset(Nti[[i]],PID%in%31:34),sum(Bh*area))
-  HSRB[4,i]<-with(subset(Nti[[i]],PID%in%41:44),sum(Bh*area))
-  HSRB[5,i]<-with(subset(Nti[[i]],PID%in%51:54),sum(Bh*area))
+  HSRB[i,1]<-with(subset(Nti[[i]],PID%in%11:13),sum(Bh*area))
+  HSRB[i,2]<-with(subset(Nti[[i]],PID%in%21:23),sum(Bh*area))
+  HSRB[i,3]<-with(subset(Nti[[i]],PID%in%31:34),sum(Bh*area))
+  HSRB[i,4]<-with(subset(Nti[[i]],PID%in%41:44),sum(Bh*area))
+  HSRB[i,5]<-with(subset(Nti[[i]],PID%in%51:54),sum(Bh*area))
   if(60%in%Nti[[i]]$PID){
-    HSRB[5,i]<-HSRB[5,i] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3noV
-    HSRB[4,i]<-HSRB[4,i] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3pV
+    HSRB[i,5]<-HSRB[i,5] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3noV
+    HSRB[i,4]<-HSRB[i,4] + with(subset(Nti[[i]],PID==60),sum(Bh*area)) * a3pV
   }
 }
 
 
-nafoA = get_21A(count="others", yearstart = 2019, datadir=datadir) 
+nafoA = get_21A(count="others", yearstart = 2017, datadir=datadir) 
 
 nafoCatch = nafoA  |>
   mutate( Division=replace(Division, Division%in%c("4VN","4VS"), "4V"))  |>
   mutate( Division=replace(Division, Division%in%c("3N","3O"), "3NO"))  |>
+  #mutate( Division=replace(Division, Division%in%c("5Y","5ZE","5ZC"), "4X"))  |>
   group_by(Year, Division) |>
   summarize(Catch = sum(CatchA,na.rm=T )) |>
   pivot_wider(names_from = c(Division),values_from = Catch) 
@@ -346,13 +333,14 @@ nafoCatch = nafoA  |>
 
 bigQ = 0.8387526
 
-tHSRB<-t(HSRB)
-B<-tHSRB[,ncol(tHSRB):1]/bigQ/1000
-C<-data.frame(nafoCatch[1:6,2:6])
+#tHSRB<-t(HSRB)
+B<-HSRB[1:nrow(HSRB),ncol(HSRB):1]/bigQ/1000
+C<-data.frame(nafoCatch[,2:6])
+
 
 #barplot(as.matrix(t(C)))
-row.names(C)<-2019:2024
-dimnames(B)<-list(2019:2024,c("3NO", "3PS", "4V",  "4W",  "4X"))
+dimnames(C)<-list(2017:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
+dimnames(B)<-list(2017:2025,c("3NO", "3PS", "4V",  "4W",  "4X"))
 
 barplot(as.matrix(t(C[,ncol(C):1])),ylab="Catch (t)",ylim=c(0,max(rowSums(C))*1.2))
 legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)

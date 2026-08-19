@@ -652,6 +652,38 @@ OCLengthSamples<-do.call("rbind",LSfiles)
 ```
 
 
+```{r}
+ComIndex<-CommercialIndexData(datadir=datadir,bins=bins,add.portsampling=F,by.sex=F)
+ComIndex$QUARTER<-quarter(ComIndex$DATE_TIME1)
+
+ nafo3 = c( "3N", "3NA", "3NB", "3NC", "3ND", "3NE", "3NF", "3O", "3OA", "3OC", "3OD", "3OE", "3PN", "3PS", "3U")
+ nafo4X = c( "4X", "4XL", "4XM", "4XN", "4XO", "4XP", "4XQ", "4XR", "4XS", "5YB", "5ZJ", "5ZM", "5ZN")
+ nafo4VW = c("4VB", "4VC", "4VN", "4VS", "4W", "4WD", "4WE", "4WF", "4WG", "4WH", "4WJ", "4WK", "4WL", "4WM")
+ 
+Fish_per_trip_nafo3 <- subset(ComIndex,YEAR%in%2024:2025&NAFAREA_ID%in%nafo3) |>
+   group_by(TRIP,QUARTER)|>
+  summarize(N_FISH=sum(EST_NUM_CAUGHT,na.rm=T))|>
+  ungroup()|>
+  group_by(QUARTER)|>
+   summarize(N_FISH_AVG=mean(N_FISH,na.rm=T))
+
+Fish_per_trip_nafo4X <- subset(ComIndex,YEAR%in%2024:2025&NAFAREA_ID%in%nafo4X) |>
+   group_by(TRIP,QUARTER)|>
+  summarize(N_FISH=sum(EST_NUM_CAUGHT,na.rm=T))|>
+  ungroup()|>
+  group_by(QUARTER)|>
+   summarize(N_FISH_AVG=mean(N_FISH,na.rm=T))
+  
+Fish_per_trip_nafo4VW <- subset(ComIndex,YEAR%in%2024:2025&NAFAREA_ID%in%nafo4VW) |>
+   group_by(TRIP,QUARTER)|>
+  summarize(N_FISH=sum(EST_NUM_CAUGHT,na.rm=T))|>
+  ungroup()|>
+  group_by(QUARTER)|>
+   summarize(N_FISH_AVG=mean(N_FISH,na.rm=T))
+  
+
+
+```
 
 
 
