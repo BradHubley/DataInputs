@@ -41,7 +41,7 @@ HI Brad
  Bruce 
 
 ```{r}
-  Yrs2=2020:2024
+  Yrs2=2020:2025
 
   
 # 1. Halibut survey
@@ -104,7 +104,7 @@ OCIdata[[2]]$NUM<-1
 # 1. Establish Oracle connection first (NEW REQUIREMENT)
 cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
 
-get_data(db='marfis', cxn = cxn , force.extract=T)
+get_data(db='marfis', cxn = cxn , force.extract=F)
 
 MARFISdataLL<-getMARFISdata(datadir,sp=130,gear=1)
 MARFISdataLL$CLASS <-NA
@@ -116,6 +116,7 @@ MARFISdataOT<-getMARFISdata(datadir,sp=130,gear=2)
 MARFISdataOT$CLASS <-"OT"
 
 MARFISdata<-rbind(MARFISdataLL,MARFISdataOT)
+MARFISdata <- MARFISdata %>% mutate(YEAR = substr(DATE_FISHED, 1,4))
 ```
 
 # Make Tables by nafo
@@ -129,7 +130,7 @@ Maybe:
 # Would mind also graphing the annual catch by area of the same time series?
 
 ```{r }
-yrs<-2017:2024
+yrs<-2017:2025
 
 data1<-subset(MARFISdata,YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT")
 data1$NAFO<-substr(data1$NAFO,1,2)
@@ -194,6 +195,8 @@ years <- MARFIS_Catch$YEAR
 data_to_plot <- MARFIS_Catch[, 2:7]/1000
 
 # Plot all time series
+tiff(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/MARFISCATCH_2026.tiff",
+     width=10, height=6, units="in", res=500)
 matplot(
   years,
   data_to_plot,
@@ -209,14 +212,15 @@ legend(
   lty = 1,
   lwd = 2
 )
+dev.off()
 
 
 ```
 
 ```{r}
  library(readr)
-RandomHalibutSurveyData_LF <- read_csv("~/Halibut/data/RandomHalibutSurveyData_LF.csv")
-yrs<-2015:2024
+RandomHalibutSurveyData_LF <- read_csv(file.path(datadir, "RandomHalibutSurveyData_LF.csv"))
+yrs<-2015:2025
 RandomHalibutSurveyData_LF$NAFO<-substr(RandomHalibutSurveyData_LF$NAFAREA_ID,1,2)
 
 tmp<- RandomHalibutSurveyData_LF |>
@@ -238,6 +242,8 @@ years <- SurveyNAFO$YEAR
 data_to_plot <- SurveyNAFO[, 2:7]
 
 # Plot all time series
+tiff(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/RandomSurveyCatch_2026.tiff",
+     width=10, height=6, units="in", res=500)
 matplot(
   years,
   data_to_plot,
@@ -253,7 +259,7 @@ legend(
   lty = 1,
   lwd = 2
 )
-
+dev.off()
 ```
 # Why would the survey CPUE in 4X be in decline in light of the better than average (DFO survey) recruitment index (in 4X?)?
 
