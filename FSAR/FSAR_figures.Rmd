@@ -18,7 +18,7 @@ devtools::load_all(".")
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
 setwd(file.path(wd,'FSAR'))
-Assessment.Year <- 2025
+Assessment.Year <- 2026
 
 
 # Update data from database 

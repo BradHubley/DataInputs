@@ -48,7 +48,7 @@ conflict_prefer("select", "dplyr")
    # 1. Establish Oracle connection first (NEW REQUIREMENT)
     cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
 
- get_data(db='isdb',cxn=cxn, force.extract=T)
+ get_data(db='isdb',cxn=cxn, force.extract=F)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
  get_data(db='rv',cxn=cxn,force.extract=T)
@@ -165,14 +165,24 @@ RandomSurvey1$diff_count<-with(RandomSurvey1,EST_NUM_CAUGHT -NUM_MEASURED )
 RandomSurvey1$diff_weight<-with(RandomSurvey1,EST_COMBINED_WT -calc_weight )
 
 RandomSurvey2$diff_count<-with(RandomSurvey2,EST_NUM_CAUGHT -NUM_MEASURED )
-RandomSurvey2$diff_weight<-with(RandomSurvey2,EST_COMBINED_WT -calc_weight )
+RandomSurvey2$diff_weight<-with(RandomSurvey2,EST_COMBINED_WT -calc_weight)
 
-subset(RandomSurvey1,abs(diff_count)>1&YEAR==2025)
-subset(RandomSurvey1,abs(diff_count)>1&YEAR==2025&!is.na(L5))
-subset(RandomSurvey2,abs(diff_count)>1&YEAR==2025)
+subset(RandomSurvey1,abs(diff_count)>1&YEAR==2026)
+subset(RandomSurvey1,abs(diff_count)>1&YEAR==2026&!is.na(L5)) #checking if it's just entry of LF data that's the issue?
+subset(RandomSurvey2,abs(diff_count)>1&YEAR==2026)
 
 subset(RandomSurvey1,diff_count==0&diff_weight>100)
 subset(RandomSurvey2,diff_count==0&diff_weight>100)
+
+RandomSurvey1 <- RandomSurvey1 %>%
+  mutate(prop_diff = diff_weight/calc_weight,
+    flag_weight = abs(prop_diff) > 0.10)
+
+RandomSurvey2 <- RandomSurvey2 %>%
+  mutate(prop_diff = diff_weight/calc_weight,
+    flag_weight = abs(prop_diff) > 0.10)
+
+
 ```
 
 Making spreadsheet of data what needs to be fixed for Stratified Random Survey (whole time series)
@@ -183,7 +193,7 @@ rs_ISFISHLENGTHS_w <- subset(RandomSurvey1,diff_count==0&diff_weight>100)
 rs_w <- rs_ISFISHLENGTHS_w %>% bind_rows(.,rs_ISFISH_w)
 rs_w <- rs_w[!duplicated(rs_w$FISHSET_ID), ]
 
-write.csv(rs_w, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_weightissues_2025.csv", row.names = FALSE)
+write.csv(rs_w, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_weightissues_2026.csv", row.names = FALSE)
 
 #length from both datasets (using ISFISH and ISFISHLENGTHS)
 rs_ISFISH_l <- subset(RandomSurvey2,abs(diff_count)>0)
@@ -191,7 +201,19 @@ rs_ISFISHLENGTHS_l <- subset(RandomSurvey1,abs(diff_count)>0)
 rs_l <- rs_ISFISHLENGTHS_l %>% bind_rows(.,rs_ISFISH_l)
 rs_l <- rs_l[!duplicated(rs_l$FISHSET_ID), ]
 
-write.csv(rs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_lengthissues_2025.csv", row.names = FALSE)
+write.csv(rs_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_lengthissues_2026.csv", row.names = FALSE)
+#bc there's no LF data, I'm going to do length issues again but just for ISFISH
+write.csv(rs_ISFISH_l, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_lengthissuesISFISHonly_2026.csv", row.names = FALSE)
+
+
+##trying with proportion instead of straight 100kg
+rs_ISFISH_wp <- subset(RandomSurvey2, diff_count==0&prop_diff>0.1)
+rs_ISFISHLENGTHS_wp <- subset(RandomSurvey1, diff_count==0&prop_diff>0.1)
+rs_wp <- rs_ISFISHLENGTHS_wp %>% bind_rows(.,rs_ISFISH_wp)
+rs_wp <- rs_wp[!duplicated(rs_wp$FISHSET_ID),]
+
+write.csv(rs_wp, "C:/Users/harperd/Documents/Halibut/GitDataInputs/randomsurvey_weightissuesbyproportion_2026.csv", row.names = FALSE)
+
 ```
 
 
