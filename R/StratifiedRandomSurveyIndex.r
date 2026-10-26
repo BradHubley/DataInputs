@@ -132,7 +132,6 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
     }
 
     total.area<-sum(areas$area)
-#browser()
 
     # Stratified mean and variance
     n<-with(subset(RSindexData,YEAR==yrs[i]),tapply(STATION,STRAT,length))*nadj
@@ -163,7 +162,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   if(output=='stratified.mean')out<-data.frame(Year=yrs,n=sets,KgPKH=B/sum(areas$area),KgPKHse=Bse/sum(areas$area),NPKH=N/sum(areas$area),NPKHse=Nse/sum(areas$area))
   if(output=='simple.mean')out<-data.frame(Year=yrs,n=sets,KgPKH=sKgPKH,KgPKHse=sKgPKHse,NPKH=sNPKH,NPKHse=sNPKHse)
 
-
+#browser()
   if(output=='stratified.estimate'){
     out$mean3_biomass <- mavg(out$B)
   }else {out$mean3_biomass <- mavg(out$KgPKH)}

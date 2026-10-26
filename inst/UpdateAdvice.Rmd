@@ -24,7 +24,7 @@ bins=seq(0,260,5)
 # labelled by upper bound
 
 
-Assessment.Year <- 2025
+Assessment.Year <- 2026
 
 
 ```
@@ -174,16 +174,16 @@ BarPlotLF(nsrvl[which(names(nsrvl)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(
   HSRandom_Index<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year)
   
   # stratified random index without zero strata
-  HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year, 
-                                               ZeroStrata=F, restratify=F)
+  #HSRandom_Index2<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year, 
+   #                                            ZeroStrata=F, restratify=F)
   
    # stratified random index without zero strata and combining 52 and 53 for all years 
-  HSRandom_Index4<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year, 
-                                               ZeroStrata=F,  restratify=F, combine.strata=52:53)
+  #HSRandom_Index4<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year, 
+   #                                            ZeroStrata=F,  restratify=F, combine.strata=52:53)
   
   # stratified random index with zero strata restratified and combining 52 and 53 for all years 
-  HSRandom_Index5<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year, 
-                                               ZeroStrata=T, restratify=T, combine.strata=52:53)
+  #HSRandom_Index5<-StratifiedRandomSurveyIndex(datadir=datadir,yrs=2017:Assessment.Year, 
+   #                                            ZeroStrata=T, restratify=T, combine.strata=52:53)
   
   
   with(subset(HSRandom_Index,Year==Assessment.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
