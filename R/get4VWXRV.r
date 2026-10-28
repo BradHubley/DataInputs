@@ -4,11 +4,9 @@ get4VWXRV<-function(uid, pwd, use.local=T,datadir=datadir){
   if(use.local==F){
 
 
-    # Make connection to Database PTRAN
-    cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
+    rv <- new.env()
 
-    # load Tables
-    Mar.datawrangling::get_data(db='rv',cxn=cxn,force.extract=T)
+    get_data('rv', cxn=cxn, env=rv)
 
 
   set.names<- c("MISSION","YEAR","SETNO", "SDATE", "TIME", "STRAT","STRATA_AREA","DIST","GEAR","WIDTH","VESEL","TYPE", "LATITUDE", "LONGITUDE","DEPTH","BOTTOM_TEMPERATURE" )

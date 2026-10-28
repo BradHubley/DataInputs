@@ -236,8 +236,9 @@ legend(
 
 ```{r}
  library(readr)
-RandomHalibutSurveyData_LF <- read_csv("~/Halibut/data/RandomHalibutSurveyData_LF.csv")
-yrs<-2015:2025
+RandomHalibutSurveyData_LF <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/RandomHalibutSurveyData_LF.csv")
+yrs<-2015:2026
+RandomHalibutSurveyData_LF <- RandomHalibutSurveyData_LF %>% filter(FISHSET_ID != 100440006)
 RandomHalibutSurveyData_LF$NAFO<-substr(RandomHalibutSurveyData_LF$NAFAREA_ID,1,2)
 
 tmp<- RandomHalibutSurveyData_LF |>
@@ -293,7 +294,7 @@ legend("topleft",legend=c("4X","4VW"),pch=16,col = 1:2,lwd=2)
 # Can you graph the fishable biomass by NAFO sub-division over the available (stratified random) time series, maybe on a stacked bar chart?
 
 ```{r}
-load("~/Halibut/git/DataInputs/inst/Nti.rdata")
+load("~/Halibut/GitDataInputs/DataInputs_2023/DataInputs/inst/Nti.rdata")
 load(file.path(datadir,"Survey","BlackOutAreas.RData"))
 attr(BO1,"projection")<-"LL"
 BO13P<-clipPolys(BO1,xlim=c(-60,-54.5),ylim=c(42,50))
