@@ -97,6 +97,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   RSindexData$EST_NUM_CAUGHT[is.na(RSindexData$EST_NUM_CAUGHT)]<-0
   RSindexData$EST_COMBINED_WT[is.na(RSindexData$EST_COMBINED_WT)]<-0
   RSindexData$NUM_HOOK_HAUL[is.na(RSindexData$NUM_HOOK_HAUL)]<-1000
+  RSindexData$NUM_HOOK_HAUL[RSindexData$SETCD_ID == 13] <-1000
 
   # standardize for 1000 hooks
   RSindexData$NPKH <-  RSindexData$EST_NUM_CAUGHT/(RSindexData$NUM_HOOK_HAUL/1000)

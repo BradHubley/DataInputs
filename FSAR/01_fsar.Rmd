@@ -5,7 +5,7 @@ output:
 ---
 ## CONTEXT {-}
 
-Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science advice on the status of the Scotian Shelf and southern Grand Banks (3NOPs4VWX5Zc) Atlantic Halibut (Hippoglossus hippoglossus) stock based on the articulated harvest decision rule adopted at the Scotia-Fundy Groundfish Advisory Committee (SFGAC) meeting in March 2022. This Science Response Report results from the regional peer review of December 2nd-3rd, 2025, on the Stock Status Update for 3NOPs4VWX5Zc Atlantic Halibut.
+Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science advice on the status of the Scotian Shelf and southern Grand Banks (3NOPs4VWX5Zc) Atlantic Halibut (Hippoglossus hippoglossus) stock based on the articulated harvest decision rule adopted at the Scotia-Fundy Groundfish Advisory Committee (SFGAC) meeting in March 2022. This Science Response Report results from the regional peer review of December 1st, 2026, on the Stock Status Update for 3NOPs4VWX5Zc Atlantic Halibut.
 
 ## SCIENCE ADVICE {-}
 
@@ -13,7 +13,7 @@ Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science
 
 ::: {custom-style="fsar-bullet"}
 
-* The 2025 three-year mean exploitable biomass index (51.1 kt) from the stratified random Industry-DFO Halibut Longline Survey is above the upper stock reference (USR) with a very high probability of being in the healthy zone.
+* The 2026 three-year mean exploitable biomass index (51.1 kt) from the stratified random Industry-DFO Halibut Longline Survey is above the upper stock reference (USR) with a very high probability of being in the healthy zone.
 :::
 
 ### Trends {-}

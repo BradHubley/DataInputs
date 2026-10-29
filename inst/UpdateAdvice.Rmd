@@ -186,7 +186,7 @@ BarPlotLF(nsrvl[which(names(nsrvl)%in%YrsObs)],yrs=YrsObs,rel=F,filen=file.path(
    #                                            ZeroStrata=T, restratify=T, combine.strata=52:53)
   
   
-  with(subset(HSRandom_Index,Year==Assessment.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2
+  with(subset(HSRandom_Index,Year==Assessment.Year),c(KgPKH,KgPKH-KgPKHse*1.96,KgPKH+KgPKHse*1.96))/2 #1.96is the critical z-score associated with a 95% confidence level in a standard normal distribution; 2??
 
 ```
 

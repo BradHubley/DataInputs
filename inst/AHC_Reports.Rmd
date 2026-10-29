@@ -46,7 +46,7 @@ HI Brad
 
   
 # 1. Halibut survey
-RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=T)
+RandomSurvey <- RandomSurveyData(datadir=datadir,bins=bins,by.sex=F)
 
   allStrata<-sort(unique(RandomSurvey$ASSIGNED_STRATUM_ID))
   Strata4VW<-allStrata[4:10]
@@ -238,7 +238,6 @@ legend(
  library(readr)
 RandomHalibutSurveyData_LF <- read.csv("C:/Users/harperd/Documents/Halibut/RDataVault/RandomHalibutSurveyData_LF.csv")
 yrs<-2015:2026
-RandomHalibutSurveyData_LF <- RandomHalibutSurveyData_LF %>% filter(FISHSET_ID != 100440006)
 RandomHalibutSurveyData_LF$NAFO<-substr(RandomHalibutSurveyData_LF$NAFAREA_ID,1,2)
 
 tmp<- RandomHalibutSurveyData_LF |>
