@@ -97,6 +97,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   RSindexData$EST_NUM_CAUGHT[is.na(RSindexData$EST_NUM_CAUGHT)]<-0
   RSindexData$EST_COMBINED_WT[is.na(RSindexData$EST_COMBINED_WT)]<-0
   RSindexData$NUM_HOOK_HAUL[is.na(RSindexData$NUM_HOOK_HAUL)]<-1000
+  RSindexData$NUM_HOOK_HAUL[RSindexData$SETCD_ID == 13] <-1000
 
   # standardize for 1000 hooks
   RSindexData$NPKH <-  RSindexData$EST_NUM_CAUGHT/(RSindexData$NUM_HOOK_HAUL/1000)
@@ -132,7 +133,6 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
     }
 
     total.area<-sum(areas$area)
-#browser()
 
     # Stratified mean and variance
     n<-with(subset(RSindexData,YEAR==yrs[i]),tapply(STATION,STRAT,length))*nadj
@@ -163,7 +163,7 @@ StratifiedRandomSurveyIndex<-function(datadir,yrs,output='stratified.mean',sp=30
   if(output=='stratified.mean')out<-data.frame(Year=yrs,n=sets,KgPKH=B/sum(areas$area),KgPKHse=Bse/sum(areas$area),NPKH=N/sum(areas$area),NPKHse=Nse/sum(areas$area))
   if(output=='simple.mean')out<-data.frame(Year=yrs,n=sets,KgPKH=sKgPKH,KgPKHse=sKgPKHse,NPKH=sNPKH,NPKHse=sNPKHse)
 
-
+#browser()
   if(output=='stratified.estimate'){
     out$mean3_biomass <- mavg(out$B)
   }else {out$mean3_biomass <- mavg(out$KgPKH)}
