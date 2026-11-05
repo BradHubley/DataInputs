@@ -131,11 +131,7 @@ Maybe:
 # Would mind also graphing the annual catch by area of the same time series?
 
 ```{r }
-<<<<<<< HEAD
-yrs<-2017:2025
-=======
 yrs<-2017:2026
->>>>>>> 125a0958570c5e44404274146cba242355f5280f
 
 data1<-subset(MARFISdata,YEAR%in%yrs&!is.na(NAFO)&CLASS!="OT")
 data1$NAFO<-substr(data1$NAFO,1,2)
@@ -244,11 +240,9 @@ dev.off()
 
 ```{r}
  library(readr)
-<<<<<<< HEAD
+
 RandomHalibutSurveyData_LF <- read_csv(file.path(datadir, "RandomHalibutSurveyData_LF.csv"))
-=======
-RandomHalibutSurveyData_LF <- read_csv("~/Halibut/data/RandomHalibutSurveyData_LF.csv")
->>>>>>> 125a0958570c5e44404274146cba242355f5280f
+
 yrs<-2015:2025
 RandomHalibutSurveyData_LF$NAFO<-substr(RandomHalibutSurveyData_LF$NAFAREA_ID,1,2)
 
@@ -352,12 +346,19 @@ C<-data.frame(nafoCatch[1:6,2:6])
 
 #barplot(as.matrix(t(C)))
 row.names(C)<-2019:2024
-dimnames(B)<-list(2019:2024,c("3NO", "3PS", "4V",  "4W",  "4X"))
+dimnames(B)<-list(2019:2024,c("3NO", "3PS", "4V",  "4W",  "4X")) ##should this change to 2017:2025?
 
+tiff(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/Catch_nafo_2026.tiff",
+     width=10, height=6, units="in", res=100)
 barplot(as.matrix(t(C[,ncol(C):1])),ylab="Catch (t)",ylim=c(0,max(rowSums(C))*1.2))
 legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
+dev.off()
+
+tiff(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/Biomass_nafo_2026.tiff",
+     width=10, height=6, units="in", res=100)
 barplot(as.matrix(t(B[,ncol(B):1])),ylab="Biomass (t)",ylim=c(0,max(rowSums(B))*1.2))
 legend('top',c("4X", "4W","4V", "3PS","3NO"),fill=grey.colors(5),horiz=T)
+dev.off()
 
 
 Exploitation<-C/B
@@ -372,12 +373,15 @@ Exploitation$Year <- as.numeric(row.names(Exploitation))
 Exploitation_long <- melt(Exploitation, id.vars = "Year", variable.name = "NAFO", value.name = "Exploitation")
 
 # Plot
+tiff(file="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/figures/Exploitation_2026.tiff",
+     width=10, height=6, units="in", res=100)
 ggplot(Exploitation_long, aes(x = Year, y = Exploitation, color = NAFO, linetype = NAFO)) +
-  geom_line(size = 1) +
+  geom_line(linewidth = 1) +
   geom_hline(yintercept = 1 - exp(-0.1044), linetype = "dashed", color = "black") +
   labs(title = "Exploitation Rates by Area", y = "C/B", x = "Year") +
   theme_minimal() +
   theme(legend.position = "top")
+dev.off()
 
 
 
