@@ -37,7 +37,7 @@ RandomSurveyData <- function(sp=30, datadir, add.gear=F, add.LF=T, bins=seq(5,26
   ## Sets
   wide$SOAKMINP3P1 <- difftime(wide$DATE_TIME3,  wide$DATE_TIME1, units='min')
   wide$SOAKMINP3P2 <- difftime(wide$DATE_TIME3,  wide$DATE_TIME2, units='min')
-  isdb$ISFISHSETS$GEAR_LEN_M <- ((isdb$ISFISHSETS$LEN_LONGLINE)*1000)
+  #isdb$ISFISHSETS$GEAR_LEN_M <- ((isdb$ISFISHSETS$LEN_LONGLINE)*1000)
   sets <- left_join(wide[,c("FISHSET_ID","SET_NO","DATE_TIME1","DATE_TIME2","DATE_TIME3","DATE_TIME4","SOAKMINP3P1","SOAKMINP3P2","LAT1","LAT2","LAT3","LAT4","LONG1","LONG2","LONG3","LONG4","DUR_41","YEAR","DEP1","DEP2","DEP3","DEP4")],
                     isdb$ISFISHSETS[,c("FISHSET_ID","TRIP_ID","SET_NO","SETCD_ID","STATION","STRATUM_ID","NAFAREA_ID","NUM_HOOK_HAUL","GEAR_ID","HAULCCD_ID","LEN_LONGLINE","GEAR_LEN_M","SPECSCD_ID")], by=c('FISHSET_ID','SET_NO'))
   # join gear if desired

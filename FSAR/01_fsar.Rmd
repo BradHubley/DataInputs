@@ -1,3 +1,55 @@
+::: {custom-style="Heading 1"}
+SCOTIAN SHELF AND SOUTHERN GRAND BANKS ATLANTIC HALIBUT (HIPPOGLOSSUS HIPPOGLOSSUS) STOCK STATUS UPDATE IN 2025
+:::
+
+::: {custom-style="Heading 2"}
+CONTEXT
+:::
+
+::: {custom-style="Body Text"}
+.
+
+:::
+
+::: {custom-style="Heading 1"}
+SCOTIAN SHELF AND SOUTHERN GRAND BANKS ATLANTIC HALIBUT (HIPPOGLOSSUS HIPPOGLOSSUS) STOCK STATUS UPDATE IN 2025
+:::
+
+::: {custom-style="Heading 2"}
+CONTEXT
+:::
+
+::: {custom-style="Body Text"}
+.
+
+:::
+
+::: {custom-style="Heading 1"}
+SCOTIAN SHELF AND SOUTHERN GRAND BANKS ATLANTIC HALIBUT (HIPPOGLOSSUS HIPPOGLOSSUS) STOCK STATUS UPDATE IN 2025
+:::
+
+::: {custom-style="Heading 2"}
+CONTEXT
+:::
+
+::: {custom-style="Body Text"}
+.
+
+:::
+
+::: {custom-style="Heading 1"}
+SCOTIAN SHELF AND SOUTHERN GRAND BANKS ATLANTIC HALIBUT (HIPPOGLOSSUS HIPPOGLOSSUS) STOCK STATUS UPDATE IN 2025
+:::
+
+::: {custom-style="Heading 2"}
+CONTEXT
+:::
+
+::: {custom-style="Body Text"}
+.
+
+:::
+
 ---
 output:
   word_document: default
@@ -5,7 +57,7 @@ output:
 ---
 ## CONTEXT {-}
 
-Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science advice on the status of the Scotian Shelf and southern Grand Banks (3NOPs4VWX5Zc) Atlantic Halibut (Hippoglossus hippoglossus) stock based on the articulated harvest decision rule adopted at the Scotia-Fundy Groundfish Advisory Committee (SFGAC) meeting in March 2022. This Science Response Report results from the regional peer review of December 1st, 2026, on the Stock Status Update for 3NOPs4VWX5Zc Atlantic Halibut.
+Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science advice on the status of the Scotian Shelf and southern Grand Banks (3NOPs4VWX5Zc) Atlantic Halibut (_Hippoglossus hippoglossus_) stock based on the articulated harvest decision rule adopted at the Scotia-Fundy Groundfish Advisory Committee (SFGAC) meeting in March 2022. This Science Response Report results from the regional peer review of December 1st, 2026, on the Stock Status Update for 3NOPs4VWX5Zc Atlantic Halibut.
 
 ## SCIENCE ADVICE {-}
 
@@ -13,16 +65,16 @@ Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science
 
 ::: {custom-style="fsar-bullet"}
 
-* The 2026 three-year mean exploitable biomass index (51.1 kt) from the stratified random Industry-DFO Halibut Longline Survey is above the upper stock reference (USR) with a very high probability of being in the healthy zone.
+* The 2026 three-year mean exploitable biomass index (57.4 kt) from the stratified random Industry-DFO Halibut Longline Survey is above the upper stock reference (USR) with a very high probability of being in the healthy zone.
 :::
 
 ### Trends {-}
 
 ::: {custom-style="fsar-bullet"}
 
-- Inter-annual changes in the index of exploitable biomass and the three-year mean have remained relatively stable through the time series with a small decrease in 2025 from the previous year. 
+- Inter-annual changes in the index of exploitable biomass and the three-year mean have remained relatively stable through the time series aside from this year, where there is a large increase in 2026 from the previous year. 
 
-- Atlantic halibut abundance in 2025 from the Maritimes Summer Ecosystem Research Vessel Survey was the lowest value in last five years, although it remains well above the long-term mean. The trend in abundance appears similar to what was seen during the peak and decline in the 2010s.
+- Atlantic halibut abundance in 2026 from the Maritimes Summer Ecosystem Research Vessel Survey was fourth highest in the time series, up from last year and similar to what was seen in 2024. It remains well above the long-term mean.
 
 :::
 
@@ -38,9 +90,9 @@ Fisheries and Oceans Canada (DFO) Resource Management (RM) has requested Science
 
 ::: {custom-style="fsar-bullet"}
 
-- The three-year mean exploitable biomass of 51.1 kt corresponds to removals of 5,064 t under the harvest decision rule (HDR) for this stock. 
+- The three-year mean exploitable biomass of 57.4 kt corresponds to removals of 5,695 t under the harvest decision rule (HDR) for this stock. 
 
-- Removals of 5,064 t is within the maximum annual change of 15% from the 2025-2026 total allowable catch (TAC). It is 85 t (1.7%) less than last year's TAC.
+- Removals of 5, t is within the maximum annual change of 15% from the 2026-2027 total allowable catch (TAC). It is 631 t (12.5%) more than last year's TAC. This is the largest inter-annual change since the implementation of this HDR.
 
 :::
 ## BASIS FOR ASSESSMENT {-}
@@ -58,7 +110,7 @@ Interim Year Update
 #### Most Recent Assessment Date {-}
 1.	Last Full Assessment: March 2022 [@DFO2024a; @Johnson2024; @Li2025]
 
-2.	Last Interim Year Update: December 2024 [@DFO2025]
+2.	Last Interim Year Update: December 2025 [@DFO2026]
 
 #### Assessment Approach {-}
 1.	Broad category: index-based (trends in empirical indices only), single stock assessment model, management strategy evaluation (MSE)-lite
@@ -90,13 +142,13 @@ The HDR has two steps. First, a fishing mortality rate (F) is applied to the exp
 
 ### Data {-}
 
-- Stratified Random Halibut Survey (Industry-DFO Halibut Longline Survey) Halibut catch (2017-2025)
+- Stratified Random Halibut Survey (Industry-DFO Halibut Longline Survey) Halibut catch (2017-2026)
 
-- Maritimes Summer Ecosystem Research Vessel Survey (RV Summer Survey; NAFO Divs. 4VWX) Halibut abundance (1970-2025)
+- Maritimes Summer Ecosystem Research Vessel Survey (RV Summer Survey; NAFO Divs. 4VWX) Halibut abundance (1970-2026)
 
 - Atlantic Halibut landings - Canadian and International landings from Northwest Atlantic Fisheries Organization (NAFO)
 
-- 2025 Preliminary Maritimes Region Atlantic Halibut landings from Maritimes Fisheries Information System database (MARFIS)
+- 2026 Preliminary Maritimes Region Atlantic Halibut landings from Maritimes Fisheries Information System database (MARFIS)
 
 
 #### Data changes: {-}
@@ -112,7 +164,7 @@ The HDR has two steps. First, a fishing mortality rate (F) is applied to the exp
 ds_all <- Mar.datawrangling::load_datasources()
 
 devtools::load_all(".")
-
+library(tidyr)
 source(file.path(getwd(), "directories.r"))
 source(file.path(wd, "passwords.r")) 
 setwd(file.path(wd,'FSAR'))
@@ -122,7 +174,8 @@ source("real-data.R")
 source("plot-timeseries.R")
 
 #
-in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
+#in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
+in.df <- read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/fsardata/in.df2026.csv")
 
 ## English template
 fsar_plot_base(in.df,Assessment.Year=Assessment.Year,language= "English")
@@ -130,7 +183,7 @@ fsar_plot_base(in.df,Assessment.Year=Assessment.Year,language= "English")
 ## French template
 fsar_plot_base(in.df,Assessment.Year=Assessment.Year,language= "English")
 ```
-Figure 2. (A) Northwest Atlantic Fisheries Organization (NAFO) reported Canadian (blue) and foreign (red) landings (tonnes) for 3NOPs4VWX5Zc Atlantic Halibut. Landings for 2025 (hashed bar) are preliminary, and taken from the Maritimes Fisheries Information System (MARFIS) as of November 14, 2025 (this does not include landings in Newfoundland which are not yet available). The solid green line is the Canadian total allowable catch (TAC). The NAFO 21A table of landings by country is reported by calendar year; however, the TAC for the stock is set for the period of April-March., (B) Stratified Random Halibut Survey Biomass (B) in relation to the Limit Reference Point (LRP; 10.9 kt) and Upper Stock Reference (USR; 21.8 kt), (C) Fishing and Natural Mortality in relation to the FMSY Removal References, the black dots are the exploitation rate based on reported landings and the three-year mean biomass from the Stratified Random Halibut Survey, (D) Recruitment index from the RV Summer Survey in numbers. 
+Figure 2. (A) Northwest Atlantic Fisheries Organization (NAFO) reported Canadian (blue) and foreign (red) landings (tonnes) for 3NOPs4VWX5Zc Atlantic Halibut. Landings for 2026 (hashed bar) are preliminary, and taken from the Maritimes Fisheries Information System (MARFIS) as of November 5, 2026 (this does not include landings in Newfoundland which are not yet available). The solid green line is the Canadian total allowable catch (TAC). The NAFO 21A table of landings by country is reported by calendar year; however, the TAC for the stock is set for the period of April-March., (B) Stratified Random Industry-DFO Halibut Longline Survey Biomass (B) in relation to the Limit Reference Point (LRP; 10.9 kt, red dashed line) and Upper Stock Reference (USR; 21.8 kt, green dashed line), (C) Fishing and Natural Mortality in relation to the F~MSY~ Removal References, the black dots are the exploitation rate based on reported landings and the three-year mean biomass from the Stratified Random Industry-DFO Halibut Longline Survey, (D) Recruitment index from the Maritimes Summer Ecosystem Research Vessel Survey in numbers. 
 
 ### Stock Status and Trends {-}
 
@@ -141,10 +194,9 @@ Following outcomes from the last framework in 2022, harvest advice in interim ye
 
 In 2023, a new stratum with reduced allocation of stations was introduced into the survey in an area in the northeast where there has been little to no catch of Atlantic Halibut in the Stratified Random Halibut Survey since 2017 (Figure 3, [@DFO2025]).
 
-Although not all stations were completed this year (Figure 3), there was adequate coverage in all strata to effectively calculate the index of exploitable biomass from the Stratified Random Halibut Survey. The 2025 index of exploitable biomass and the three-year mean are slightly lower than last year. Inter-annual changes in the three-year mean have remained relatively stable through the time series.
+All stations except one were completed this year (Figure 3), providing adequate coverage in all strata and allowing for calculation of the exploitable biomass from the Stratified Random Halibut Survey as planned. Inter-annual changes in the three-year mean exploitable biomass index have remained relatively stable until this year. The 2026 index of exploitable biomass and the three-year mean are highest in the time series. 
 
-
-The 2025 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 to be 49.4 kt (95% confidence interval: 35.8, 63.1). Based on the three-year mean (Figure 2B), the exploitable biomass index from the Stratified Random Halibut Survey for 2025 is 51.1 kt which is 1.9 B~MSY~, higher than the LRP (0.4 B~MSY~=10.9 kt) and USR (0.8 B~MSY~=21.8 kt), putting this stock in the healthy zone (Figure 1).
+The 2026 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 to be 67.4 kt (95% confidence interval: 51.9, 82.9). Based on the three-year mean (Figure 2B), the exploitable biomass index from the Stratified Random Halibut Survey for 2026 is 57.4 kt which is 2.1 B~MSY~, higher than the LRP (0.4 B~MSY~=10.9 kt) and USR (0.8 B~MSY~=21.8 kt), putting this stock in the healthy zone (Figure 1).
 
 (ref:caption)
 
@@ -162,8 +214,8 @@ BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
 
 BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
 
-HalSurvey2025 <- read.csv("fsardata/StratifiedRandom_2025final.csv")
-completed2025 <- read.csv("fsardata/2025 Halibut Longline Survey Stations Completed.csv")
+HalSurvey2026 <- read.csv("fsardata/StratifiedRandom_2026finalJune03.csv")
+completed2026 <- read.csv("fsardata/2026 Halibut Longline Survey Stations Completed.csv")
 
 xl=c(-68,-47)
 yl=c(40,48)
@@ -172,8 +224,8 @@ png(file.path(wd,'figures',"SurveyMap.png"), width =8, height = 6,units='in',poi
 bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
 addPolys(BO1,density=20,col='black')
 sp::plot(NAFO,add=T)
- points(lat.DecDeg~lon.DecDeg,HalSurvey2025,pch=21,bg = "yellow",cex=0.5)
- points(lat.DecDeg~lon.DecDeg,completed2025,pch=21, bg = "black",cex=0.5)
+ points(lat.DecDeg~lon.DecDeg,HalSurvey2026,pch=21,bg = "yellow",cex=0.5)
+ points(lat.DecDeg~lon.DecDeg,completed2026,pch=21, bg = "black",cex=0.5)
 text(x = -56.5, y = 43, labels = "4Vs")
 text(x = -59.55, y = 46.37, labels = "4Vn")
 text(x = -61, y = 42, labels = "4W")
@@ -184,34 +236,36 @@ text(x = -53.2, y = 43.7, labels = "3O")
 text(x = -55.5, y = 45.9, labels = "3Ps")
 text(x = -58.7, y = 47.35, labels = "3Pn")
 ```
-Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into depth strata, shown in different shades of each colour. The hatched area is a new stratum with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2025 survey, black dots indicate completed stations and red dots indicate incomplete stations (three stations in 3Ps). Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
+Figure 3. The Stratified Random Industry-DFO Halibut Longline survey area is separated into five zones across the Scotian Shelf (SS) and southern Grand Banks (GB) represented by different colours. Each zone is further separated into depth strata, shown in different shades of each colour. The hatched area is a new stratum with lower station allocation introduced in 2023. The survey area includes division 3Pn, which is not part of the management unit. Two hundred stations were assigned in the 2026 survey, black dots indicate completed stations and the yellow dot indicates the one incomplete station (4W). Solid black lines represent Northwest Atlantic Fisheries Organization Division boundaries, while international boundaries are marked with dashed lines.
 
 
 #### Index of Recruitment: Maritimes Summer Ecosystem Research Vessel Survey (RV Summer Survey; NAFO Divs. 4VWX) {-}
 
-The RV Summer Survey provides an index of recruitment for Atlantic Halibut. The median size of Atlantic Halibut caught in the trawl survey is between 40–50 cm. The abundance of Atlantic Halibut in this survey increased between 2000 and 2011 (Figure 2D) but then declined to the lowest value since 2011 in 2020. Since 2020, catch has been increasing but declined this year showing a similar trend to what was seen after the last peak in 2011.
+The RV Summer Survey provides an index of recruitment for Atlantic Halibut. The median size of Atlantic Halibut caught in the trawl survey is between 40–50 cm. The abundance of Atlantic Halibut in this survey increased between 2000 and 2011 (Figure 2D) but then declined to the lowest value since 2011 in 2020. Since 2020, catch had been increasing but declined last year. In 2026, abundance has increased and is the fourth highest in the time series and is higher than the long-term mean.
 
 A conversion factor for Atlantic Halibut between the old and new survey vessels and fishing gear was estimated (1:1) in 2024 and since then the data from the 2021 survey that was not included in previous years is now being incorporated into the time series, however coverage remains incomplete for that year.
 
-The abundance index for 2025 is the lowest in the last 5 years, however it is still higher than the long-term mean. The index of abundance is reviewed annually, exclusively for context and does not directly contribute to the HDR outputs.
+This index of abundance is reviewed annually, exclusively for context and does not directly contribute to the HDR outputs.
 
 #### Current Status {-}
 
-The 2025 three-year mean exploitable biomass index (51.1 kt) from the Stratified Random Halibut Survey is above the USR with a very high probability of being in the healthy zone.
+The 2026 three-year mean exploitable biomass index (57.4 kt) from the Stratified Random Halibut Survey is above the USR with a very high probability of being in the healthy zone.
 
 
 ### History of Management, TAC, Catch Advice and Landings {-}
 
 A TAC for this fishery was first established in 1988 ([@DFO2024a]; [@Li2025]) followed by a period of declining landings which led to a significantly reduced TAC by 1995 and the introduction of a minimum size limit of 81 cm. Since then, TAC has increased and peaked at 5,507 t in 2020 (Table 1, Figures 2A).
 
-Landings data for Atlantic Halibut are retrieved from the NAFO database for each calendar year because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)) as well as in other countries. Landings from the MARFIS database are reported as preliminary Canadian landings for 2025. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX).
+Landings data for Atlantic Halibut are retrieved from the NAFO database for each calendar year because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)) as well as in other countries. Landings from the MARFIS database are reported as preliminary Canadian landings for 2026. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divs. 4VWX).
 
 
 ```{r, message=FALSE, echo = FALSE, warning=FALSE}
 library(kableExtra)
+library(flextable)
 landingstable <- read.csv("fsardata/landingstable.csv")
-csasdown::csas_table(landingstable, caption = "Total reported Canadian and foreign landings (tonnes) of Atlantic Halibut from Northwest Atlantic Fisheries Organization (NAFO) Divisions 3NOPs4VWX5Zc and total allowable catch (TAC) for these divisions. Ten-year annual average landings are presented for 1960 to 2009. The [NAFO 21A table](https://www.nafo.int/Data/STATLANT-21A) of landings by country are reported by calendar year; however, the TAC for the stock is set for the period of April–March. Data were extracted from the NAFO 21A database on November 14, 2025. A dash indicates where data are not available.
+flextable(landingstable) %>% set_caption(caption = "Total reported Canadian and foreign landings (tonnes) of Atlantic Halibut from Northwest Atlantic Fisheries Organization (NAFO) Divisions 3NOPs4VWX5Zc and total allowable catch (TAC) for these divisions. Ten-year annual average landings are presented for 1960 to 2009. The [NAFO 21A table](https://www.nafo.int/Data/STATLANT-21A) of landings by country are reported by calendar year; however, the TAC for the stock is set for the period of April–March. Data were extracted from the NAFO 21A database on November 9, 2026. A dash indicates where data are not available.
                      ")
+
 # 
 # names(landingstable)[c(3, 6)] <- paste0(names(landingstable)[c(3,6)],
 #                                 footnote_marker_symbol(1))
@@ -238,7 +292,7 @@ csasdown::csas_table(landingstable, caption = "Total reported Canadian and forei
 
 ### Ecosystem and Climate Change Considerations {-}
 
-The environmental conditions affecting this stock are currently unknown. Recent work by @Czich2023 suggest that forecasted changes in thermal conditions in the Northwest Atlantic may influence the distribution and abundance of juvenile Atlantic Halibut in the near future. 
+The environmental conditions affecting this stock are currently unknown. Work by @Czich2023 suggest that forecasted changes in thermal conditions in the Northwest Atlantic may influence the distribution and abundance of juvenile Atlantic Halibut in the near future. (SHACKELL 2026???) - Consistent with this expansion of suitable thermal habitat, recent analysis of these same data suggest an increased range towards the northeast and a shift in the center of gravity of the abundance in that direction (Shackell et al. 2026).
 
 ### Stock Advice {-}
 
@@ -246,16 +300,16 @@ Stock status in interim years is assessed based on the three-year mean exploitab
 
 ### Harvest Decision Rule Outputs {-}
 
-As the 2025 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2 B~MSY~ (32.8 kt, Table 1), the highest fishing mortality, 1.2 F~MSY~ (0.104), would be applied using the articulated HDR. This results in TAC advice for 2026-2027 of 5,064 t. As this is within the maximum inter-annual change of 15% from the 2025-2026 TAC (5,149 t), the 2026-2027 TAC advice is 5,064 t. This application of the HDR assumes all removals from Canadian and international fisheries are included.
+As the 2026 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2 B~MSY~ (32.8 kt, Table 1), the highest fishing mortality, 1.2 F~MSY~ (0.104), would be applied using the articulated HDR. This results in TAC advice for 2027-2028 of 5,695 t. As this is within the maximum inter-annual change of 15% from the 2026-2027 TAC (5,064 t), the 2027-2028 TAC advice is 5,695 t. This application of the HDR assumes all removals from Canadian and international fisheries are included.
 
 ### Evaluation of Exceptional Circumstances/Assessment Triggers {-}
 
-No significant changes in data sources or significant deviations from expectations were observed that would trigger an early assessment. The three-year mean index for 2025 was near the upper end, but still within the 90% probability envelope from the closed-loop simulation.
+No significant changes in data sources or significant deviations from expectations were observed that would trigger an early assessment. The three-year mean index for 2026 is however above the 90% probability envelope from the closed-loop simulation which does trigger an assessment. (something about this is in the plans anyhow??)
 
 
 ## SOURCES OF UNCERTAINTY {-}
 
-The Industry-DFO Halibut Longline Survey index uses the stratified mean catch per tow and does not account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although three stations were not completed, the minimum number of stations in each stratum were completed, allowing for calculation of the exploitable biomass index.
+The Industry-DFO Halibut Longline Survey index uses the stratified mean catch per tow and does not account for variation associated with hook competition, vessels, and temperature effects. In the current survey year, although one station was not completed as assigned, the minimum number of stations in each stratum were completed, allowing for calculation of the exploitable biomass index.
 
 The 2018 and 2022 RV Summer Survey did not cover all strata due to mechanical issues with the vessels.
 
@@ -267,3 +321,143 @@ The interpretation of trends assumes no changes in vital rates such as growth or
 
 ## SOURCES OF INFORMATION {-}
 
+## THIS REPORT IS AVAILABLE FROM THE:{-}
+
+::: {custom-style="Body Text + Centered"}
+Fisheries and Oceans Canada Bedford Institute of Oceanography 1 Challenger Drive, PO Box 1006 Dartmouth, Nova Scotia B2Y 4A2
+E-Mail:
+MaritimesRAP.XMAR@dfo-mpo.gc.ca
+\
+Internet address: [www.dfo-mpo.gc.ca/csas-sccs/](www.dfo-mpo.gc.ca/csas-sccs/)
+
+ISSN 1919-5087\
+ISBN 978-0-660-xxxxx-x&#9;Cat. No. Fs70-6/2026-nnnE-PDF\
+© His Majesty the King in Right of Canada, as represented by the Minister of the\
+                  Department of Fisheries and Oceans,
+2026
+
+
+DOI: xxx.xxx.xxx
+
+This report is published under the [Open Government Licence - Canada](https://open.canada.ca/en/open-government-licence-canada)
+
+MOBIUS
+:::
+
+
+Correct citation for this publication:
+
+::: {custom-style="citation"}
+DFO. 2026. Scotian Shelf and Southern Grand Banks Atlantic Halibut (Hippoglossus hippoglossus) Stock Status Update in 2025. DFO Can. Sci. Advis. Sec. Sci. Advis. Rep. 2026/XXX. doi: xxx.xxx.xxx.
+:::
+
+*Aussi disponible en français:*
+
+::: {custom-style="citation"}
+*MPO. 2026. Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) duplateau néo-écossais et du sud du Grand Banc. Secr. can. des avis sci. du MPO. Avis sci. 2026/XXX. doi: xxx.xxx.xxx.*
+:::
+## THIS REPORT IS AVAILABLE FROM THE:{-}
+
+::: {custom-style="Body Text + Centered"}
+Fisheries and Oceans Canada Bedford Institute of Oceanography 1 Challenger Drive, PO Box 1006 Dartmouth, Nova Scotia B2Y 4A2
+E-Mail:
+MaritimesRAP.XMAR@dfo-mpo.gc.ca
+\
+Internet address: [www.dfo-mpo.gc.ca/csas-sccs/](www.dfo-mpo.gc.ca/csas-sccs/)
+
+ISSN 1919-5087\
+ISBN 978-0-660-xxxxx-x&#9;Cat. No. Fs70-6/2026-nnnE-PDF\
+© His Majesty the King in Right of Canada, as represented by the Minister of the\
+                  Department of Fisheries and Oceans,
+2026
+
+
+DOI: xxx.xxx.xxx
+
+This report is published under the [Open Government Licence - Canada](https://open.canada.ca/en/open-government-licence-canada)
+
+MOBIUS
+:::
+
+
+Correct citation for this publication:
+
+::: {custom-style="citation"}
+DFO. 2026. Scotian Shelf and Southern Grand Banks Atlantic Halibut (Hippoglossus hippoglossus) Stock Status Update in 2025. DFO Can. Sci. Advis. Sec. Sci. Advis. Rep. 2026/XXX. doi: xxx.xxx.xxx.
+:::
+
+*Aussi disponible en français:*
+
+::: {custom-style="citation"}
+*MPO. 2026. Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) duplateau néo-écossais et du sud du Grand Banc. Secr. can. des avis sci. du MPO. Avis sci. 2026/XXX. doi: xxx.xxx.xxx.*
+:::
+## THIS REPORT IS AVAILABLE FROM THE:{-}
+
+::: {custom-style="Body Text + Centered"}
+Fisheries and Oceans Canada Bedford Institute of Oceanography 1 Challenger Drive, PO Box 1006 Dartmouth, Nova Scotia B2Y 4A2
+E-Mail:
+MaritimesRAP.XMAR@dfo-mpo.gc.ca
+\
+Internet address: [www.dfo-mpo.gc.ca/csas-sccs/](www.dfo-mpo.gc.ca/csas-sccs/)
+
+ISSN 1919-5087\
+ISBN 978-0-660-xxxxx-x&#9;Cat. No. Fs70-6/2026-nnnE-PDF\
+© His Majesty the King in Right of Canada, as represented by the Minister of the\
+                  Department of Fisheries and Oceans,
+2026
+
+
+DOI: xxx.xxx.xxx
+
+This report is published under the [Open Government Licence - Canada](https://open.canada.ca/en/open-government-licence-canada)
+
+MOBIUS
+:::
+
+
+Correct citation for this publication:
+
+::: {custom-style="citation"}
+DFO. 2026. Scotian Shelf and Southern Grand Banks Atlantic Halibut (Hippoglossus hippoglossus) Stock Status Update in 2025. DFO Can. Sci. Advis. Sec. Sci. Advis. Rep. 2026/XXX. doi: xxx.xxx.xxx.
+:::
+
+*Aussi disponible en français:*
+
+::: {custom-style="citation"}
+*MPO. 2026. Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) duplateau néo-écossais et du sud du Grand Banc. Secr. can. des avis sci. du MPO. Avis sci. 2026/XXX. doi: xxx.xxx.xxx.*
+:::
+## THIS REPORT IS AVAILABLE FROM THE:{-}
+
+::: {custom-style="Body Text + Centered"}
+Fisheries and Oceans Canada Bedford Institute of Oceanography 1 Challenger Drive, PO Box 1006 Dartmouth, Nova Scotia B2Y 4A2
+E-Mail:
+MaritimesRAP.XMAR@dfo-mpo.gc.ca
+\
+Internet address: [www.dfo-mpo.gc.ca/csas-sccs/](www.dfo-mpo.gc.ca/csas-sccs/)
+
+ISSN 1919-5087\
+ISBN 978-0-660-xxxxx-x&#9;Cat. No. Fs70-6/2026-nnnE-PDF\
+© His Majesty the King in Right of Canada, as represented by the Minister of the\
+                  Department of Fisheries and Oceans,
+2026
+
+
+DOI: xxx.xxx.xxx
+
+This report is published under the [Open Government Licence - Canada](https://open.canada.ca/en/open-government-licence-canada)
+
+MOBIUS
+:::
+
+
+Correct citation for this publication:
+
+::: {custom-style="citation"}
+DFO. 2026. Scotian Shelf and Southern Grand Banks Atlantic Halibut (Hippoglossus hippoglossus) Stock Status Update in 2025. DFO Can. Sci. Advis. Sec. Sci. Advis. Rep. 2026/XXX. doi: xxx.xxx.xxx.
+:::
+
+*Aussi disponible en français:*
+
+::: {custom-style="citation"}
+*MPO. 2026. Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) duplateau néo-écossais et du sud du Grand Banc. Secr. can. des avis sci. du MPO. Avis sci. 2026/XXX. doi: xxx.xxx.xxx.*
+:::
