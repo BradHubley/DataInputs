@@ -40,10 +40,10 @@ Assessment.Year <- 2026
    # 1. Establish Oracle connection first (NEW REQUIREMENT)
     cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
 
- get_data(db='isdb',cxn=cxn)
+ get_data(db='isdb',cxn=cxn, force.extract = TRUE)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
- get_data(db='rv',cxn=cxn)
+ get_data(db='rv',cxn=cxn, force.extract = FALSE)
 
 
 
