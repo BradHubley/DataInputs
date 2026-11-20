@@ -67,7 +67,7 @@ Mar.utils::get_data_tables(schema="<NA>",cxn=cxn, data.dir = "C:/DFO-MPO/PESDDat
 ### Survey data by NAFO
 
 ```{r}
-RandomSurveyLandmark<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
+RandomSurvey<-RandomSurveyData(sp=30,datadir=datadir,by.sex=F,add.LF=F, hook.data=F)
 
 
 

@@ -40,7 +40,7 @@ Assessment.Year <- 2026
    # 1. Establish Oracle connection first (NEW REQUIREMENT)
     cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), uid, pwd, "PTRAN")
 
- get_data(db='isdb',cxn=cxn, force.extract = TRUE)
+ get_data(db='isdb',cxn=cxn, force.extract = FALSE)
 # open and check setprofile_wide to confirm that you have year, latitude & longitude
 
  get_data(db='rv',cxn=cxn, force.extract = FALSE)
@@ -274,5 +274,90 @@ dev.off()
  
  
  
+```
+
+plotting the stations by catch for given years - checking some stuff for 2026
+```{r}
+RandomSurvey$EST_COMBINED_WT_scaled <- (RandomSurvey$EST_COMBINED_WT - min(RandomSurvey$EST_COMBINED_WT, na.rm = TRUE)) / (max(RandomSurvey$EST_COMBINED_WT, na.rm = TRUE) - min(RandomSurvey$EST_COMBINED_WT, na.rm = TRUE))
+
+RandomSurvey <- RandomSurvey %>%
+  mutate(
+    # Rank non-zero values from >0 to 1
+    EST_COMBINED_WT_scaled = ifelse(EST_COMBINED_WT == 0, 0, percent_rank(ifelse(EST_COMBINED_WT > 0, EST_COMBINED_WT, NA))),
+    
+    # Bin 0 separately, split non-zeros into quartiles (7 equal-sized groups)
+    bins = case_when(
+      EST_COMBINED_WT == 0 ~ "0 (Zero)",
+      EST_COMBINED_WT_scaled <= 0.15 ~ "1 (Low)",
+      EST_COMBINED_WT_scaled <= 0.30 ~ "1 (Low-mediumlow)",
+      EST_COMBINED_WT_scaled <= 0.45 ~ "1 (mediumlow-medium)",
+      EST_COMBINED_WT_scaled <= 0.60 ~ "2 (Medium-mediumhigh)",
+      EST_COMBINED_WT_scaled <= 0.75 ~ "3 (Mediumhigh-High)",
+      TRUE ~ "4 (High)"
+    )
+  )
+
+RandomSurvey <- RandomSurvey %>%
+  mutate(
+    # 1. Log-transform and rescale to 0-1 (zeros stay exact 0)
+    EST_COMBINED_WT_scaled = log1p(EST_COMBINED_WT) / max(log1p(EST_COMBINED_WT), na.rm = TRUE),
+    
+    # 2. Separate into value-based bins
+    bins = case_when(
+      EST_COMBINED_WT == 0 ~ "0 (Zero)",
+      EST_COMBINED_WT_scaled <= 0.15 ~ "1 (Low)",
+      EST_COMBINED_WT_scaled <= 0.30 ~ "1 (Low-mediumlow)",
+      EST_COMBINED_WT_scaled <= 0.45 ~ "1 (mediumlow-medium)",
+      EST_COMBINED_WT_scaled <= 0.60 ~ "2 (Medium-mediumhigh)",
+      EST_COMBINED_WT_scaled <= 0.75 ~ "3 (Mediumhigh-High)",
+      TRUE ~ "4 (High)"
+    )
+  )
+
+RandomSurvey$WT_scaled2 <- RandomSurvey$EST_COMBINED_WT_scaled*2
+
+RS2024 <- RandomSurvey %>% filter(YEAR == 2024)
+RS2025 <- RandomSurvey %>% filter(YEAR == 2025)
+RS2026 <- RandomSurvey %>% filter(YEAR == 2026)
+
+library(SpatialHub)
+library(PBSmapping)
+load(file.path(datadir,"SurveyStrata2022.RData"))
+BO1<-data.frame(PID=1,POS=1:6,X=c(-47,-55,-55,-56.15283,-56.15283,-47),Y=c(45.5,45.5,46.25,46.25,48,48))
+
+BO1<-joinPolys(BO1,surveyPolyLL,operation="INT")
+
+
+BO2<-data.frame(PID=1,POS=1:4,X=c(-68,-68,-67,-67),Y=c(41,46,46,41))
+
+BO2<-joinPolys(BO2,surveyPolyLL,operation="INT")
+
+xl=c(-68,-47)
+yl=c(40,48)
+png(file.path(wd,'figures',"2SurveyMap_catch2024_26.png"), width =12, height = 8,units='in',pointsize=12, res=300,type='cairo')
+
+
+bioMap(xlim = xl, ylim = yl,mapRes="MR",poly.lst = list(surveyStrataPolyLL,props), plot.rivers=F,isobaths = NULL)
+addPolys(BO1,density=20,col='black')
+sp::plot(NAFO,add=T)
+ points(LAT1~LONG1,RS2024,pch=21,bg = "blue",cex=RS2024$WT_scaled2)
+ points(LAT1~LONG1,RS2025,pch=21,bg = "black",cex=RS2025$WT_scaled2)
+ points(LAT1~LONG1,RS2026,pch=21,bg = "red",cex=RS2026$WT_scaled2)
+  # points(lat.DecDeg~lon.DecDeg,completed2026,pch=21, bg = "black",cex=0.5)
+text(x = -56.5, y = 43, labels = "4Vs")
+text(x = -59.55, y = 46.37, labels = "4Vn")
+text(x = -61, y = 42, labels = "4W")
+text(x = -64.5, y = 41.5, labels = "4X")
+text(x = -66.25, y = 41.9, labels = "5Zc")
+text(x = -48.75, y = 42.5, labels = "3N")
+text(x = -53.2, y = 43.7, labels = "3O")
+text(x = -55.5, y = 45.9, labels = "3Ps")
+text(x = -58.7, y = 47.35, labels = "3Pn")
+dev.off()
+
+RandomSurvey <- RandomSurvey %>% mutate(NAFO = substr(NAFAREA_ID, 1, 2))
+Highcatch_summary <- RandomSurvey %>% filter(bins == "4 (High)") %>%
+  group_by(NAFO, YEAR) %>% summarize(n_stations = n(), catch = sum(EST_COMBINED_WT))
+
 ```
 
