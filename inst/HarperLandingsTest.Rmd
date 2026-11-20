@@ -153,7 +153,7 @@ Canadian Maritimes Landings only
 
 cxn <- ROracle::dbConnect(DBI::dbDriver("Oracle"), "hubleyb", "R4#vmxtas", "PTRAN")
 
-get_data(db='marfis', cxn = cxn, force.extract = TRUE)
+get_data(db='marfis', cxn = cxn, force.extract = FALSE)
 
 #get_data(db='marfis',data.dir=datadir)
 SPECIES = SPECIES[SPECIES$SPECIES_CODE == 130,]

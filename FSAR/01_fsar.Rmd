@@ -87,7 +87,7 @@ In 1987, Atlantic halibut in Canadian waters were separated into two management 
 
 ### Harvest Decision Rule {-}
 
-The HDR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass (B) estimated from the three-year mean of the stratified random Industry-DFO Halibut Longline Survey to calculate total allowable catch (TAC) advice. The articulated HDR includes three control points, the LRP, USR, and 1.2 B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  B = 0.8 B~MSY~) up to the third control point (1.2 B~MSY~), above which it is capped at 1.2 F~MSY~. Second, the percentage change from the previous year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP (Figure 1). 
+The HDR has two steps. First, a fishing mortality rate (F) is applied to the exploitable biomass estimate (B) to calculate total allowable catch (TAC) advice. B is estimated from the three-year mean of the stratified random Industry-DFO Halibut Longline Survey. The articulated HDR includes three control points, the LRP, USR, and 1.2 B~MSY~. Below the LRP, F is capped at 0.05 and above the USR it is relative to F~MSY~ (i.e., F = 0.8 F~MSY~ when  B = 0.8 B~MSY~) up to the third control point (1.2 B~MSY~), above which it is capped at 1.2 F~MSY~. Second, the percentage change from the previous year's TAC is limited by the sliding inter-annual TAC change threshold, where the limit of change ranges from 15% at the USR to 100% at the LRP (Figure 1). 
 
 
 ![Figure 1. The articulated harvest decision rule with reference points and control points used for determining target harvest rates for Atlantic Halibut for the Scotian Shelf and southern Grand Banks stock (NAFO Divisions 3NOPs4VWX5Zc) based on the three-year mean of biomass estimates from the stratified random Industry-DFO Halibut Longline Survey. LRP = limit reference point, USR = upper stock reference, B~MSY~ = Biomass at maximum sustainable yield.](fsardata/HCR.png)
@@ -121,7 +121,7 @@ source("real-data.R")
 source("plot-timeseries.R")
 
 #
-#in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
+in.df <- fsar_data(Assessment.Year=Assessment.Year,datadir=datadir)
 in.df <- read.csv("C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/FSAR/fsardata/in.df2026.csv")
 
 ## English template
@@ -139,11 +139,11 @@ Figure 2. (A) Northwest Atlantic Fisheries Organization (NAFO) reported Canadian
 
 Following outcomes from the last framework in 2022, harvest advice in interim years is based on the three-year mean exploitable biomass index from the Stratified Random Halibut Survey. Inter-annual changes in this index have been minimal (Figure 2B).
 
-In 2023, a new stratum with reduced allocation of stations was introduced into the survey in an area in the northeast where there has been little to no catch of Atlantic Halibut in the Stratified Random Halibut Survey since 2017 (Figure 3, [@DFO2025]).
+In 2023, a new stratum with reduced allocation of stations was introduced into the survey in an area in the northeast where there has been little to no catch of Atlantic Halibut in the Stratified Random Halibut Survey since 2017 (Figure 3, [@Li2025]).
 
 All stations except one were completed this year (Figure 3), providing adequate coverage in all strata and allowing for calculation of the exploitable biomass from the Stratified Random Halibut Survey as planned. Inter-annual changes in the three-year mean exploitable biomass index have remained relatively stable until this year. The 2026 index of exploitable biomass and the three-year mean (2024-2026) are highest in the time series. 
 
-The 2026 biomass from the Stratified Random Halibut Survey was estimated using a catchability of 0.002 to be 67.4 kt (95% confidence interval: 51.9, 82.9). Based on the three-year mean (Figure 2B), the exploitable biomass index from the Stratified Random Halibut Survey for 2026 is 57.4 kt which is 2.1 B~MSY~, higher than the LRP (0.4 B~MSY~=10.9 kt) and USR (0.8 B~MSY~=21.8 kt)(Figure 1).
+The 2026 biomass from the Stratified Random Halibut Survey was estimated to be 67.4 kt (95% confidence interval: 51.9, 82.9) using a catchability of 0.002. Based on the three-year mean (Figure 2B), the exploitable biomass index from the Stratified Random Halibut Survey for 2026 is 57.4 kt which is 2.1 B~MSY~, higher than the LRP (0.4 B~MSY~=10.9 kt) and USR (0.8 B~MSY~=21.8 kt)(Figure 1).
 
 (ref:caption)
 
@@ -201,7 +201,7 @@ The 2026 three-year mean exploitable biomass index (57.4 kt) from the Stratified
 
 ### History of Management, TAC, Catch Advice and Landings {-}
 
-A TAC for this fishery was first established in 1988 ([@DFO2024a]; [@Li2025]) followed by a period of declining landings which led to a significantly reduced TAC by 1995 and the introduction of a minimum size limit of 81 cm. Beginning in the early 2000s, TAC increased and up to 5,507 t in 2020 (Table 1, Figures 2A).
+A TAC for this fishery was first established in 1988 ([@DFO2024a]; [@Li2025]) followed by a period of declining landings which led to a significantly reduced TAC by 1995 and the introduction of a minimum size limit of 81 cm. Beginning in the early 2000s, TAC increased up to 5,507 t in 2020 (Table 1, Figures 2A).
 
 Landings data for Atlantic Halibut are retrieved from the NAFO database for each calendar year because landings occur in two DFO regions (Maritimes and Newfoundland and Labrador (NL)) as well as in other countries. Landings from the MARFIS database are reported as preliminary Canadian landings for 2026. These preliminary landings do not include landings in NL. The majority of landings occur on the Scotian Shelf (NAFO Divisions 4VWX).
 
@@ -247,7 +247,7 @@ Stock status in interim years is assessed based on the three-year mean exploitab
 
 ### Harvest Decision Rule Outputs {-}
 
-As the 2026 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2 B~MSY~ (32.8 kt, Table 1), the highest fishing mortality, 1.2 F~MSY~ (0.104), would be applied using the articulated HDR. This results in TAC advice for 2027-2028 of 5,695 t. As this is within the maximum inter-annual change of 15% from the 2026-2027 TAC (5,064 t), the 2027-2028 TAC advice is 5,695 t. This application of the HDR assumes all removals from Canadian and international fisheries are included.
+As the 2026 three-year mean exploitable biomass based on the Stratified Random Halibut Survey is higher than 1.2 B~MSY~ (32.8 kt, Table 1), the highest fishing mortality, 1.2 F~MSY~ (0.104), would be applied using the articulated HDR. This results in TAC advice for 2027-2028 of 5,695 t. This is within the maximum inter-annual change of 15% from the 2026-2027 TAC (5,064 t). This application of the HDR assumes all removals from Canadian and international fisheries are included.
 
 ### Evaluation of Exceptional Circumstances/Assessment Triggers {-}
 
@@ -256,8 +256,8 @@ No significant changes in data sources or significant deviations from expectatio
 
 ## SOURCES OF UNCERTAINTY {-}
 
-Sources of uncertainty related to the Stratified Random Halibut Survey exploitable biomass index and the DFO Summer RV Survey index of recruitment, and the interpretation of the trends of these indices, were outlined in the last assessment and stock status update ([@DFO2024a], [@DFO2025]).
-Three stations were not completed in the 2025 Stratified Random Halibut Survey, however the minimum number of stations in each stratum were compelted, allowing for the calculation of the exploitable biomass index without any expected impact on the science advice provided.
+Sources of uncertainty related to the Stratified Random Halibut Survey exploitable biomass index and the DFO Summer RV Survey index of recruitment, and the interpretation of the trends of these indices, were outlined in the last assessment and previous stock status updates ([@DFO2024a], [@DFO2025]).
+One stations was not completed in the 2026 Stratified Random Halibut Survey, however the minimum number of stations in each stratum were completed, allowing for the calculation of the exploitable biomass index without any expected impact on the science advice provided.
 
 
 ## LIST OF MEETING PARTICIPANTS {-}
