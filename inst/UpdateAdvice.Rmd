@@ -359,5 +359,7 @@ RandomSurvey <- RandomSurvey %>% mutate(NAFO = substr(NAFAREA_ID, 1, 2))
 Highcatch_summary <- RandomSurvey %>% filter(bins == "4 (High)") %>%
   group_by(NAFO, YEAR) %>% summarize(n_stations = n(), catch = sum(EST_COMBINED_WT))
 
+Allcatch <- RandomSurvey %>% group_by(NAFO, YEAR) %>% summarize(n_stations = n(), catch = sum(EST_NUM_CAUGHT))
+
 ```
 

@@ -1,6 +1,6 @@
 ---
 english_title: "Scotian Shelf and Southern Grand Banks Atlantic Halibut (Hippoglossus
-hippoglossus) Stock Status Update in 2025"
+hippoglossus) Stock Status Update in 2026"
 year: "2026"
 release_month: "December"
 report_number: "XXX"
@@ -14,7 +14,7 @@ Bedford Institute of Oceanography
 1 Challenger Drive, PO Box 1006
 Dartmouth, Nova Scotia B2Y 4A2"
 french_csa_address: "XXX"
-french_title: "Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) duplateau néo-écossais et du sud du Grand Banc"
+french_title: "Mise à jour de l'état du stock de flétan atlantique (Hippoglossus hippoglossus) duplateau néo-écossais et du sud des Grands Bancs en 2026"
 inuktitut_citation: " "
 context: |
   .
