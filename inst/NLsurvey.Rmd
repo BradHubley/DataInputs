@@ -15,7 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
  library(dplyr)
 
 
-datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021"
+datadir= "C:/Users/VarkeyP/Documents/Halibut/RDataVault"
+#datadir="C:/Users/harperd/Documents/Halibut/RDataVault/NLdata_received2021"
 #datadir="C:/Users/hubleyb/Documents/Halibut/data/Newfoundland Data/Newfoundland RV Data - Received 2021"
 wd="C:/Users/harperd/Documents/Halibut/GitDataInputs/DataInputs_2023/DataInputs/"
 source(file.path(wd, "passwords.r"))
